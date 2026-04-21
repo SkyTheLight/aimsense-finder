@@ -1,14 +1,14 @@
 import { PSAIteration } from '@/types';
 
 export function generateInitialPSAOptions(base: number): {
-  half: number;
-  base: number;
-  double: number;
+  slower: number;
+  current: number;
+  faster: number;
 } {
   return {
-    half: Number((base * 0.5).toFixed(3)),
-    base: Number(base.toFixed(3)),
-    double: Number((base * 2).toFixed(3)),
+    slower: Number((base * 0.7).toFixed(3)),
+    current: Number(base.toFixed(3)),
+    faster: Number((base * 1.3).toFixed(3)),
   };
 }
 
@@ -18,13 +18,12 @@ export function createPSAIteration(
   high: number
 ): PSAIteration {
   const mid = Number(((low + high) / 2).toFixed(3));
-  const step = 0.12 / iteration;
-  const adjustedStep = Math.max(step, 0.012);
-
+  const step = (high - low) / 4;
+  
   return {
     iteration,
-    low: Number((mid - adjustedStep).toFixed(3)),
-    high: Number((mid + adjustedStep).toFixed(3)),
+    low: Number((mid - step).toFixed(3)),
+    high: Number((mid + step).toFixed(3)),
     mid,
     choice: null,
   };
@@ -37,25 +36,34 @@ export function processPSAChoice(
   const lastIteration = iterations[iterations.length - 1];
   if (!lastIteration) return iterations;
 
+  let newLow: number, newHigh: number;
+  
+  if (choice === 'low') {
+    newLow = lastIteration.low;
+    newHigh = lastIteration.mid;
+  } else {
+    newLow = lastIteration.mid;
+    newHigh = lastIteration.high;
+  }
+
   const newIteration = createPSAIteration(
     lastIteration.iteration + 1,
-    choice === 'low' ? lastIteration.low : lastIteration.mid,
-    choice === 'low' ? lastIteration.mid : lastIteration.high
+    newLow,
+    newHigh
   );
 
-  newIteration.choice = choice;
-  lastIteration.choice = choice;
-
-  return [...iterations.slice(0, -1), lastIteration, newIteration];
+  const updatedLast = { ...lastIteration, choice };
+  
+  return [...iterations.slice(0, -1), updatedLast, newIteration];
 }
 
 export function getPSAValue(iterations: PSAIteration[]): number | null {
   if (iterations.length === 0) return null;
 
-  const completed = iterations.filter(i => i.choice !== null);
-  if (completed.length === 0) return null;
+  const validIterations = iterations.filter(i => i.choice !== null);
+  if (validIterations.length === 0) return null;
 
-  const last = completed[completed.length - 1];
+  const last = validIterations[validIterations.length - 1];
   return last.mid;
 }
 
@@ -67,6 +75,6 @@ export function getPSARange(iterations: PSAIteration[]): { low: number; high: nu
 }
 
 export function createFirstIteration(base: number): PSAIteration {
-  const range = { low: base * 0.5, high: base * 1.5 };
+  const range = { low: base * 0.7, high: base * 1.3 };
   return createPSAIteration(1, range.low, range.high);
 }

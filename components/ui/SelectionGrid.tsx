@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
 
@@ -8,6 +9,7 @@ interface SelectionOption<T> {
   label: string;
   icon?: string;
   iconColor?: string;
+  fallback?: string;
   description?: string;
 }
 
@@ -25,16 +27,28 @@ export function SelectionGrid<T>({
   columns = 2,
 }: SelectionGridProps<T>) {
   const gridCols = columns === 3 ? 'grid-cols-3' : 'grid-cols-2';
+  const [iconErrors, setIconErrors] = useState<Record<string, boolean>>({});
 
-  const renderIcon = (icon?: string, iconColor?: string) => {
+  const renderIcon = (option: SelectionOption<T>) => {
+    const { icon, iconColor, fallback } = option;
     if (!icon) return null;
+    
     if (icon.startsWith('data:')) {
       return <img src={icon} alt="" className="w-8 h-8 object-contain" />;
     }
-    if (icon.includes(':')) {
-      return <Icon icon={icon} className="w-8 h-8" style={{ color: iconColor }} />;
+    
+    if (icon.includes(':') && !iconErrors[String(option.value)]) {
+      return (
+        <Icon 
+          icon={icon} 
+          className="w-8 h-8" 
+          style={{ color: iconColor }}
+          onError={() => setIconErrors(prev => ({ ...prev, [String(option.value)]: true }))}
+        />
+      );
     }
-    return <span className="text-2xl">{icon}</span>;
+    
+    return <span className="text-2xl">{fallback || icon}</span>;
   };
 
   return (
@@ -56,7 +70,7 @@ export function SelectionGrid<T>({
             `}
           >
             <div className="flex flex-col items-center gap-2">
-              {renderIcon(option.icon, option.iconColor)}
+              {renderIcon(option)}
               <span className={`font-medium text-sm ${isSelected ? 'text-[#00ff88]' : 'text-white'}`}>
                 {option.label}
               </span>

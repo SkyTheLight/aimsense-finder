@@ -49,13 +49,13 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
     };
     return colors[g];
   };
-  const games: { value: Game; label: string; icon: string; iconColor: string }[] = [
-    { value: 'valorant', label: getGameLabel('valorant'), icon: GAME_ICONS.valorant, iconColor: getGameColor('valorant') },
-    { value: 'cs2', label: getGameLabel('cs2'), icon: GAME_ICONS.cs2, iconColor: getGameColor('cs2') },
-    { value: 'apex', label: 'Apex Legends', icon: GAME_ICONS.apex, iconColor: getGameColor('apex') },
-    { value: 'overwatch2', label: 'Overwatch 2', icon: GAME_ICONS.overwatch2, iconColor: getGameColor('overwatch2') },
-    { value: 'cod', label: 'Call of Duty', icon: GAME_ICONS.cod, iconColor: getGameColor('cod') },
-    { value: 'r6', label: 'Rainbow Six', icon: GAME_ICONS.r6, iconColor: getGameColor('r6') },
+  const games: { value: Game; label: string; icon: string; iconColor: string; fallback: string }[] = [
+    { value: 'valorant', label: getGameLabel('valorant'), icon: GAME_ICONS.valorant, iconColor: getGameColor('valorant'), fallback: '🎯' },
+    { value: 'cs2', label: getGameLabel('cs2'), icon: GAME_ICONS.cs2, iconColor: getGameColor('cs2'), fallback: '🔫' },
+    { value: 'apex', label: 'Apex Legends', icon: GAME_ICONS.apex, iconColor: getGameColor('apex'), fallback: '⚡' },
+    { value: 'overwatch2', label: 'Overwatch 2', icon: GAME_ICONS.overwatch2, iconColor: getGameColor('overwatch2'), fallback: '🛡️' },
+    { value: 'cod', label: 'Call of Duty', icon: GAME_ICONS.cod, iconColor: getGameColor('cod'), fallback: '🎮' },
+    { value: 'r6', label: 'Rainbow Six', icon: GAME_ICONS.r6, iconColor: getGameColor('r6'), fallback: '🔰' },
   ];
 
   const handleDpiChange = (e: React.ChangeEvent<HTMLInputElement>) => {

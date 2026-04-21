@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/Button';
@@ -19,7 +19,7 @@ import {
   getProRange,
   calculatePresetBias,
 } from '@/lib/calculations';
-import { AIM_LAB_TASKS, SENSITIVITY_TIPS, PRACTICE_TIPS, BORDERLINE_TIPS } from '@/lib/constants';
+import { AIM_LAB_TASKS, PRACTICE_TIPS, BORDERLINE_TIPS, SENSITIVITY_TIPS } from '@/lib/constants';
 import {
   Trophy,
   Activity,
@@ -35,6 +35,7 @@ import {
   Target,
   Share2,
   AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -60,6 +61,60 @@ export function ResultsStep({
   const resultsRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [tipsLoading, setTipsLoading] = useState(true);
+  const [personalizedTips, setPersonalizedTips] = useState<string[]>([]);
+
+  const fetchPersonalizedTips = useCallback(async () => {
+    if (!setup || !simplified || !aimStyle) {
+      setTipsLoading(false);
+      return;
+    }
+
+    const game = setup.game;
+    const tracking = simplified?.tracking || 5;
+    const flicking = simplified?.flicking || 5;
+    const switching = simplified?.switching || 5;
+
+    const baseSens = psaValue || 0.4;
+    const presetBias = calculatePresetBias(selectedPreset);
+    const aimBias = calculateAimStyleBias(aimStyle?.mechanic ?? null, aimStyle?.playstyle ?? null);
+    const voltaicMod = calculateVoltaicModifier(tracking, flicking, switching);
+    const finalSens = calculateFinalSensitivity(baseSens, presetBias, aimBias, voltaicMod);
+    const edpi = calculateEDPI(setup.dpi, finalSens);
+    const cm360 = ((360 * 2.54) / (setup.dpi * finalSens * (game === 'valorant' ? 0.07 : game === 'cs2' ? 0.022 : 1)));
+    const labelWithBorderline = getSensitivityLabelWithBorderline(finalSens, baseSens);
+    const explanationLabel = labelWithBorderline === 'borderline' ? 'balanced' : labelWithBorderline;
+
+    try {
+      const response = await fetch('/api/tips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          game,
+          edpi,
+          cm360,
+          label: explanationLabel,
+          tracking,
+          flicking,
+          switching,
+          aimStyle: aimStyle?.mechanic || 'hybrid',
+          mouseGrip: setup.mouseGrip || 'palm',
+        }),
+      });
+      const data = await response.json();
+      if (data.tips) {
+        setPersonalizedTips(data.tips);
+      }
+    } catch (error) {
+      console.error('Failed to fetch personalized tips:', error);
+    } finally {
+      setTipsLoading(false);
+    }
+  }, [setup, simplified, aimStyle, psaValue, selectedPreset]);
+
+  useEffect(() => {
+    fetchPersonalizedTips();
+  }, [fetchPersonalizedTips]);
 
   if (!setup) return null;
 
@@ -238,26 +293,47 @@ ${proComparison.recommendation}`;
         <Card variant="bordered">
           <div className="flex items-start gap-3">
             <Lightbulb className="w-5 h-5 text-[#00ff88] mt-0.5" />
-            <div>
+            <div className="flex-1">
               <p className="text-white font-semibold mb-3">💡 Pro Tips for Your Sensitivity</p>
-              <div className="space-y-3">
-                <div className="p-3 bg-[#00ff88]/5 rounded-lg border border-[#00ff88]/20">
-                  <p className="text-xs text-[#00ff88] font-semibold">✅ Good</p>
-                  <p className="text-sm text-[#94a3b8]">{tips.pros}</p>
+              {tipsLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-5 h-5 text-[#00ff88] animate-spin" />
                 </div>
-                <div className="p-3 bg-[#ff3366]/5 rounded-lg border border-[#ff3366]/20">
-                  <p className="text-xs text-[#ff3366] font-semibold">⚠️ Watch Out</p>
-                  <p className="text-sm text-[#94a3b8]">{tips.cons}</p>
+              ) : personalizedTips.length > 0 ? (
+                <div className="space-y-2">
+                  {personalizedTips.map((tip, index) => (
+                    <div 
+                      key={index} 
+                      className={`p-3 rounded-lg border text-sm text-[#94a3b8] ${
+                        index === 0 ? 'bg-[#00ff88]/5 border-[#00ff88]/20' :
+                        index === 1 ? 'bg-[#6366f1]/5 border-[#6366f1]/20' :
+                        'bg-[#1a1a24] border-[#2a2a3a]'
+                      }`}
+                    >
+                      {tip}
+                    </div>
+                  ))}
                 </div>
-                <div className="p-3 bg-[#f59e0b]/5 rounded-lg border border-[#f59e0b]/20">
-                  <p className="text-xs text-[#f59e0b] font-semibold">🎯 Struggles</p>
-                  <p className="text-sm text-[#94a3b8]">{tips.struggles}</p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="p-3 bg-[#00ff88]/5 rounded-lg border border-[#00ff88]/20">
+                    <p className="text-xs text-[#00ff88] font-semibold">✅ Good</p>
+                    <p className="text-sm text-[#94a3b8]">{tips.pros}</p>
+                  </div>
+                  <div className="p-3 bg-[#ff3366]/5 rounded-lg border border-[#ff3366]/20">
+                    <p className="text-xs text-[#ff3366] font-semibold">⚠️ Watch Out</p>
+                    <p className="text-sm text-[#94a3b8]">{tips.cons}</p>
+                  </div>
+                  <div className="p-3 bg-[#f59e0b]/5 rounded-lg border border-[#f59e0b]/20">
+                    <p className="text-xs text-[#f59e0b] font-semibold">🎯 Struggles</p>
+                    <p className="text-sm text-[#94a3b8]">{tips.struggles}</p>
+                  </div>
+                  <div className="p-3 bg-[#6366f1]/5 rounded-lg border border-[#6366f1]/20">
+                    <p className="text-xs text-[#6366f1] font-semibold">💪 Advice</p>
+                    <p className="text-sm text-[#94a3b8]">{tips.advice}</p>
+                  </div>
                 </div>
-                <div className="p-3 bg-[#6366f1]/5 rounded-lg border border-[#6366f1]/20">
-                  <p className="text-xs text-[#6366f1] font-semibold">💪 Advice</p>
-                  <p className="text-sm text-[#94a3b8]">{tips.advice}</p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </Card>
@@ -386,6 +462,26 @@ ${proComparison.recommendation}`;
           <RefreshCcw className="w-4 h-4 mr-2" />
           Restart
         </Button>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="flex flex-col items-center gap-3 pt-8 pb-4"
+      >
+        <a 
+          href="https://steamcommunity.com/id/SkyTheLight666" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#1a1a24] border border-[#2a2a3a] hover:border-[#00ff88] hover:bg-[#00ff88]/5 transition-all"
+        >
+          <svg className="w-5 h-5 text-[#1b8be8]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.979 0C5.668 0 .527 4.92.044 11.15l4.661 6.71c.622-.332 1.367-.457 2.119-.3.752.156 1.433.562 1.946 1.175.513.613.804 1.403.804 2.23 0 .826-.29 1.617-.804 2.23-.513.613-1.194 1.02-1.946 1.175-.752.156-1.497.03-2.119-.3L.044 21.51C2.033 23.013 4.78 24 7.697 24c6.627 0 12.008-5.382 12.008-12 0-1.12-.155-2.207-.445-3.247-.29-1.04-.748-2.027-1.35-2.94C16.793 4.56 14.788 3.13 12.485 2.156 11.938 1.402 10.993.76 9.846.403 8.7.046 7.42-.06 6.153.047 4.886.154 3.716.593 2.75 1.336c-.966.743-1.68 1.77-2.068 2.976-.39 1.206-.487 2.533-.224 3.833.263 1.3.897 2.47 1.843 3.39.946.92 2.204 1.45 3.588 1.52.532.027 1.063-.012 1.585-.114.522-.102 1.023-.29 1.48-.552v-6.18c-.457.233-.917.365-1.38.365-.924 0-1.676-.752-1.676-1.676s.752-1.676 1.676-1.676c.463 0 .923.13 1.38.365V5.09c-.457-.263-.958-.45-1.48-.552-.522-.102-1.053-.14-1.585-.114-1.384.07-2.642.6-3.588 1.52-.946.92-1.58 2.09-1.843 3.39-.263 1.3-.166 2.627.224 3.833.39 1.206 1.103 2.233 2.068 2.976.966.743 2.136 1.182 3.403 1.29 1.267.107 2.497-.14 3.693-.713C14.39 20.87 16.393 19.44 17.91 17.81c1.517-1.63 2.386-3.77 2.386-6.03 0-4.552-3.692-8.244-8.244-8.244-.772 0-1.527.106-2.247.306l2.174-3.177z"/>
+          </svg>
+          <span className="text-sm text-[#94a3b8] hover:text-[#00ff88]">Made by SkyTheLight</span>
+        </a>
+        <span className="text-xs text-[#3a3a4a]">v1.0.0</span>
       </motion.div>
     </div>
   );

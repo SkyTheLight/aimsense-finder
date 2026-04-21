@@ -118,11 +118,20 @@ export interface WizardState {
 
 export const GAME_ICONS: Record<string, string> = {
   valorant: 'simple-icons:valorant',
-  cs2: 'simple-icons:counterstrike2',
-  apex: 'simple-icons:apexlegends',
-  overwatch2: 'simple-icons:overwatch',
-  cod: 'simple-icons:callofduty',
-  r6: 'simple-icons:rainbow6',
+  cs2: 'simple-icons:counterstrike',
+  apex: 'arcticons:apex-legends',
+  overwatch2: 'arcticons:overwatch',
+  cod: 'arcticons:call-of-duty',
+  r6: 'arcticons:rainbow-six-mobile',
+};
+
+export const GAME_ICON_FALLBACKS: Record<string, string> = {
+  valorant: '🎯',
+  cs2: '🔫',
+  apex: '⚡',
+  overwatch2: '🛡️',
+  cod: '🎮',
+  r6: '🔰',
 };
 
 export const GAMES: GameConfig[] = [

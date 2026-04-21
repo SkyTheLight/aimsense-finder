@@ -40,27 +40,33 @@ export function PSAStep({
 
   const baseSens = useMemo(() => {
     if (!setup || !setup.dpi || !setup.sensitivity) return 0.4;
-    if (selectedPreset) {
-      const midEDPI = (selectedPreset.edpiRange.min + selectedPreset.edpiRange.max) / 2;
-      return Number((midEDPI / setup.dpi).toFixed(3));
-    }
-    const edpi = calculateEDPI(setup.dpi, setup.sensitivity);
-    return calculateBaseSensitivity(edpi, 280, setup.game);
-  }, [setup, selectedPreset]);
+    return Number(setup.sensitivity.toFixed(3));
+  }, [setup]);
 
   const psaOptions = useMemo(() => generateInitialPSAOptions(baseSens), [baseSens]);
 
   const currentIteration = iterations.length > 0 ? iterations[iterations.length - 1] : null;
 
   const handleInitialChoice = (choice: 'half' | 'base' | 'double') => {
-    const selectedSens =
-      choice === 'half' ? psaOptions.half : choice === 'double' ? psaOptions.double : baseSens;
+    let selectedSens: number;
+    let binaryChoice: 'low' | 'high';
+    
+    if (choice === 'half') {
+      selectedSens = psaOptions.slower;
+      binaryChoice = 'low';
+    } else if (choice === 'double') {
+      selectedSens = psaOptions.faster;
+      binaryChoice = 'high';
+    } else {
+      selectedSens = baseSens;
+      binaryChoice = 'low';
+    }
     
     setInitialChoice(choice);
     onPSAFinalChange(selectedSens);
     
     const firstIter = createFirstIteration(selectedSens);
-    firstIter.choice = choice === 'half' ? 'low' : choice === 'double' ? 'high' : 'low';
+    firstIter.choice = binaryChoice;
     onIterationsChange([firstIter]);
   };
 
@@ -109,13 +115,13 @@ export function PSAStep({
         className="text-center"
       >
         <h2 className="text-2xl font-bold text-white mb-2">PSA Method</h2>
-        <p className="text-[#94a3b8]">
-          {initialChoice
-            ? isComplete
-              ? 'Calibration complete!'
-              : `Iteration ${Math.min(iterations.length, 7)} of 7`
-            : 'Choose your starting point'}
-        </p>
+<p className="text-[#94a3b8]">
+              {initialChoice
+                ? isComplete
+                  ? 'Calibration complete!'
+                  : `Step ${Math.min(iterations.length, 7)} of 7`
+                : 'Choose your starting point'}
+            </p>
       </motion.div>
 
       {!initialChoice && (
@@ -126,13 +132,13 @@ export function PSAStep({
         >
           <Card variant="bordered">
             <p className="text-sm text-[#94a3b8] mb-4 text-center">
-              Which sensitivity feels better for tracking?
+              Choose which feels better for smooth tracking:
             </p>
             <div className="grid grid-cols-3 gap-3">
               {[
-                { key: 'half' as const, value: psaOptions.half, label: 'Half' },
-                { key: 'base' as const, value: psaOptions.base, label: 'Base' },
-                { key: 'double' as const, value: psaOptions.double, label: 'Double' },
+                { key: 'half' as const, value: psaOptions.slower, label: 'Slower' },
+                { key: 'base' as const, value: psaOptions.current, label: 'Current' },
+                { key: 'double' as const, value: psaOptions.faster, label: 'Faster' },
               ].map((option) => (
                 <button
                   key={option.key}
@@ -145,7 +151,7 @@ export function PSAStep({
               ))}
             </div>
             <p className="text-xs text-[#64748b] text-center mt-4">
-              Base sensitivity: {baseSens.toFixed(3)}
+              Your current sensitivity: {baseSens.toFixed(3)}
             </p>
           </Card>
         </motion.div>
