@@ -10,8 +10,8 @@ interface WelcomeStepProps {
 
 export function WelcomeStep({ onStart }: WelcomeStepProps) {
   const features = [
-    { icon: Target, title: 'TenZ PSA Method', description: 'Binary search calibration' },
-    { icon: Zap, title: 'Ron Rambo Kim', description: 'Aim style detection' },
+    { icon: Target, title: 'PSA Method', description: 'Binary search calibration' },
+    { icon: Zap, title: 'Aim Style Detection', description: 'Personalized profile' },
     { icon: Award, title: 'Voltaic Benchmarks', description: 'Performance analysis' },
     { icon: Layers, title: 'Smart Engine', description: 'Personalized results' },
   ];

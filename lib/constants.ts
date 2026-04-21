@@ -6,12 +6,12 @@ export const STEPS = [
   { id: 2, title: 'Pro Presets', label: 'Presets' },
   { id: 3, title: 'PSA Method', label: 'Calibrate' },
   { id: 4, title: 'Aim Style', label: 'Profile' },
-  { id: 5, title: 'Benchmarks', label: 'Test' },
+  { id: 5, title: 'Performance', label: 'Test' },
   { id: 6, title: 'Results', label: 'Final' },
 ];
 
-export const DEFAULT_DPI = 800;
-export const DEFAULT_SENSITIVITY = 0.5;
+export const DEFAULT_DPI = 0;
+export const DEFAULT_SENSITIVITY = 0;
 export const TARGET_eDPI = 280;
 
 export const GAME_YAW_VALUES: Record<Game, number> = {
@@ -24,7 +24,7 @@ export const GAME_YAW_VALUES: Record<Game, number> = {
 };
 
 export const SENSITIVITY_LIMITS = {
-  min: 0.05,
+  min: 0.01,
   max: 10,
   minDPI: 100,
   maxDPI: 32000,
@@ -41,33 +41,33 @@ export const PRO_eDPI_RANGES = {
 
 export const PRO_PRESETS: ProPreset[] = [
   {
-    id: 'tenz_style',
-    name: 'TenZ Pro',
-    description: 'Medium sens, flick-focused',
+    id: 'jett_duelist',
+    name: 'Duelist',
+    description: 'Fast entries, aggressive plays',
     edpiRange: { min: 200, max: 320 },
     dpi: 800,
     sensitivity: 0.28,
     playstyle: 'flick',
     games: ['valorant'],
-    icon: '🎯',
+    icon: '⚡',
     color: '#00ff88',
   },
   {
-    id: 'asuna_style',
-    name: 'Asuna',
-    description: 'High sens, tracking-focused',
-    edpiRange: { min: 280, max: 400 },
-    dpi: 1600,
+    id: 'controller',
+    name: 'Controller',
+    description: 'Smart positioning, support',
+    edpiRange: { min: 180, max: 280 },
+    dpi: 800,
     sensitivity: 0.22,
-    playstyle: 'tracking',
+    playstyle: 'balanced',
     games: ['valorant'],
-    icon: '⚡',
+    icon: '🛡️',
     color: '#6366f1',
   },
   {
-    id: 'tenz_low',
-    name: 'Low Sens Tactician',
-    description: 'Lower sens, precise control',
+    id: 'sentinel',
+    name: 'Sentinel',
+    description: 'Anchors, site holding',
     edpiRange: { min: 140, max: 240 },
     dpi: 400,
     sensitivity: 0.4,
@@ -77,90 +77,83 @@ export const PRO_PRESETS: ProPreset[] = [
     color: '#00ff88',
   },
   {
-    id: 'derke_style',
-    name: 'Derke',
-    description: 'Balanced, all-rounder',
-    edpiRange: { min: 240, max: 360 },
-    dpi: 800,
-    sensitivity: 0.35,
-    playstyle: 'balanced',
-    games: ['valorant'],
-    icon: '🔥',
-    color: '#ff3366',
-  },
-  {
-    id: 's1mple_style',
-    name: 's1mple Legacy',
-    description: 'Very low sens, anchor AWP',
+    id: 'awper',
+    name: 'AWPer',
+    description: 'Anchor, holds angles',
     edpiRange: { min: 400, max: 700 },
     dpi: 400,
     sensitivity: 1.0,
     playstyle: 'control',
     games: ['cs2'],
-    icon: '🎯',
-    color: '#00ff88',
+    icon: '🔫',
+    color: '#22c55e',
   },
   {
-    id: 'ZywOo_style',
-    name: 'ZywOo',
-    description: 'Low-mid, absolute rifler',
-    edpiRange: { min: 350, max: 550 },
-    dpi: 400,
-    sensitivity: 0.9,
-    playstyle: 'control',
-    games: ['cs2'],
-    icon: '👑',
-    color: '#f59e0b',
-  },
-  {
-    id: 'cleave_style',
-    name: 'Cleave',
-    description: 'Medium sens, entry fragger',
-    edpiRange: { min: 400, max: 700 },
+    id: 'entry',
+    name: 'Entry Fragger',
+    description: 'First into sites',
+    edpiRange: { min: 300, max: 500 },
     dpi: 800,
-    sensitivity: 0.7,
-    playstyle: 'balanced',
+    sensitivity: 0.5,
+    playstyle: 'flick',
     games: ['cs2'],
     icon: '💥',
-    color: '#3b82f6',
+    color: '#ef4444',
   },
   {
-    id: 'high_tracking',
-    name: 'High Sens Tracking',
-    description: 'Fast sens, movement players',
+    id: 'igl',
+    name: 'IGL / Support',
+    description: 'Call-heavy, utility',
+    edpiRange: { min: 280, max: 450 },
+    dpi: 800,
+    sensitivity: 0.4,
+    playstyle: 'balanced',
+    games: ['cs2'],
+    icon: '📡',
+    color: '#8b5cf6',
+  },
+  {
+    id: 'tracking_pro',
+    name: 'Tracker',
+    description: 'Movement fraggers',
     edpiRange: { min: 500, max: 900 },
     dpi: 1600,
     sensitivity: 0.5,
     playstyle: 'tracking',
     games: ['apex', 'overwatch2'],
-    icon: '⚡',
-    color: '#6366f1',
+    icon: '🎯',
+    color: '#f59e0b',
   },
   {
-    id: 'cod_pro',
-    name: 'CoD Pro',
-    description: 'Medium sens, fast reactions',
-    edpiRange: { min: 300, max: 600 },
+    id: 'default_tactical',
+    name: 'Tactical',
+    description: 'Balanced playstyle',
+    edpiRange: { min: 250, max: 400 },
     dpi: 800,
-    sensitivity: 0.5,
-    playstyle: 'flick',
-    games: ['cod'],
-    icon: '🎮',
-    color: '#22c55e',
-  },
-  {
-    id: 'r6_tachanka',
-    name: 'R6 Anchor',
-    description: 'Low sens, site anchor',
-    edpiRange: { min: 500, max: 900 },
-    dpi: 800,
-    sensitivity: 0.7,
-    playstyle: 'control',
-    games: ['r6'],
-    icon: '🛡️',
-    color: '#f97316',
+    sensitivity: 0.35,
+    playstyle: 'balanced',
+    games: ['valorant', 'cs2', 'r6'],
+    icon: '⚖️',
+    color: '#06b6d4',
   },
 ];
+
+export const STEAM_AIM_LAB_APPID = '714010';
+
+export const AIM_LAB_TASKS = {
+  switching: [
+    { id: 'gridshot', name: 'Gridshot', difficulty: 'Easy', avgScore: 45, steamLink: 'steam://run/714010//?action=play_task&task_id=1' },
+  ],
+  flicking: [
+    { id: 'sixshot', name: 'Sixshot', difficulty: 'Medium', avgScore: 40, steamLink: 'steam://run/714010//?action=play_task&task_id=12' },
+    { id: 'microshot', name: 'Microshot', difficulty: 'Hard', avgScore: 30, steamLink: 'steam://run/714010//?action=play_task&task_id=11' },
+    { id: 'reflexshot', name: 'Reflexshot', difficulty: 'Expert', avgScore: 25, steamLink: 'steam://run/714010//?action=play_task&task_id=10' },
+  ],
+  tracking: [
+    { id: 'strafe_track', name: 'Strafe Track', difficulty: 'Medium', avgScore: 35, steamLink: 'steam://run/714010//?action=play_task&task_id=13' },
+    { id: 'smoothsphere', name: 'Smooth Sphere', difficulty: 'Hard', avgScore: 28, steamLink: 'steam://url/CommunityFilePage/2073171803' },
+  ],
+};
 
 export const VOLTAIC_SCORE_THRESHOLDS = {
   novice: { tracking: 25, flicking: 25, switching: 25 },
@@ -170,25 +163,25 @@ export const VOLTAIC_SCORE_THRESHOLDS = {
   pro: { tracking: 85, flicking: 85, switching: 85 },
 };
 
-export const AIM_LAB_TASKS = {
-  tracking: [
-    { id: 'strafe_track', name: 'Strafe Track', difficulty: 'Medium', avgScore: 35 },
-    { id: 'sphere_track', name: 'Sphere Tracking', difficulty: 'Hard', avgScore: 28 },
-    { id: 'thin_track', name: 'Thin Track', difficulty: 'Expert', avgScore: 20 },
-    { id: 'patience', name: 'Patience', difficulty: 'Hard', avgScore: 30 },
-  ],
-  flicking: [
-    { id: 'sixshot', name: 'Sixshot', difficulty: 'Medium', avgScore: 40 },
-    { id: 'reflex_flick', name: 'Reflex Flick', difficulty: 'Hard', avgScore: 32 },
-    { id: 'micro_flick', name: 'Micro Flick', difficulty: 'Expert', avgScore: 25 },
-    { id: 'tracking_flick', name: 'Tracking Flick', difficulty: 'Hard', avgScore: 28 },
-  ],
-  switching: [
-    { id: 'gridshot', name: 'Gridshot', difficulty: 'Easy', avgScore: 45 },
-    { id: 'gridshot_sg', name: 'Gridshot: SG', difficulty: 'Medium', avgScore: 38 },
-    { id: 'popcorn', name: 'Popcorn', difficulty: 'Hard', avgScore: 30 },
-    { id: 'close_long', name: 'Close Long', difficulty: 'Medium', avgScore: 35 },
-  ],
+export const SENSITIVITY_TIPS = {
+  control: {
+    pros: 'Better precision at range, easier to hit headshots, more consistent',
+    cons: 'Slower strafing, harder to 180, tiring for arm',
+    struggles: 'Quick peeks, close quarters flick shots',
+    advice: 'Work on arm movement drills and pre-aim corners',
+  },
+  balanced: {
+    pros: 'Good all-around, versatile in any scenario',
+    cons: 'Not the best at either extreme',
+    struggles: 'May need adjustment for specific roles',
+    advice: 'Perfect for flexible players, adapt as needed',
+  },
+  speed: {
+    pros: 'Fast peeks, quick flicks, easier 180s',
+    cons: 'Less precision, harder to control',
+    struggles: 'Long range shots, spray control',
+    advice: 'Focus on diagonal tracking and precision click timing',
+  },
 };
 
 export const COLORS = {

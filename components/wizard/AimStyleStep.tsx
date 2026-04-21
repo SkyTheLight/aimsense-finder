@@ -41,8 +41,8 @@ export function AimStyleStep({
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-2">Aim Style Profile</h2>
-        <p className="text-[#94a3b8]">Ron Rambo Kim inspired analysis</p>
+        <h2 className="text-2xl font-bold text-white mb-2">Aim Style Detection</h2>
+        <p className="text-[#94a3b8]">How you play</p>
       </motion.div>
 
       <motion.div

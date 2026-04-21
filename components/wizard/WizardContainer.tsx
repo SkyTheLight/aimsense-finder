@@ -6,7 +6,6 @@ import { WelcomeStep } from './WelcomeStep';
 import { SetupStep } from './SetupStep';
 import { PresetStep } from './PresetStep';
 import { PSAStep } from './PSAStep';
-import { AimStyleStep } from './AimStyleStep';
 import { BenchmarkStep } from './BenchmarkStep';
 import { ResultsStep } from './ResultsStep';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,10 +19,7 @@ export function WizardContainer() {
     setSelectedPreset,
     setPSAIterations,
     setPSAFinal,
-    setAimStyle,
-    setBenchmarkMode,
     setBenchmarks,
-    setSimplified,
     setResults,
     reset,
   } = useWizard();
@@ -48,6 +44,8 @@ export function WizardContainer() {
           <PresetStep
             setup={state.setup}
             selectedPreset={state.selectedPreset}
+            selectedAimStyle={state.setup?.aimingMechanic || 'hybrid'}
+            selectedGrip={state.setup?.mouseGrip || 'claw'}
             onPresetChange={setSelectedPreset}
             onNext={nextStep}
             onBack={prevStep}
@@ -67,34 +65,31 @@ export function WizardContainer() {
         );
       case 4:
         return (
-          <AimStyleStep
-            aimStyle={state.aimStyle}
-            onAimStyleChange={setAimStyle}
+          <BenchmarkStep
+            benchmarks={state.benchmarks}
+            simplified={state.simplified}
+            onBenchmarksChange={setBenchmarks}
+            onSimplifiedChange={() => {}}
             onNext={nextStep}
             onBack={prevStep}
           />
         );
       case 5:
         return (
-          <BenchmarkStep
-            mode={state.benchmarkMode}
-            benchmarks={state.benchmarks}
-            simplified={state.simplified}
-            onModeChange={setBenchmarkMode}
-            onBenchmarksChange={setBenchmarks}
-            onSimplifiedChange={setSimplified}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        );
-      case 6:
-        return (
           <ResultsStep
             setup={state.setup}
             selectedPreset={state.selectedPreset}
             psaValue={state.psaFinal}
             aimStyle={state.aimStyle}
-            simplified={state.simplified}
+            simplified={
+              state.benchmarks
+                ? {
+                    tracking: state.benchmarks.tracking || 5,
+                    flicking: state.benchmarks.flicking || 5,
+                    switching: state.benchmarks.switching || 5,
+                  }
+                : { tracking: 5, flicking: 5, switching: 5 }
+            }
             onResults={setResults}
             onRestart={reset}
           />
@@ -107,7 +102,7 @@ export function WizardContainer() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] overflow-x-hidden">
       <div className="max-w-2xl mx-auto px-4 py-6 md:py-12">
-        {currentStep > 0 && (
+        {currentStep > 0 && currentStep < 5 && (
           <ProgressIndicator currentStep={currentStep} />
         )}
 

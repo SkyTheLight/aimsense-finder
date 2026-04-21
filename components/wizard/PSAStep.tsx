@@ -108,7 +108,7 @@ export function PSAStep({
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-2">TenZ PSA Method</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">PSA Method</h2>
         <p className="text-[#94a3b8]">
           {initialChoice
             ? isComplete

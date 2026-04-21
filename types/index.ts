@@ -8,12 +8,15 @@ export interface GameConfig {
 }
 
 export type AimingMechanic = 'wrist' | 'arm' | 'hybrid';
+export type MouseGrip = 'palm' | 'claw' | 'fingertip';
 export type Playstyle = 'flick' | 'tracking' | 'balanced';
 
 export interface UserSetup {
   dpi: number;
   sensitivity: number;
   game: Game;
+  mouseGrip: MouseGrip | null;
+  aimingMechanic: AimingMechanic | null;
 }
 
 export interface CalculatedMetrics {
@@ -63,6 +66,18 @@ export interface ProPreset {
   color: string;
 }
 
+export interface ProPlayer {
+  name: string;
+  dpi: number;
+  sens: number;
+  edpi: number;
+  role: string;
+  aimStyle: string;
+  grip: string;
+  country: string;
+  matchScore?: number;
+}
+
 export interface FinalResults {
   sensitivity: number;
   edpi: number;
@@ -70,6 +85,12 @@ export interface FinalResults {
   label: 'control' | 'balanced' | 'speed';
   explanation: string;
   profile: string;
+  tips: {
+    pros: string;
+    cons: string;
+    struggles: string;
+    advice: string;
+  };
   comparedToPro: {
     percentile: number;
     range: string;
@@ -97,6 +118,18 @@ export const GAMES: GameConfig[] = [
   { id: 'overwatch2', name: 'Overwatch 2', icon: '🛡️', multiplier: 3.3333 },
   { id: 'cod', name: 'Call of Duty', icon: '🎮', multiplier: 1 },
   { id: 'r6', name: 'Rainbow Six', icon: '🔰', multiplier: 0.022 },
+];
+
+export const MOUSE_GRIPS = [
+  { id: 'palm', name: 'Palm Grip', icon: '✋', description: 'Full hand contact, relaxed' },
+  { id: 'claw', name: 'Claw Grip', icon: '🦞', description: 'Archved palm, quick movement' },
+  { id: 'fingertip', name: 'Fingertip', icon: '👆', description: 'Fingertips only, precision' },
+];
+
+export const AIMING_MECHANICS = [
+  { id: 'wrist', name: 'Wrist Aiming', description: 'Small movements, fast flicks' },
+  { id: 'arm', name: 'Arm Aiming', description: 'Arm movement, smooth tracking' },
+  { id: 'hybrid', name: 'Hybrid', description: 'Combination of both' },
 ];
 
 export const VOLTAIC_BENCHMARKS = {

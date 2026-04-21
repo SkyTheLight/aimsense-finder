@@ -1,17 +1,20 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { ProPreset, UserSetup } from '@/types';
+import { ProPreset, UserSetup, ProPlayer } from '@/types';
 import { PRO_PRESETS, PRO_eDPI_RANGES } from '@/lib/constants';
 import { getProRange } from '@/lib/calculations';
 import { calculateEDPI, getFilteredPresets, suggestPresets } from '@/lib/calculations';
-import { Users, Crosshair, Info } from 'lucide-react';
+import { Users, Crosshair, Info, Sparkles, Trophy } from 'lucide-react';
 
 interface PresetStepProps {
   setup: UserSetup | null;
   selectedPreset: ProPreset | null;
+  selectedAimStyle: string | null;
+  selectedGrip: string | null;
   onPresetChange: (preset: ProPreset | null) => void;
   onNext: () => void;
   onBack: () => void;
@@ -20,10 +23,41 @@ interface PresetStepProps {
 export function PresetStep({
   setup,
   selectedPreset,
+  selectedAimStyle,
+  selectedGrip,
   onPresetChange,
   onNext,
   onBack,
 }: PresetStepProps) {
+  const [proRecommendations, setProRecommendations] = useState<ProPlayer[]>([]);
+  const [loadingPros, setLoadingPros] = useState(false);
+  const [showPros, setShowPros] = useState(false);
+
+  useEffect(() => {
+    if (!setup || !selectedAimStyle || !selectedGrip) return;
+
+    const fetchProRecommendations = async () => {
+      setLoadingPros(true);
+      try {
+        const params = new URLSearchParams({
+          game: setup.game,
+          edpi: calculateEDPI(setup.dpi, setup.sensitivity).toString(),
+          aimStyle: selectedAimStyle,
+          grip: selectedGrip,
+        });
+        const res = await fetch(`/api/pros?${params}`);
+        const data = await res.json();
+        setProRecommendations(data.recommendations || []);
+      } catch (err) {
+        console.error('Failed to fetch pro recommendations:', err);
+      } finally {
+        setLoadingPros(false);
+      }
+    };
+
+    fetchProRecommendations();
+  }, [setup, selectedAimStyle, selectedGrip]);
+
   if (!setup) return null;
 
   const game = setup.game;
@@ -76,6 +110,86 @@ export function PresetStep({
           </div>
         </Card>
       </motion.div>
+
+      {proRecommendations.length > 0 && !showPros && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+        >
+          <Card variant="bordered" className="bg-[#1a1a24]">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#00ff88]" />
+                <span className="text-sm text-white font-medium">AI Pro Matching</span>
+              </div>
+              <span className="text-xs text-[#64748b]">Based on your eDPI & aim style</span>
+            </div>
+            <div className="space-y-2 mb-3">
+              {proRecommendations.slice(0, 3).map((pro, idx) => (
+                <div key={pro.name} className="flex items-center justify-between p-2 rounded-lg bg-[#12121a]">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-bold ${idx === 0 ? 'text-[#ffd700]' : 'text-[#94a3b8]'}`}>
+                      #{idx + 1}
+                    </span>
+                    <span className="text-white text-sm">{pro.name}</span>
+                    <span className="text-xs text-[#64748b]">({pro.country})</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="text-[#94a3b8]">{pro.dpi} DPI</span>
+                    <span className="text-white font-mono">{pro.sens}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button variant="secondary" onClick={() => setShowPros(true)} className="w-full">
+              View All Matches
+            </Button>
+          </Card>
+        </motion.div>
+      )}
+
+      {showPros && proRecommendations.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm text-[#94a3b8] flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-[#ffd700]" />
+              Top Pro Player Matches
+            </p>
+            <button onClick={() => setShowPros(false)} className="text-xs text-[#64748b] hover:text-white">
+              Hide
+            </button>
+          </div>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {proRecommendations.map((pro, idx) => (
+              <div key={pro.name} className="flex items-center justify-between p-3 rounded-xl bg-[#12121a] border border-[#2a2a3a]">
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm font-bold w-6 ${idx < 3 ? 'text-[#ffd700]' : 'text-[#64748b]'}`}>
+                    #{idx + 1}
+                  </span>
+                  <div>
+                    <p className="text-white font-medium">{pro.name}</p>
+                    <p className="text-xs text-[#64748b]">{pro.role} • {pro.country}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-white font-mono">{pro.edpi} eDPI</p>
+                  <p className="text-xs text-[#64748b]">{pro.aimStyle} • {pro.grip}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      <div className="flex items-center gap-2 text-xs text-[#64748b] mb-4">
+        <Info className="w-3 h-3" />
+        <span>Pro data from prosettings.net</span>
+      </div>
 
       {suggestedPresets.length > 0 && (
         <motion.div

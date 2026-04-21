@@ -6,7 +6,7 @@ const VERSION = '1.0';
 function getDefaultState(): WizardState {
   return {
     currentStep: 0,
-    setup: null,
+    setup: { dpi: 0, sensitivity: 0, game: 'valorant', mouseGrip: null, aimingMechanic: null },
     selectedPreset: null,
     psaIterations: [],
     psaFinal: null,
