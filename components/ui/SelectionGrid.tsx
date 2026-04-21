@@ -1,12 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
+import { Icon } from '@iconify/react';
 
 interface SelectionOption<T> {
   value: T;
   label: string;
   icon?: string;
+  iconColor?: string;
   description?: string;
 }
 
@@ -24,6 +25,17 @@ export function SelectionGrid<T>({
   columns = 2,
 }: SelectionGridProps<T>) {
   const gridCols = columns === 3 ? 'grid-cols-3' : 'grid-cols-2';
+
+  const renderIcon = (icon?: string, iconColor?: string) => {
+    if (!icon) return null;
+    if (icon.startsWith('data:')) {
+      return <img src={icon} alt="" className="w-8 h-8 object-contain" />;
+    }
+    if (icon.includes(':')) {
+      return <Icon icon={icon} className="w-8 h-8" style={{ color: iconColor }} />;
+    }
+    return <span className="text-2xl">{icon}</span>;
+  };
 
   return (
     <div className={`grid ${gridCols} gap-3`}>
@@ -44,13 +56,7 @@ export function SelectionGrid<T>({
             `}
           >
             <div className="flex flex-col items-center gap-2">
-              {option.icon && (
-                option.icon.startsWith('data:') ? (
-                  <img src={option.icon} alt={option.label} className="w-8 h-8 object-contain" />
-                ) : (
-                  <span className="text-2xl">{option.icon}</span>
-                )
-              )}
+              {renderIcon(option.icon, option.iconColor)}
               <span className={`font-medium text-sm ${isSelected ? 'text-[#00ff88]' : 'text-white'}`}>
                 {option.label}
               </span>

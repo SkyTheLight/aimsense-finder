@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { SelectionGrid } from '@/components/ui/SelectionGrid';
-import { UserSetup, Game, MOUSE_GRIPS, AIMING_MECHANICS } from '@/types';
+import { UserSetup, Game, MOUSE_GRIPS, AIMING_MECHANICS, GAME_ICONS } from '@/types';
 import { calculateEDPI, calculateCm360, getGameConfig, getCm360Feedback, getProComparison } from '@/lib/calculations';
 import { SENSITIVITY_LIMITS } from '@/lib/constants';
 import { Mouse, Crosshair, Activity, Hand, TrendingUp, TrendingDown, Minus } from 'lucide-react';
@@ -42,13 +42,20 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
     };
     return labels[g];
   };
-  const games: { value: Game; label: string; icon: string }[] = [
-    { value: 'valorant', label: getGameLabel('valorant'), icon: 'valorant' },
-    { value: 'cs2', label: getGameLabel('cs2'), icon: 'cs2' },
-    { value: 'apex', label: 'Apex Legends', icon: 'apex' },
-    { value: 'overwatch2', label: 'Overwatch 2', icon: 'overwatch2' },
-    { value: 'cod', label: 'Call of Duty', icon: 'cod' },
-    { value: 'r6', label: 'Rainbow Six', icon: 'r6' },
+  const getGameColor = (g: Game) => {
+    const colors: Record<Game, string> = {
+      valorant: '#FF4655', cs2: '#DE9B35', apex: '#DA292A',
+      overwatch2: '#FABD19', cod: '#222222', r6: '#FABD19'
+    };
+    return colors[g];
+  };
+  const games: { value: Game; label: string; icon: string; iconColor: string }[] = [
+    { value: 'valorant', label: getGameLabel('valorant'), icon: GAME_ICONS.valorant, iconColor: getGameColor('valorant') },
+    { value: 'cs2', label: getGameLabel('cs2'), icon: GAME_ICONS.cs2, iconColor: getGameColor('cs2') },
+    { value: 'apex', label: 'Apex Legends', icon: GAME_ICONS.apex, iconColor: getGameColor('apex') },
+    { value: 'overwatch2', label: 'Overwatch 2', icon: GAME_ICONS.overwatch2, iconColor: getGameColor('overwatch2') },
+    { value: 'cod', label: 'Call of Duty', icon: GAME_ICONS.cod, iconColor: getGameColor('cod') },
+    { value: 'r6', label: 'Rainbow Six', icon: GAME_ICONS.r6, iconColor: getGameColor('r6') },
   ];
 
   const handleDpiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
