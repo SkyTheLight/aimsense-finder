@@ -10,12 +10,14 @@ import {
   calculateVoltaicModifier,
   calculateFinalSensitivity,
   getSensitivityLabel,
+  getSensitivityLabelWithBorderline,
+  isBorderline,
   generateExplanation,
   getProComparison,
+  getProRange,
   calculatePresetBias,
 } from '@/lib/calculations';
-import { AIM_LAB_TASKS, SENSITIVITY_TIPS } from '@/lib/constants';
-import { getProRange } from '@/lib/calculations';
+import { AIM_LAB_TASKS, SENSITIVITY_TIPS, PRACTICE_TIPS, BORDERLINE_TIPS } from '@/lib/constants';
 import {
   Trophy,
   Activity,
@@ -29,6 +31,7 @@ import {
   Lightbulb,
   Target,
   Share2,
+  AlertTriangle,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -68,12 +71,16 @@ export function ResultsStep({
   const edpi = calculateEDPI(setup.dpi, finalSens);
   const cm360 = ((360 * 2.54) / (setup.dpi * finalSens * (game === 'valorant' ? 0.07 : game === 'cs2' ? 0.022 : 1)));
   const label = getSensitivityLabel(finalSens, baseSens);
+  const labelWithBorderline = getSensitivityLabelWithBorderline(finalSens, baseSens);
+  const borderlineRisk = isBorderline(finalSens, baseSens);
   const proComparison = getProComparison(edpi, game);
   const proRange = getProRange(game);
-  const tips = SENSITIVITY_TIPS[label];
+  const tips = labelWithBorderline === 'borderline' ? SENSITIVITY_TIPS.borderline : SENSITIVITY_TIPS[labelWithBorderline === 'balanced' ? 'balanced' : labelWithBorderline === 'control' ? 'control' : 'speed'];
+  const practiceTip = PRACTICE_TIPS[Math.floor(Math.random() * PRACTICE_TIPS.length)];
 
+  const explanationLabel = labelWithBorderline === 'borderline' ? 'balanced' : labelWithBorderline;
   const explanation = generateExplanation(
-    label,
+    explanationLabel,
     baseSens,
     aimStyle || { mechanic: null, playstyle: null },
     { percentile: proComparison.percentile, range: proComparison.range }
@@ -83,7 +90,7 @@ export function ResultsStep({
     sensitivity: finalSens,
     edpi,
     cm360: Number(cm360.toFixed(2)),
-    label,
+    label: explanationLabel,
     explanation,
     profile: `${aimStyle?.mechanic || 'hybrid'} aiming • ${aimStyle?.playstyle || 'balanced'}`,
     tips: {
@@ -233,6 +240,24 @@ ${proComparison.recommendation}`;
         </Card>
       </motion.div>
 
+      {borderlineRisk && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card variant="bordered" className="border-[#f59e0b]/30 bg-[#f59e0b]/5">
+            <div className="flex items-center gap-3 mb-2">
+              <AlertTriangle className="w-5 h-5 text-[#f59e0b]" />
+              <p className="text-[#f59e0b] font-semibold">Risk Warning</p>
+            </div>
+            <p className="text-sm text-[#94a3b8]">
+              {BORDERLINE_TIPS[Math.floor(Math.random() * BORDERLINE_TIPS.length)]}
+            </p>
+          </Card>
+        </motion.div>
+      )}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -244,6 +269,9 @@ ${proComparison.recommendation}`;
             <p className="text-white font-semibold">Practice Recommendations</p>
           </div>
           <div className="space-y-3">
+            <p className="text-sm text-[#94a3b8] border-l-2 border-[#00ff88]/50 pl-3">
+              {practiceTip}
+            </p>
             {tracking < 6 && (
               <div>
                 <p className="text-xs text-[#64748b] mb-2">Improve Tracking</p>
@@ -281,7 +309,7 @@ ${proComparison.recommendation}`;
               </div>
             )}
             {tracking >= 6 && flicking >= 6 && switching >= 6 && (
-              <p className="text-sm text-[#94a3b8]">Keep practicing to maintain your skills!</p>
+              <p className="text-sm text-[#94a3b8]">Great scores! Keep practicing to maintain your skills!</p>
             )}
           </div>
         </Card>

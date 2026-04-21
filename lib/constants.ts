@@ -163,6 +163,28 @@ export const VOLTAIC_SCORE_THRESHOLDS = {
   pro: { tracking: 85, flicking: 85, switching: 85 },
 };
 
+export const PRACTICE_TIPS = [
+  'Practice makes perfect - put in the reps daily',
+  'Sometimes copying pro settings won\'t help - find what works for YOU',
+  'Consistency is the key to perfect aim, not the sensitivity',
+  'Sometimes your opponent is just having a really good day',
+  'Focus on your fundamentals before tweaking settings',
+  'Your aim will fluctuate - that\'s normal, even for pros',
+  'Mchanics matter more than perfect settings',
+  'Don\'t change settings after every bad game',
+  'Sleep and nutrition affect aim more than you think',
+  'Warm up properly before ranked - your future self will thank you',
+  'Film your gameplay to see what you actually do, not what you think you do',
+  'Low sens isn\'t automatically better - it\'s about what you can control',
+  'The best sensitivity is the one you can be consistent with',
+];
+
+export const BORDERLINE_TIPS = [
+  'Warning: Your sensitivity is at a borderline zone, which may affect consistency',
+  'Consider testing slightly higher or lower to find your true preference',
+  'Many pros settle in the middle after some adjustment period',
+];
+
 export const SENSITIVITY_TIPS = {
   control: {
     pros: 'Better precision at range, easier to hit headshots, more consistent',
@@ -181,6 +203,12 @@ export const SENSITIVITY_TIPS = {
     cons: 'Less precision, harder to control',
     struggles: 'Long range shots, spray control',
     advice: 'Focus on diagonal tracking and precision click timing',
+  },
+  borderline: {
+    pros: 'You have room to explore both ends of the spectrum',
+    cons: 'Borderline zone - may feel inconsistent until you commit to a side',
+    struggles: 'Finding your true preference',
+    advice: 'Test slightly higher and lower to find what clicks for you',
   },
 };
 

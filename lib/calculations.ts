@@ -197,12 +197,33 @@ export function calculateFinalSensitivity(
 export function getSensitivityLabel(
   sensitivity: number,
   baseSensitivity: number
-): 'control' | 'balanced' | 'speed' {
+): 'control' | 'balanced' | 'speed' | 'borderline' {
   if (baseSensitivity === 0) return 'balanced';
   const ratio = sensitivity / baseSensitivity;
   if (ratio < 0.78) return 'control';
   if (ratio > 1.22) return 'speed';
   return 'balanced';
+}
+
+export function getSensitivityLabelWithBorderline(
+  sensitivity: number,
+  baseSensitivity: number
+): 'control' | 'balanced' | 'speed' | 'borderline' {
+  if (baseSensitivity === 0) {
+    return Math.random() > 0.5 ? 'balanced' : 'borderline';
+  }
+  const ratio = sensitivity / baseSensitivity;
+  if (ratio >= 0.73 && ratio <= 0.87) return 'borderline';
+  if (ratio >= 1.13 && ratio <= 1.27) return 'borderline';
+  if (ratio < 0.78) return 'control';
+  if (ratio > 1.22) return 'speed';
+  return 'balanced';
+}
+
+export function isBorderline(sensitivity: number, baseSensitivity: number): boolean {
+  if (baseSensitivity === 0) return false;
+  const ratio = sensitivity / baseSensitivity;
+  return (ratio >= 0.73 && ratio <= 0.87) || (ratio >= 1.13 && ratio <= 1.27);
 }
 
 export function generateExplanation(
