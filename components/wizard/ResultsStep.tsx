@@ -1,6 +1,8 @@
 'use client';
 
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
+import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FinalResults, UserSetup, ProPreset } from '@/types';
@@ -24,6 +26,7 @@ import {
   Save,
   RefreshCcw,
   Copy,
+  Camera,
   CheckCircle,
   TrendingUp,
   TrendingDown,
@@ -54,7 +57,9 @@ export function ResultsStep({
   onResults,
   onRestart,
 }: ResultsStepProps) {
+  const resultsRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   if (!setup) return null;
 
@@ -106,6 +111,24 @@ export function ResultsStep({
     },
   };
 
+  const handleScreenshot = async () => {
+    if (!resultsRef.current) return;
+    setSaving(true);
+    try {
+      const canvas = await html2canvas(resultsRef.current, {
+        background: '#0a0a0f',
+      });
+      const link = document.createElement('a');
+      link.download = `aimsense-results-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error('Failed to generate screenshot:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleCopy = async () => {
     const text = `🎯 AimSense Finder Results
 Sensitivity: ${finalSens}
@@ -126,7 +149,7 @@ ${proComparison.recommendation}`;
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={resultsRef}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -330,7 +353,20 @@ ${proComparison.recommendation}`;
           ) : (
             <>
               <Copy className="w-4 h-4 mr-2" />
-              Copy Text
+              Copy
+            </>
+          )}
+        </Button>
+        <Button variant="secondary" onClick={handleScreenshot} className="flex-1 sm:flex-none" disabled={saving}>
+          {saving ? (
+            <>
+              <Activity className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Camera className="w-4 h-4 mr-2" />
+              Screenshot
             </>
           )}
         </Button>
