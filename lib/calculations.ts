@@ -1,14 +1,15 @@
 import { Game, GameConfig, GAMES, ProPreset } from '@/types';
-import { PRO_eDPI_RANGES, VOLTAIC_SCORE_THRESHOLDS } from './constants';
+import { PRO_eDPI_RANGES } from './constants';
 
 export function calculateEDPI(dpi: number, sensitivity: number): number {
   return Math.round(dpi * sensitivity);
 }
 
-export function calculateCm360(dpi: number, sensitivity: number, yaw: number = 1): number {
-  if (sensitivity === 0) return 0;
-  const inchesPer360 = (360 / sensitivity) * (yaw / 1);
-  return Number((inchesPer360 * 2.54).toFixed(2));
+export function calculateCm360(dpi: number, sensitivity: number, game: Game): number {
+  if (dpi <= 0 || sensitivity <= 0) return 0;
+  const config = getGameConfig(game);
+  const result = (360 * 2.54) / (dpi * sensitivity * config.multiplier);
+  return Number(result.toFixed(2));
 }
 
 export function getGameConfig(game: Game): GameConfig {
@@ -82,10 +83,11 @@ export function calculateBaseSensitivity(
 ): number {
   const baseEDPI = targetEDPI || 280;
   const sens = baseEDPI / currentEDPI;
-  return Math.round(sens * 1000) / 1000;
+  return Math.max(0.05, Math.min(10, Math.round(sens * 1000) / 1000));
 }
 
 export function getSensitivityFromEDPI(targetEDPI: number, dpi: number, game: Game): number {
+  if (dpi <= 0) return 0.5;
   const sens = targetEDPI / dpi;
   return Math.max(0.05, Math.min(10, Number(sens.toFixed(3))));
 }
@@ -236,7 +238,7 @@ export function convertSensitivity(
 ): number {
   const fromConfig = getGameConfig(fromGame);
   const toConfig = getGameConfig(toGame);
-  const ratio = fromConfig.yaw / toConfig.yaw;
+  const ratio = toConfig.multiplier / fromConfig.multiplier;
   return Number((fromSens * ratio).toFixed(3));
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -27,8 +27,8 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
 
   const edpi = useMemo(() => calculateEDPI(dpi, sensitivity), [dpi, sensitivity]);
   const cm360 = useMemo(
-    () => calculateCm360(dpi, sensitivity, gameConfig.yaw),
-    [dpi, sensitivity, gameConfig.yaw]
+    () => calculateCm360(dpi, sensitivity, game),
+    [dpi, sensitivity, game]
   );
   const cm360Feedback = useMemo(() => getCm360Feedback(cm360, game), [cm360, game]);
   const proComparison = useMemo(() => getProComparison(edpi, game), [edpi, game]);
@@ -62,7 +62,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
     onSetupChange({ dpi, sensitivity, game: newGame });
   };
 
-  const isValid = dpi >= SENSITIVITY_LIMITS.minDPI && sensitivity >= SENSITIVITY_LIMITS.min;
+  const isValid = dpi >= SENSITIVITY_LIMITS.minDPI && sensitivity >= SENSITIVITY_LIMITS.min && dpi > 0 && sensitivity > 0;
 
   const getTrendIcon = () => {
     if (proComparison.percentile < 35) return <TrendingDown className="w-4 h-4 text-[#ff3366]" />;

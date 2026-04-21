@@ -14,7 +14,6 @@ import {
 import {
   calculateEDPI,
   calculateBaseSensitivity,
-  getSensitivityRange,
 } from '@/lib/calculations';
 import { Target, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 
@@ -40,7 +39,7 @@ export function PSAStep({
   const [initialChoice, setInitialChoice] = useState<'half' | 'base' | 'double' | null>(null);
 
   const baseSens = useMemo(() => {
-    if (!setup) return 0.4;
+    if (!setup || !setup.dpi || !setup.sensitivity) return 0.4;
     if (selectedPreset) {
       const midEDPI = (selectedPreset.edpiRange.min + selectedPreset.edpiRange.max) / 2;
       return Number((midEDPI / setup.dpi).toFixed(3));
@@ -54,20 +53,32 @@ export function PSAStep({
   const currentIteration = iterations.length > 0 ? iterations[iterations.length - 1] : null;
 
   const handleInitialChoice = (choice: 'half' | 'base' | 'double') => {
-    setInitialChoice(choice);
     const selectedSens =
       choice === 'half' ? psaOptions.half : choice === 'double' ? psaOptions.double : baseSens;
+    
+    setInitialChoice(choice);
     onPSAFinalChange(selectedSens);
+    
+    const firstIter = createFirstIteration(selectedSens);
+    firstIter.choice = choice === 'half' ? 'low' : choice === 'double' ? 'high' : 'low';
+    onIterationsChange([firstIter]);
   };
 
   const handleBinaryChoice = (choice: 'low' | 'high') => {
     if (!currentIteration) return;
-    const newIterations = processPSAChoice(iterations, choice);
-    onIterationsChange(newIterations);
-
+    
+    const updatedCurrent = { ...currentIteration, choice };
+    const newIterations = [...iterations.slice(0, -1), updatedCurrent];
+    
     if (newIterations.length >= 7) {
       const psaValue = getPSAValue(newIterations);
       onPSAFinalChange(psaValue);
+      onIterationsChange(newIterations);
+    } else {
+      const nextIter = createFirstIteration(
+        choice === 'low' ? currentIteration.low : currentIteration.high
+      );
+      onIterationsChange([...newIterations, nextIter]);
     }
   };
 
@@ -77,7 +88,18 @@ export function PSAStep({
     onPSAFinalChange(null);
   };
 
-  const isComplete = iterations.length >= 7;
+  const isComplete = iterations.length >= 7 && iterations.every(i => i.choice !== null);
+
+  if (!setup || !setup.dpi || !setup.sensitivity) {
+    return (
+      <div className="space-y-6">
+        <Card variant="bordered" className="text-center">
+          <p className="text-white">Please complete Setup step first</p>
+        </Card>
+        <Button onClick={onBack}>Go Back</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -91,7 +113,7 @@ export function PSAStep({
           {initialChoice
             ? isComplete
               ? 'Calibration complete!'
-              : `Iteration ${iterations.length} of 7`
+              : `Iteration ${Math.min(iterations.length, 7)} of 7`
             : 'Choose your starting point'}
         </p>
       </motion.div>
@@ -129,9 +151,9 @@ export function PSAStep({
         </motion.div>
       )}
 
-      {initialChoice && !isComplete && (
+      {initialChoice && !isComplete && currentIteration && (
         <motion.div
-          key={currentIteration?.iteration}
+          key={currentIteration.iteration}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
@@ -152,7 +174,7 @@ export function PSAStep({
                 <ArrowLeft className="w-6 h-6 text-[#64748b] mx-auto mb-2 group-hover:text-[#00ff88]" />
                 <p className="text-xs text-[#64748b] mb-1">Lower</p>
                 <p className="text-2xl font-mono font-bold text-white">
-                  {currentIteration?.low.toFixed(3)}
+                  {currentIteration.low.toFixed(3)}
                 </p>
               </button>
 
@@ -163,7 +185,7 @@ export function PSAStep({
                 <ArrowRight className="w-6 h-6 text-[#64748b] mx-auto mb-2 group-hover:text-[#00ff88]" />
                 <p className="text-xs text-[#64748b] mb-1">Higher</p>
                 <p className="text-2xl font-mono font-bold text-white">
-                  {currentIteration?.high.toFixed(3)}
+                  {currentIteration.high.toFixed(3)}
                 </p>
               </button>
             </div>
@@ -213,11 +235,7 @@ export function PSAStep({
         <Button variant="secondary" onClick={onBack}>
           Back
         </Button>
-        <Button
-          onClick={onNext}
-          disabled={!isComplete}
-          className="flex-1"
-        >
+        <Button onClick={onNext} disabled={!isComplete} className="flex-1">
           Continue
         </Button>
       </motion.div>

@@ -4,7 +4,7 @@ export interface GameConfig {
   id: Game;
   name: string;
   icon: string;
-  yaw: number;
+  multiplier: number;
 }
 
 export type AimingMechanic = 'wrist' | 'arm' | 'hybrid';
@@ -91,12 +91,12 @@ export interface WizardState {
 }
 
 export const GAMES: GameConfig[] = [
-  { id: 'valorant', name: 'Valorant', icon: '🎯', yaw: 1 },
-  { id: 'cs2', name: 'CS2', icon: '🔫', yaw: 3.18 },
-  { id: 'apex', name: 'Apex Legends', icon: '⚡', yaw: 1 },
-  { id: 'overwatch2', name: 'Overwatch 2', icon: '🛡️', yaw: 1 },
-  { id: 'cod', name: 'Call of Duty', icon: '🎮', yaw: 1 },
-  { id: 'r6', name: 'Rainbow Six', icon: '🔰', yaw: 1 },
+  { id: 'valorant', name: 'Valorant', icon: '🎯', multiplier: 0.07 },
+  { id: 'cs2', name: 'CS2', icon: '🔫', multiplier: 0.022 },
+  { id: 'apex', name: 'Apex Legends', icon: '⚡', multiplier: 1 },
+  { id: 'overwatch2', name: 'Overwatch 2', icon: '🛡️', multiplier: 3.3333 },
+  { id: 'cod', name: 'Call of Duty', icon: '🎮', multiplier: 1 },
+  { id: 'r6', name: 'Rainbow Six', icon: '🔰', multiplier: 0.022 },
 ];
 
 export const VOLTAIC_BENCHMARKS = {
