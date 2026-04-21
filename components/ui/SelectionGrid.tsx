@@ -45,9 +45,13 @@ export function SelectionGrid<T>({
           >
             <div className="flex flex-col items-center gap-2">
               {option.icon && (
-                <span className="text-2xl">{option.icon}</span>
+                option.icon.startsWith('data:') ? (
+                  <img src={option.icon} alt={option.label} className="w-8 h-8 object-contain" />
+                ) : (
+                  <span className="text-2xl">{option.icon}</span>
+                )
               )}
-              <span className={`font-medium ${isSelected ? 'text-[#00ff88]' : 'text-white'}`}>
+              <span className={`font-medium text-sm ${isSelected ? 'text-[#00ff88]' : 'text-white'}`}>
                 {option.label}
               </span>
               {option.description && (

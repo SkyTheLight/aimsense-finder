@@ -35,13 +35,20 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
   const cm360Feedback = useMemo(() => cm360 > 0 ? getCm360Feedback(cm360, game) : { status: '', message: 'Enter values above' }, [cm360, game]);
   const proComparison = useMemo(() => edpi > 0 ? getProComparison(edpi, game) : { percentile: 50, range: 'Average', recommendation: '' }, [edpi, game]);
 
+  const getGameLabel = (g: Game) => {
+    const labels: Record<Game, string> = {
+      valorant: 'Valorant', cs2: 'CS2', apex: 'Apex Legends',
+      overwatch2: 'Overwatch 2', cod: 'Call of Duty', r6: 'Rainbow Six'
+    };
+    return labels[g];
+  };
   const games: { value: Game; label: string; icon: string }[] = [
-    { value: 'valorant', label: 'Valorant', icon: '🎯' },
-    { value: 'cs2', label: 'CS2', icon: '🔫' },
-    { value: 'apex', label: 'Apex', icon: '⚡' },
-    { value: 'overwatch2', label: 'OW2', icon: '🛡️' },
-    { value: 'cod', label: 'CoD', icon: '🎮' },
-    { value: 'r6', label: 'R6', icon: '🔰' },
+    { value: 'valorant', label: getGameLabel('valorant'), icon: 'valorant' },
+    { value: 'cs2', label: getGameLabel('cs2'), icon: 'cs2' },
+    { value: 'apex', label: 'Apex Legends', icon: 'apex' },
+    { value: 'overwatch2', label: 'Overwatch 2', icon: 'overwatch2' },
+    { value: 'cod', label: 'Call of Duty', icon: 'cod' },
+    { value: 'r6', label: 'Rainbow Six', icon: 'r6' },
   ];
 
   const handleDpiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
