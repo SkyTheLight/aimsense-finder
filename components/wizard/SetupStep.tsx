@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { SelectionGrid } from '@/components/ui/SelectionGrid';
-import { UserSetup, Game, GameConfig } from '@/types';
-import { calculateEDPI, calculateCm360, getGameConfig } from '@/lib/calculations';
+import { UserSetup, Game } from '@/types';
+import { calculateEDPI, calculateCm360, getGameConfig, getCm360Feedback, getProComparison } from '@/lib/calculations';
 import { SENSITIVITY_LIMITS } from '@/lib/constants';
-import { Mouse, Crosshair, Activity } from 'lucide-react';
+import { Mouse, Crosshair, Activity, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface SetupStepProps {
   setup: UserSetup | null;
@@ -30,6 +30,8 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
     () => calculateCm360(dpi, sensitivity, gameConfig.yaw),
     [dpi, sensitivity, gameConfig.yaw]
   );
+  const cm360Feedback = useMemo(() => getCm360Feedback(cm360, game), [cm360, game]);
+  const proComparison = useMemo(() => getProComparison(edpi, game), [edpi, game]);
 
   const games: { value: Game; label: string; icon: string }[] = [
     { value: 'valorant', label: 'Valorant', icon: '🎯' },
@@ -61,6 +63,19 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
   };
 
   const isValid = dpi >= SENSITIVITY_LIMITS.minDPI && sensitivity >= SENSITIVITY_LIMITS.min;
+
+  const getTrendIcon = () => {
+    if (proComparison.percentile < 35) return <TrendingDown className="w-4 h-4 text-[#ff3366]" />;
+    if (proComparison.percentile > 65) return <TrendingUp className="w-4 h-4 text-[#6366f1]" />;
+    return <Minus className="w-4 h-4 text-[#00ff88]" />;
+  };
+
+  const getCm360Color = () => {
+    if (cm360Feedback.status === 'fast') return 'text-[#6366f1]';
+    if (cm360Feedback.status === 'slow') return 'text-[#f59e0b]';
+    if (cm360Feedback.status === 'ideal') return 'text-[#00ff88]';
+    return 'text-white';
+  };
 
   return (
     <div className="space-y-6">
@@ -143,15 +158,25 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <Card variant="glow" className="flex justify-around text-center">
-          <div>
-            <p className="text-xs text-[#64748b] mb-1">eDPI</p>
-            <p className="text-2xl font-mono font-bold text-[#00ff88]">{edpi}</p>
+        <Card variant="glow" className="text-center">
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <p className="text-xs text-[#64748b] mb-1">eDPI</p>
+              <p className="text-2xl font-mono font-bold text-[#00ff88]">{edpi}</p>
+            </div>
+            <div>
+              <p className="text-xs text-[#64748b] mb-1">cm/360</p>
+              <p className={`text-2xl font-mono font-bold ${getCm360Color()}`}>{cm360}</p>
+            </div>
           </div>
-          <div className="w-px bg-[#2a2a3a]" />
-          <div>
-            <p className="text-xs text-[#64748b] mb-1">cm/360</p>
-            <p className="text-2xl font-mono font-bold text-white">{cm360}</p>
+          <div className="pt-3 border-t border-[#2a2a3a]">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              {getTrendIcon()}
+              <span className="text-sm text-[#94a3b8]">
+                {proComparison.range} compared to {gameConfig.name} pros
+              </span>
+            </div>
+            <p className="text-xs text-[#64748b]">{cm360Feedback.message}</p>
           </div>
         </Card>
       </motion.div>

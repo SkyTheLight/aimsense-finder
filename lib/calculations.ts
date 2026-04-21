@@ -1,5 +1,5 @@
 import { Game, GameConfig, GAMES, ProPreset } from '@/types';
-import { PRO_eDPI_RANGES, PRO_PRESETS, VOLTAIC_SCORE_THRESHOLDS } from './constants';
+import { PRO_eDPI_RANGES, VOLTAIC_SCORE_THRESHOLDS } from './constants';
 
 export function calculateEDPI(dpi: number, sensitivity: number): number {
   return Math.round(dpi * sensitivity);
@@ -7,7 +7,7 @@ export function calculateEDPI(dpi: number, sensitivity: number): number {
 
 export function calculateCm360(dpi: number, sensitivity: number, yaw: number = 1): number {
   if (sensitivity === 0) return 0;
-  const inchesPer360 = (360 / sensitivity) * (1 / yaw);
+  const inchesPer360 = (360 / sensitivity) * (yaw / 1);
   return Number((inchesPer360 * 2.54).toFixed(2));
 }
 
@@ -80,14 +80,12 @@ export function calculateBaseSensitivity(
   targetEDPI: number,
   game: Game
 ): number {
-  const config = getGameConfig(game);
   const baseEDPI = targetEDPI || 280;
   const sens = baseEDPI / currentEDPI;
   return Math.round(sens * 1000) / 1000;
 }
 
 export function getSensitivityFromEDPI(targetEDPI: number, dpi: number, game: Game): number {
-  const config = getGameConfig(game);
   const sens = targetEDPI / dpi;
   return Math.max(0.05, Math.min(10, Number(sens.toFixed(3))));
 }
@@ -110,12 +108,15 @@ export function calculateAimStyleBias(
   playstyle: string | null
 ): number {
   let bias = 0;
-  if (mechanic === 'wrist') bias += 0.025;
-  if (mechanic === 'arm') bias -= 0.025;
+  
+  if (mechanic === 'wrist') bias += 0.02;
+  if (mechanic === 'arm') bias -= 0.015;
   if (mechanic === 'hybrid') bias += 0.005;
-  if (playstyle === 'flick') bias += 0.02;
-  if (playstyle === 'tracking') bias -= 0.025;
+  
+  if (playstyle === 'flick') bias += 0.025;
+  if (playstyle === 'tracking') bias -= 0.02;
   if (playstyle === 'balanced') bias += 0.005;
+  
   return Number(bias.toFixed(3));
 }
 
@@ -125,33 +126,34 @@ export function calculateVoltaicModifier(
   switching: number
 ): number {
   const avgScore = (tracking + flicking + switching) / 3;
-
   let modifier = 0;
 
-  if (avgScore >= VOLTAIC_SCORE_THRESHOLDS.elite.tracking) {
+  if (avgScore >= 80) {
+    modifier += 0.025;
+  } else if (avgScore >= 65) {
     modifier += 0.015;
-  } else if (avgScore >= VOLTAIC_SCORE_THRESHOLDS.advanced.tracking) {
+  } else if (avgScore >= 50) {
     modifier += 0.005;
-  } else if (avgScore <= VOLTAIC_SCORE_THRESHOLDS.novice.tracking) {
-    modifier -= 0.01;
-  }
-
-  const flickDiff = flicking - tracking;
-  if (flickDiff > 15) {
-    modifier += 0.02;
-  } else if (flickDiff > 8) {
-    modifier += 0.01;
-  } else if (flickDiff < -15) {
-    modifier -= 0.025;
-  } else if (flickDiff < -8) {
+  } else if (avgScore <= 25) {
     modifier -= 0.015;
   }
 
-  const switchDiff = switching - avgScore;
-  if (Math.abs(switchDiff) > 20) {
-    modifier *= 0.6;
-  } else if (Math.abs(switchDiff) > 10) {
-    modifier *= 0.8;
+  const flickDiff = flicking - tracking;
+  if (flickDiff >= 20) {
+    modifier += 0.025;
+  } else if (flickDiff >= 12) {
+    modifier += 0.015;
+  } else if (flickDiff <= -20) {
+    modifier -= 0.02;
+  } else if (flickDiff <= -12) {
+    modifier -= 0.01;
+  }
+
+  const switchConsistency = Math.abs(switching - avgScore);
+  if (switchConsistency > 25) {
+    modifier *= 0.5;
+  } else if (switchConsistency > 15) {
+    modifier *= 0.7;
   }
 
   return Number(modifier.toFixed(3));
@@ -161,13 +163,13 @@ export function calculatePresetBias(preset: ProPreset | null): number {
   if (!preset) return 0;
   switch (preset.playstyle) {
     case 'flick':
-      return 0.03;
+      return 0.035;
     case 'tracking':
-      return -0.02;
+      return -0.025;
     case 'control':
-      return -0.03;
+      return -0.035;
     default:
-      return 0;
+      return 0.01;
   }
 }
 
@@ -175,9 +177,17 @@ export function calculateFinalSensitivity(
   psaValue: number,
   presetBias: number,
   aimStyleBias: number,
-  voltaicModifier: number
+  voltaicModifier: number,
+  targetEDPI?: number
 ): number {
-  const total = psaValue + presetBias + aimStyleBias + voltaicModifier;
+  let total = psaValue + presetBias + aimStyleBias + voltaicModifier;
+  
+  if (targetEDPI && targetEDPI > 0) {
+    const psaEDPIContribution = psaValue * 800;
+    const targetDiff = (targetEDPI - psaEDPIContribution) / 800;
+    total += targetDiff * 0.3;
+  }
+  
   const clamped = Math.max(0.1, Math.min(10, total));
   return Number(clamped.toFixed(3));
 }
@@ -186,9 +196,10 @@ export function getSensitivityLabel(
   sensitivity: number,
   baseSensitivity: number
 ): 'control' | 'balanced' | 'speed' {
+  if (baseSensitivity === 0) return 'balanced';
   const ratio = sensitivity / baseSensitivity;
-  if (ratio < 0.75) return 'control';
-  if (ratio > 1.25) return 'speed';
+  if (ratio < 0.78) return 'control';
+  if (ratio > 1.22) return 'speed';
   return 'balanced';
 }
 
@@ -230,18 +241,60 @@ export function convertSensitivity(
 }
 
 export function getFilteredPresets(game: Game): ProPreset[] {
-  return PRO_PRESETS.filter(p => p.games.includes(game));
+  const { PRO_PRESETS } = require('./constants');
+  return PRO_PRESETS.filter((p: ProPreset) => p.games.includes(game));
 }
 
 export function suggestPresets(userEDPI: number, game: Game): ProPreset[] {
-  const filtered = getFilteredPresets(game);
+  const { PRO_PRESETS } = require('./constants');
+  const filtered = PRO_PRESETS.filter((p: ProPreset) => p.games.includes(game));
   return filtered
-    .map(preset => {
+    .map((preset: ProPreset) => {
       const presetMid = (preset.edpiRange.min + preset.edpiRange.max) / 2;
       const diff = Math.abs(userEDPI - presetMid);
       return { preset, diff: diff / presetMid };
     })
-    .sort((a, b) => a.diff - b.diff)
+    .sort((a: { diff: number }, b: { diff: number }) => a.diff - b.diff)
     .slice(0, 3)
-    .map(r => r.preset);
+    .map((r: { preset: ProPreset }) => r.preset);
+}
+
+export function getOptimalCm360Range(game: Game): { min: number; max: number; ideal: number } {
+  const ranges: Record<Game, { min: number; max: number; ideal: number }> = {
+    valorant: { min: 20, max: 50, ideal: 30 },
+    cs2: { min: 25, max: 60, ideal: 40 },
+    apex: { min: 30, max: 70, ideal: 45 },
+    overwatch2: { min: 25, max: 60, ideal: 38 },
+    cod: { min: 25, max: 55, ideal: 35 },
+    r6: { min: 20, max: 50, ideal: 30 },
+  };
+  return ranges[game] || ranges.valorant;
+}
+
+export function getCm360Feedback(cm360: number, game: Game): { status: string; message: string } {
+  const range = getOptimalCm360Range(game);
+  
+  if (cm360 < range.min) {
+    return { status: 'fast', message: `Very fast (${cm360}cm/360). Great for close quarters.` };
+  }
+  if (cm360 > range.max) {
+    return { status: 'slow', message: `Very slow (${cm360}cm/360). Excellent for long-range precision.` };
+  }
+  if (cm360 >= range.ideal * 0.9 && cm360 <= range.ideal * 1.1) {
+    return { status: 'ideal', message: `Ideal range (${cm360}cm/360). Balanced for all distances.` };
+  }
+  return { status: 'good', message: `Good range (${cm360}cm/360). Works well for most scenarios.` };
+}
+
+export function validateSensitivityInput(dpi: number, sensitivity: number): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (dpi < 100 || dpi > 32000) {
+    errors.push('DPI must be between 100 and 32000');
+  }
+  if (sensitivity < 0.01 || sensitivity > 10) {
+    errors.push('Sensitivity must be between 0.01 and 10');
+  }
+  
+  return { valid: errors.length === 0, errors };
 }

@@ -14,7 +14,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 export function WizardContainer() {
   const {
     state,
-    setStep,
     nextStep,
     prevStep,
     setSetup,
@@ -34,9 +33,7 @@ export function WizardContainer() {
   const renderStep = () => {
     switch (currentStep) {
       case 0:
-        return (
-          <WelcomeStep onStart={nextStep} />
-        );
+        return <WelcomeStep onStart={nextStep} />;
       case 1:
         return (
           <SetupStep
@@ -108,8 +105,8 @@ export function WizardContainer() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
-      <div className="max-w-2xl mx-auto px-4 py-8 md:py-16">
+    <div className="min-h-screen bg-[#0a0a0f] overflow-x-hidden">
+      <div className="max-w-2xl mx-auto px-4 py-6 md:py-12">
         {currentStep > 0 && (
           <ProgressIndicator currentStep={currentStep} />
         )}
@@ -117,10 +114,14 @@ export function WizardContainer() {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, x: 30, scale: 0.98 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -30, scale: 0.98 }}
+            transition={{ 
+              duration: 0.25, 
+              ease: [0.25, 0.46, 0.45, 0.94],
+              opacity: { duration: 0.2 }
+            }}
           >
             {renderStep()}
           </motion.div>

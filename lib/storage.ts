@@ -1,11 +1,28 @@
 import { WizardState } from '@/types';
 
 const STORAGE_KEY = 'aimsense_data';
+const VERSION = '1.0';
+
+function getDefaultState(): WizardState {
+  return {
+    currentStep: 0,
+    setup: null,
+    selectedPreset: null,
+    psaIterations: [],
+    psaFinal: null,
+    aimStyle: null,
+    benchmarkMode: 'simplified',
+    benchmarks: null,
+    simplified: null,
+    results: null,
+  };
+}
 
 export function saveToStorage<T>(key: string, data: T): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(key, JSON.stringify(data));
+    const payload = { version: VERSION, data, timestamp: Date.now() };
+    localStorage.setItem(key, JSON.stringify(payload));
   } catch (e) {
     console.error('Failed to save to localStorage:', e);
   }
@@ -14,8 +31,15 @@ export function saveToStorage<T>(key: string, data: T): void {
 export function loadFromStorage<T>(key: string): T | null {
   if (typeof window === 'undefined') return null;
   try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    
+    const parsed = JSON.parse(raw);
+    if (parsed.version !== VERSION) {
+      console.log('Data version mismatch, using defaults');
+      return null;
+    }
+    return parsed.data as T;
   } catch (e) {
     console.error('Failed to load from localStorage:', e);
     return null;
@@ -36,19 +60,7 @@ export function saveWizardState(state: WizardState): void {
 }
 
 export function loadWizardState(): WizardState | null {
-  const defaultState: WizardState = {
-    currentStep: 0,
-    setup: null,
-    selectedPreset: null,
-    psaIterations: [],
-    psaFinal: null,
-    aimStyle: null,
-    benchmarkMode: 'simplified',
-    benchmarks: null,
-    simplified: null,
-    results: null,
-  };
-
+  const defaultState = getDefaultState();
   const saved = loadFromStorage<WizardState>(STORAGE_KEY);
   if (!saved) return defaultState;
 
@@ -62,10 +74,13 @@ export function clearWizardState(): void {
 export function exportProfile(wizardState: WizardState): string {
   const profile = {
     exportedAt: new Date().toISOString(),
+    version: VERSION,
     setup: wizardState.setup,
+    game: wizardState.setup?.game,
     psaResult: wizardState.psaFinal,
     aimStyle: wizardState.aimStyle,
     finalResults: wizardState.results,
+    comparedToPro: wizardState.results?.comparedToPro,
   };
   return JSON.stringify(profile, null, 2);
 }
