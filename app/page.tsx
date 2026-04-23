@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback } from 'react';
 import styles from './wizard.module.css';
@@ -58,7 +58,7 @@ export default function HomeWizard() {
           body: JSON.stringify({
             game: data.game,
             edpi: data.dpi * data.inGameSens,
-            cm360: parseFloat(((360 * 2.54) / (data.dpi * data.inGameSens * (data.game === 'valorant' ? 0.07 : 0.022)).toFixed(1)),
+            cm360: parseFloat(((360 * 2.54) / (data.dpi * data.inGameSens * (data.game === 'valorant' ? 0.07 : 0.022))).toFixed(1)),
             label: data.inGameSens < 0.4 ? 'control' : data.inGameSens > 0.8 ? 'speed' : 'balanced',
             tracking: 70,
             flicking: 65,
@@ -113,7 +113,7 @@ export default function HomeWizard() {
         <div className={styles.progressTrack}>
           <div 
             className={styles.progressFill}
-            style={{ width: `${((currentStep - 1) / 3 * 100}%` }}
+            style={{ width: ((currentStep - 1) / 3 * 100) + '%' }}
           />
         </div>
       </div>
@@ -131,19 +131,19 @@ export default function HomeWizard() {
                   className={`${styles.gameBtn} ${data.game === 'valorant' ? styles.gameActive : ''}`}
                   onClick={() => setData({ ...data, game: 'valorant' })}
                 >
-                  <span>◆</span> Valorant
+                  <span>Γùå</span> Valorant
                 </button>
                 <button
                   className={`${styles.gameBtn} ${data.game === 'cs2' ? styles.gameActive : ''}`}
                   onClick={() => setData({ ...data, game: 'cs2' })}
                 >
-                  <span>◇</span> CS2
+                  <span>Γùç</span> CS2
                 </button>
               </div>
             </div>
 
             <button className={styles.nextBtn} onClick={handleNext}>
-              Get Started →
+              Get Started ΓåÆ
             </button>
           </div>
         )}
@@ -179,8 +179,8 @@ export default function HomeWizard() {
             </div>
 
             <div className={styles.buttonGroup}>
-              <button className={styles.backBtn} onClick={handleBack}>← Back</button>
-              <button className={styles.nextBtn} onClick={handleNext}>Next →</button>
+              <button className={styles.backBtn} onClick={handleBack}>ΓåÉ Back</button>
+              <button className={styles.nextBtn} onClick={handleNext}>Next ΓåÆ</button>
             </div>
           </div>
         )}
@@ -221,7 +221,7 @@ export default function HomeWizard() {
             </div>
 
             <div className={styles.buttonGroup}>
-              <button className={styles.backBtn} onClick={handleBack}>← Back</button>
+              <button className={styles.backBtn} onClick={handleBack}>ΓåÉ Back</button>
               <button 
                 className={`${styles.analyzeBtn} ${loading ? styles.loading : ''}`}
                 onClick={handleStartAnalysis}
@@ -233,7 +233,7 @@ export default function HomeWizard() {
                     Analyzing...
                   </>
                 ) : (
-                  'Start Analysis →'
+                  'Start Analysis ΓåÆ'
                 )}
               </button>
             </div>
@@ -276,7 +276,7 @@ export default function HomeWizard() {
                   </div>
 
                   <a href="/dashboard" className={styles.dashboardBtn}>
-                    Go to Dashboard →
+                    Go to Dashboard ΓåÆ
                   </a>
                 </>
               ) : null}
