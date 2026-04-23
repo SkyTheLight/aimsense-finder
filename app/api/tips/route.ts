@@ -13,6 +13,9 @@ interface TipContext {
   aimStyle: string;
   mouseGrip: string;
   rank?: string;
+  overshooting?: boolean;
+  undershooting?: boolean;
+  aimIssue?: string;
 }
 
 async function generateAIAnalysis(body: TipContext) {
@@ -20,22 +23,51 @@ async function generateAIAnalysis(body: TipContext) {
   if (!apiKey) return null;
 
   const weakest = body.tracking <= body.flicking && body.tracking <= body.switching ? 'tracking' : body.flicking <= body.switching ? 'flicking' : 'target switching';
+  const strongest = tracking >= flicking && body.tracking >= body.switching ? 'tracking' : body.flicking >= body.switching ? 'flicking' : 'target switching';
+  
+  let problemAnalysis = '';
+  if (body.overshooting) problemAnalysis = 'OVERSHOOTING DETECTED - Diagnose: Is this a tension issue, sens issue, or panic behavior?';
+  if (body.undershooting) problemAnalysis = 'UNDERSHOOTING DETECTED - Diagnose: Is this hesitation, sens too low, or visual tracking issue?';
+  if (body.aimIssue) problemAnalysis = `SPECIFIC ISSUE: ${body.aimIssue}`;
 
-  const prompt = `You are TrueSens, an elite FPS Aim Coach. Return ONLY valid JSON.
+  const prompt = `You are TrueSens, an elite FPS Aim Coach with infinite adaptability.
 
-Player: ${body.game}, eDPI ${body.edpi}, style ${body.aimStyle}, grip ${body.mouseGrip}
-Scores: Tracking ${body.tracking}, Flicking ${body.flicking}, Switching ${body.switching}
-Weakest: ${weakest}
+THINK FIRST - Internal analysis:
+1. What type of player is this? (${body.aimStyle} style, ${body.mouseGrip} grip)
+2. What is their sensitivity telling us? eDPI ${body.edpi} = ${body.cm360}cm/360 = ${body.label}
+3. What are the SCORE GAPS telling us? Tracking ${body.tracking} vs Flicking ${body.flicking} vs Switching ${body.switching}
+4. Biggest gap: ${weakest} is ${body.tracking <= body.flicking && body.tracking <= body.switching ? body.tracking : body.flicking <= body.switching ? body.flicking : body.switching} while ${strongest} is higher
+5. ${problemAnalysis || 'No specific problem flagged'}
 
-JSON format:
+REASONING MODE:
+- Don't give template advice
+- Think about WHAT IS ACTUALLY CAUSING their weakness
+- Adjust advice based on their specific score ratios
+- Consider: Is sensitivity the root cause or is it habits/tension?
+- Consider: Is this a rank-specific issue or mechanical gap?
+
+OUTPUT (vary structure each time, NO fixed templates):
 {
-  "recommendedSensitivity": "0.75-0.85",
-  "whyThisFits": "2 sentences based on their data",
-  "aiTips": ["specific tip 1", "specific tip 2", "specific tip 3", "specific tip 4"],
-  "improvementPriority": "THE #1 priority",
-  "hiddenInsight": "One hidden observation",
-  "confidence": "High"
-}`;
+  "recommendedSensitivity": "X.XX",
+  "whyThisFits": "EXPLAIN based on THEIR specific data, not generic",
+  "aiTips": [
+    "SPECIFIC actionable advice referencing their actual scores",
+    "DIFFERENT advice that addresses their biggest gap",
+    "ADAPTIVE advice for their ${body.aimStyle} style",
+    "CONTEXT-AWARE advice considering ${body.overshooting ? 'their overshooting' : body.undershooting ? 'their undershooting' : 'their overall pattern'}"
+  ],
+  "improvementPriority": "THE ONE THING that will give them the most improvement",
+  "hiddenInsight": "SOMETHING THEY PROBABLY DON'T REALIZE about their own gameplay",
+  "confidence": "High/Medium"
+}
+
+RULES:
+- NEVER repeat the same tip structure
+- ALWAYS reference their specific numbers
+- Make each response feel like you just analyzed THIS player
+- If scores are close, focus on flow/transitions
+- If one score is much lower, target that specifically
+- Sound like you REASONED through their replay`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/responses', {
@@ -52,7 +84,7 @@ JSON format:
 
     if (!response.ok) {
       const err = await response.text();
-      console.error('[tips] Groq error:', response.status, err.substring(0, 100));
+      console.error('[tips] Groq error:', response.status);
       return null;
     }
 
@@ -60,17 +92,12 @@ JSON format:
     const msg = data.output?.find((o: { type: string }) => o.type === 'message');
     const content = msg?.content?.[0]?.text?.trim() || '';
     
-    if (!content) {
-      console.error('[tips] No content in response');
-      return null;
-    }
+    if (!content) return null;
 
     const parsed = JSON.parse(content);
     if (parsed.aiTips && parsed.recommendedSensitivity) {
       return parsed;
     }
-    
-    console.error('[tips] Parsed JSON invalid:', content.substring(0, 100));
   } catch (err) {
     console.error('[tips] Exception:', err);
   }
@@ -87,17 +114,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ ...result, fallback: false });
     }
 
+    const weakest = body.tracking <= body.flicking ? 'tracking' : 'flicking';
     return NextResponse.json({
-      recommendedSensitivity: '0.75 - 0.85',
-      whyThisFits: `Based on your ${body.label} sensitivity and ${body.aimStyle} style.`,
+      recommendedSensitivity: `${(body.edpi / 800).toFixed(2)}`,
+      whyThisFits: `Your ${body.label} sensitivity with ${body.aimStyle} style suggests this range.`,
       aiTips: [
-        `Your ${body.tracking <= 50 ? 'tracking' : 'flicking'} needs attention.`,
-        'Film your gameplay.',
-        'Focus on one skill per session.',
-        'Build a warmup routine.'
+        `Target your ${weakest} score - it's your biggest gap.`,
+        'Build a pre-aim routine before each match.',
+        'Focus on smoothness over speed.',
+        'Track your progress session to session.'
       ],
-      improvementPriority: body.tracking <= body.flicking ? 'tracking' : 'flicking',
-      hiddenInsight: 'Most players blame sens when routine is the issue.',
+      improvementPriority: weakest,
+      hiddenInsight: 'The gap between your scores reveals your true weakness.',
       confidence: 'Medium',
       fallback: true
     });

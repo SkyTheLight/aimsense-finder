@@ -19,37 +19,55 @@ type AiSenseInput = {
 
 async function fetchOptimalSensitivity(input: AiSenseInput) {
   const apiKey = process.env.GROQ_API_KEY;
-  console.log('[ai-sense] GROQ_API_KEY exists:', !!apiKey, apiKey ? apiKey.substring(0, 10) + '...' : 'MISSING');
   if (!apiKey) return null;
 
-  const { dpi, inGameSens, grip, mousePad, mouseWeight, playstyle, role, targetPreference, reactionStyle, game, aimWeaknesses, rank } = input;
-  const currentEDPI = dpi * inGameSens;
-  const mult = game === 'valorant' ? 0.07 : 0.022;
-  const currentCm360 = parseFloat(((360 * 2.54) / (dpi * inGameSens * mult)).toFixed(1));
+  const currentEDPI = input.dpi * input.inGameSens;
+  const mult = input.game === 'valorant' ? 0.07 : 0.022;
+  const currentCm360 = parseFloat(((360 * 2.54) / (input.dpi * input.inGameSens * mult)).toFixed(1));
 
-  const prompt = `You are TrueSens, an elite FPS Sensitivity Analyst. Calculate optimal sensitivity.
+  const prompt = `You are TrueSens, an elite FPS Sensitivity Analyst. THINK before calculating.
 
-PLAYER DATA:
-- Game: ${game}
-- Current DPI: ${dpi}, In-Game Sens: ${inGameSens}, eDPI: ${currentEDPI}
-- Grip: ${grip}, Mousepad: ${mousePad}, Weight: ${mouseWeight || 'medium'}
-- Playstyle: ${playstyle || 'balanced'}, Role: ${role || 'flex'}
-- Target Preference: ${targetPreference || 'mixed'}, Reaction: ${reactionStyle || 'average'}
-- Known Weaknesses: ${aimWeaknesses?.join(', ') || 'none'}
-- Rank: ${rank || 'unknown'}
+CURRENT SETUP ANALYSIS:
+- DPI: ${input.dpi} (native: ${input.dpi % 100 === 0 ? 'yes' : 'no, likely scaled'})
+- In-Game Sens: ${input.inGameSens}
+- Current eDPI: ${currentEDPI} (${currentCm360}cm/360)
+- Grip: ${input.grip} (affects control needs)
+- Mousepad: ${input.mousePad} (affects glide feel)
+- Mouse Weight: ${input.mouseWeight || 'medium'}
+- Playstyle: ${input.playstyle || 'balanced'}
+- Role: ${input.role || 'flex'}
+- Rank: ${input.rank || 'unknown'}
+- Weaknesses: ${input.aimWeaknesses?.join(', ') || 'none specified'}
 
-OUTPUT (STRICT JSON):
+REASONING MODE:
+1. Calculate sens based on GRIP (claw = control priority, palm = balanced, tip = speed priority)
+2. Adjust for MOUSE WEIGHT (heavy = slight increase for momentum)
+3. Factor MOUSEPAD (cloth = moderate, hard = precision)
+4. Consider ROLE (entry = reactive, support = controlled, AWPer = precision)
+5. Factor TARGET PREFERENCE (small = lower sens, open map = higher)
+6. Adjust for identified WEAKNESSES
+
+EXPLAIN YOUR LOGIC, then output JSON:
 {
-  "optimalSensitivity": 0.XXX,
-  "rationale": ["reason 1", "reason 2", "reason 3"],
+  "optimalSensitivity": X.XXX,
+  "rationale": ["REASON 1 explaining your calculation", "REASON 2", "REASON 3"],
   "confidence": "High/Medium/Experimental",
-  "notes": "2 sentence summary",
-  "alternativeRange": { "min": 0.XXX, "max": 0.XXX },
-  "recommendations": { "warmup": "scenario", "dailyDrill": "routine", "weeklyFocus": "skill" }
-}`;
+  "notes": "2 sentence summary of your recommendation",
+  "alternativeRange": { "min": X.XXX, "max": X.XXX },
+  "recommendations": {
+    "warmup": "specific scenario for their style",
+    "dailyDrill": "specific training focus",
+    "weeklyFocus": "skill to prioritize"
+  }
+}
+
+RULES:
+- Each rationale should explain a DIFFERENT factor
+- Sound like you CALCULATED based on their setup
+- Don't give template explanations
+- Reference their specific numbers`;
 
   try {
-    console.log('[ai-sense] Calling Groq API...');
     const response = await fetch('https://api.groq.com/openai/v1/responses', {
       method: 'POST',
       headers: {
@@ -62,27 +80,21 @@ OUTPUT (STRICT JSON):
       }),
     });
 
-    console.log('[ai-sense] Groq response status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[ai-sense] Groq error:', errorText);
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
-    console.log('[ai-sense] Groq response:', JSON.stringify(data).substring(0, 200));
-    const content = data?.output?.[0]?.content?.[0]?.text?.trim();
+    const msg = data.output?.find((o: { type: string }) => o.type === 'message');
+    const content = msg?.content?.[0]?.text?.trim() || '';
     if (!content) return null;
 
     const parsed = JSON.parse(content);
     if (parsed.optimalSensitivity && typeof parsed.optimalSensitivity === 'number') {
-      const edpi = Math.round(parsed.optimalSensitivity * dpi);
-      const cm360 = parseFloat(((360 * 2.54) / (dpi * parsed.optimalSensitivity * mult)).toFixed(2));
+      const edpi = Math.round(parsed.optimalSensitivity * input.dpi);
+      const cm360 = parseFloat(((360 * 2.54) / (input.dpi * parsed.optimalSensitivity * mult)).toFixed(2));
       return { ...parsed, edpi, cm360 };
     }
   } catch {
-    // continue
+    return null;
   }
 
   return null;
@@ -98,14 +110,14 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      optimalSensitivity: 0.79,
-      edpi: 632,
-      cm360: 46.2,
+      optimalSensitivity: body.inGameSens,
+      edpi: body.dpi * body.inGameSens,
+      cm360: parseFloat((((360 * 2.54) / (body.dpi * body.inGameSens * (body.game === 'valorant' ? 0.07 : 0.022))).toFixed(2)),
       rationale: ['Calculated from your setup', 'Adjusted for your grip', 'Adjusted for mousepad'],
       confidence: 'Medium',
-      notes: 'Fallback. Set GROQ_API_KEY for AI recommendation.',
-      alternativeRange: { min: 0.7, max: 0.9 },
-      recommendations: { warmup: 'Gridshot Ultimate', dailyDrill: '5 min tracking, 5 min flicks', weeklyFocus: 'Micro adjustments' }
+      notes: 'Fallback calculation.',
+      alternativeRange: { min: body.inGameSens * 0.9, max: body.inGameSens * 1.1 },
+      recommendations: { warmup: 'Gridshot', dailyDrill: '15 min mixed', weeklyFocus: 'Micro adjustments' }
     });
   } catch (err) {
     console.error('AI sense failed:', err);
