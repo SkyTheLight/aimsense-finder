@@ -200,16 +200,32 @@ export function ResultsStep({
     if (!resultsRef.current) return;
     setSaving(true);
     try {
-      const canvas = await html2canvas(resultsRef.current, {
-        background: '#0a0a0f',
-      });
+      // Generate text-based report instead of image
+      const report = `TrueSens Results
+==================
+Sensitivity: ${finalSens}
+eDPI: ${edpi}
+cm/360: ${cm360.toFixed(2)}
+Style: ${label} (${proComparison.range} eDPI)
+Recommendation: ${proComparison.recommendation}
+
+Data:
+- DPI: ${setup.dpi}
+- In-Game Sens: ${setup.sensitivity}
+- Game: ${setup.game}
+- Playstyle: ${aimStyle?.playstyle || 'balanced'}
+- Grip: ${setup.mouseGrip}
+`;
+
+      const blob = new Blob([report], { type: 'text/plain' });
       const link = document.createElement('a');
-      link.download = `aimsense-results-${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = URL.createObjectURL(blob);
+      link.download = `aimsense-results-${Date.now()}.txt`;
       link.click();
-    } catch (err) {
-      console.error('Failed to generate screenshot:', err);
-    } finally {
+      URL.revokeObjectURL(link.href);
+      setSaving(false);
+    } catch (error) {
+      console.error('Failed to save results:', error);
       setSaving(false);
     }
   };

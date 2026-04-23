@@ -8,48 +8,57 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String?  @unique
-  username     String?  @unique
-  name          String?
-  image         String?
-  bio           String?
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  username     String?   @unique
+  name         String?
+  bio          String?
   favoriteGame String?
   country      String?
-  isPro        Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isPro        Boolean   @default(false)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(0)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(0)
   settings     Setting[]
   history      History[]
+
+  @@index([email])
+  @@index([username])
+  @@index([createdAt])
 }
 
 model Setting {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  game       String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        String
   dpi         Int
   sensitivity Float
   edpi        Int
   cm360       Float
   mouseGrip  String?
   aimStyle   String?
-  isCurrent  Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  isCurrent  Boolean   @default(false)
+  createdAt   DateTime   @default(now()) @db.Timestamptz(0)
 
   @@index([userId])
+  @@index([userId, isCurrent])
+  @@index([game])
+  @@index([createdAt])
 }
 
 model History {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  game       String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        String
   dpi         Int
   sensitivity Float
   edpi        Int
   cm360       Float
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now()) @db.Timestamptz(0)
 
   @@index([userId])
+  @@index([userId, createdAt])
+  @@index([game])
+  @@index([createdAt])
 }

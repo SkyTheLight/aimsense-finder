@@ -69,10 +69,10 @@ DEEP ANALYSIS:
    ${body.undershooting ? `- UNDERSHOOTING: Is this hesitation, sens too low, or visual lag?
      * If hesitation: Decision anxiety, confidence, or overthinking
      * If sens: Check if they\'re correcting mid-movement` : ''}
-   ${!body.overshooting && !body.undershooting ? `- No flagged issue - but low ${weakest} score suggests underlying ${weakest === 't' ? 'tracking tension' : weaknes === 'f' ? 'flick control issue' : 'switching rhythm problem'}` : ''}
+   ${!body.overshooting && !body.undershooting ? `- No flagged issue - but low ${weakest} score suggests underlying ${weakest === 't' ? 'tracking tension' : weakest === 'f' ? 'flick control issue' : 'switching rhythm problem'}` : ''}
 
 3. SENSITIVITY CORRELATION
-   - Current eDPI ${body.edpi} = ${body.cm360}cm/360 (${parseFloat(body.cm360) < 35 ? 'LOW (precision)' : parseFloat(body.cm360) > 50 ? 'HIGH (speed)' : 'MID (balanced)'})
+   - Current eDPI ${body.edpi} = ${body.cm360}cm/360 (${parseFloat(String(body.cm360)) < 35 ? 'LOW (precision)' : parseFloat(String(body.cm360)) > 50 ? 'HIGH (speed)' : 'MID (balanced)'})
    - Does sensitivity explain their score pattern? Or is it habits/tension?
 
 4. GRIP + STYLE INTERACTION

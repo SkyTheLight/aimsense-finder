@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import ClientProviders from "@/components/Providers";
+import ParticleBackground from "@/components/ParticleBackground";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -14,14 +15,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'TrueSens',
+  title: 'TrueSens | AI-Powered Aim Optimization',
   icons: { 
     icon: '/truesensicon.png',
     apple: '/truesensicon.png',
   },
-  description:
-    'Discover your optimal mouse sensitivity with the TenZ PSA Method, Ron Rambo Kim principles, and Voltaic benchmarks. Personalized results for Valorant, CS2, and more.',
-  keywords: ['fps', 'aim', 'sensitivity', 'valorant', 'cs2', 'calibration', 'gaming'],
+  description: 'World-class AI-powered aim optimization platform. Real-time esports performance analytics, sensitivity tuning, and personalized coaching.',
+  keywords: ['aim', 'sensitivity', 'AI', 'esports', 'valorant', 'cs2', 'optimization', 'analytics', 'gaming'],
 };
 
 export default function RootLayout({
@@ -31,9 +31,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="min-h-screen bg-[#0a0a0f] text-white antialiased">
+      <body className="min-h-screen bg-[#0B0B0F] text-white antialiased" suppressHydrationWarning>
         <ClientProviders>
-          {children}
+          <ParticleBackground />
+          <div className="relative z-10">
+            {children}
+          </div>
         </ClientProviders>
       </body>
     </html>

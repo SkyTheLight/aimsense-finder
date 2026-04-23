@@ -17,7 +17,6 @@ export async function GET() {
         name: true,
         email: true,
         username: true,
-        image: true,
         bio: true,
         favoriteGame: true,
         country: true,

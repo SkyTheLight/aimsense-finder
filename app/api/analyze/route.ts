@@ -403,8 +403,8 @@ export async function POST(request: Request) {
     };
 
     if (aiInsights) {
-      output.aimAnalysis.issues = [...issues, aiInsights.deepInsight || ''];
-      output.adaptiveFeedback.conditionalUp = aiInsights.specificAdvice || feedback.up;
+      output.aimAnalysis.issues = [...issues, (aiInsights as any).deepInsight || ''];
+      output.adaptiveFeedback.conditionalUp = (aiInsights as any).specificAdvice || feedback.up;
     }
 
     return NextResponse.json({ ...output, fallback: !aiInsights });
