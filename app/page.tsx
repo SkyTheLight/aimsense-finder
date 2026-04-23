@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import styles from './wizard.module.css';
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 0 | 1 | 2 | 3 | 4;
 
 interface WizardData {
   dpi: number;
@@ -98,57 +98,42 @@ export default function HomeWizard() {
     }
   }, [data]);
 
-  return (
+return (
     <div className={styles.wizardContainer}>
-      <div className={styles.progressBar}>
-        {[1, 2, 3, 4].map(step => (
-          <div 
-            key={step}
-            className={`${styles.progressStep} ${currentStep >= step ? styles.active : ''} ${currentStep === step ? styles.current : ''}`}
-          >
-            <div className={styles.stepDot}>{step}</div>
-            <span className={styles.stepLabel}>Step {step}</span>
+      {currentStep > 0 && (
+        <div className={styles.progressBar}>
+          {[1, 2, 3, 4].map(step => (
+            <div 
+              key={step}
+              className={`${styles.progressStep} ${currentStep >= step ? styles.active : ''} ${currentStep === step ? styles.current : ''}`}
+            >
+              <div className={styles.stepDot}>{step}</div>
+              <span className={styles.stepLabel}>{step === 1 ? 'Game' : step === 2 ? 'Hardware' : step === 3 ? 'Style' : 'Result'}</span>
+            </div>
+          ))}
+          <div className={styles.progressTrack}>
+            <div 
+              className={styles.progressFill}
+              style={{ width: ((currentStep - 1) / 3 * 100) + '%' }}
+            />
           </div>
-        ))}
-        <div className={styles.progressTrack}>
-          <div 
-            className={styles.progressFill}
-            style={{ width: ((currentStep - 1) / 3 * 100) + '%' }}
-          />
         </div>
-      </div>
+      )}
 
       <div className={styles.content}>
-        {currentStep === 1 && (
+        {currentStep === 0 && (
           <div className={`${styles.stepContent} ${styles.fadeIn}`}>
             <h1 className={styles.stepTitle}>Welcome to TrueSens</h1>
             <p className={styles.stepSubtitle}>AI-Powered Sensitivity Calibration</p>
+            <p className={styles.stepDesc}>Optimize your aim with personalized sensitivity recommendations powered by AI. Enter your setup, and we'll calculate your perfect sensitivity settings.</p>
             
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Game</label>
-              <div className={styles.gameSelect}>
-                <button
-                  className={`${styles.gameBtn} ${data.game === 'valorant' ? styles.gameActive : ''}`}
-                  onClick={() => setData({ ...data, game: 'valorant' })}
-                >
-                  <span>Γùå</span> Valorant
-                </button>
-                <button
-                  className={`${styles.gameBtn} ${data.game === 'cs2' ? styles.gameActive : ''}`}
-                  onClick={() => setData({ ...data, game: 'cs2' })}
-                >
-                  <span>Γùç</span> CS2
-                </button>
-              </div>
-            </div>
-
             <button className={styles.nextBtn} onClick={handleNext}>
-              Get Started ΓåÆ
+              Get Started →
             </button>
           </div>
         )}
 
-        {currentStep === 2 && (
+        {currentStep === 1 && (
           <div className={`${styles.stepContent} ${styles.fadeIn}`}>
             <h2 className={styles.stepTitle}>Hardware Setup</h2>
             <p className={styles.stepSubtitle}>Tell us about your gear</p>
