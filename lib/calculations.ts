@@ -286,10 +286,6 @@ export function getOptimalCm360Range(game: Game): { min: number; max: number; id
   const ranges: Record<Game, { min: number; max: number; ideal: number }> = {
     valorant: { min: 20, max: 50, ideal: 30 },
     cs2: { min: 25, max: 60, ideal: 40 },
-    apex: { min: 30, max: 70, ideal: 45 },
-    overwatch2: { min: 25, max: 60, ideal: 38 },
-    cod: { min: 25, max: 55, ideal: 35 },
-    r6: { min: 20, max: 50, ideal: 30 },
   };
   return ranges[game] || ranges.valorant;
 }

@@ -17,10 +17,6 @@ export const TARGET_eDPI = 280;
 export const GAME_YAW_VALUES: Record<Game, number> = {
   valorant: 1,
   cs2: 3.18,
-  apex: 1,
-  overwatch2: 1,
-  cod: 1,
-  r6: 1,
 };
 
 export const SENSITIVITY_LIMITS = {
@@ -33,10 +29,6 @@ export const SENSITIVITY_LIMITS = {
 export const PRO_eDPI_RANGES = {
   valorant: { min: 141, max: 450, avg: 280 },
   cs2: { min: 380, max: 1400, avg: 800 },
-  apex: { min: 200, max: 800, avg: 400 },
-  overwatch2: { min: 300, max: 1200, avg: 600 },
-  cod: { min: 200, max: 800, avg: 400 },
-  r6: { min: 400, max: 1600, avg: 800 },
 };
 
 export const PRO_PRESETS: ProPreset[] = [
@@ -120,7 +112,7 @@ export const PRO_PRESETS: ProPreset[] = [
     dpi: 1600,
     sensitivity: 0.5,
     playstyle: 'tracking',
-    games: ['apex', 'overwatch2'],
+    games: ['valorant'],
     icon: '🎯',
     color: '#f59e0b',
   },
@@ -132,7 +124,7 @@ export const PRO_PRESETS: ProPreset[] = [
     dpi: 800,
     sensitivity: 0.35,
     playstyle: 'balanced',
-    games: ['valorant', 'cs2', 'r6'],
+    games: ['valorant', 'cs2'],
     icon: '⚖️',
     color: '#06b6d4',
   },

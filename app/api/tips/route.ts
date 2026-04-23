@@ -14,166 +14,138 @@ interface TipContext {
   mouseGrip: string;
 }
 
-const GAME_TIPS: Record<string, string[]> = {
-  valorant: [
-    'Work on jiggle peeking - essential for Valorant',
-    'Practice counter-strafing until it\'s muscle memory',
-    'Micro-adjustments are key - your crosshair placement matters more than flicks',
-    'Learn anchor points on each site',
-    'Practice spray control on the vandal - it\'s different from CS2',
-  ],
-  cs2: [
-    'Master spray patterns - they\'re essential in CS2',
-    'Practice peeking wide to deny enemy crosshair placement',
-    'Work on counter-strafing for instant stops',
-    'Learn common smoke lineups for each map',
-    'Prefiring common angles will win you duels',
-  ],
-  apex: [
-    'Tracking is everything in Apex - practice sustained aim',
-    'Learn to lead your shots with projectile weapons',
-    'Movement + aim = success - practice mobility drills',
-    'Hip-fire accuracy matters close range',
-    'Work on tracking while strafing',
-  ],
-  overwatch2: [
-    'Heroes have different aim requirements - practice accordingly',
-    'Tracking heroes need smooth, continuous movement',
-    'Hitscan vs projectile - know which heroes you\'re best at',
-    'Headshots matter more than bodyshots',
-    'Practice in deathmatch to warm up',
-  ],
-  cod: [
-    'SMG players need fast tracking - practice close range',
-    'AR players should focus on burst fire accuracy',
-    'Aim assist is real - use it to your advantage',
-    'Slide-cancel movement adds to your lethality',
-    'Quick scoping is essential for snipers',
-  ],
-  r6: [
-    'Lean mechanics are essential - practice quick peeks',
-    'Headshots are 1-shot most operators',
-    'Pre-aiming common spots will win you engagements',
-    'Vertical play - practice spawn peeking',
-    'Drone before pushing - information wins rounds',
-  ],
+const GAME_NAMES: Record<string, string> = {
+  valorant: 'Valorant',
+  cs2: 'Counter-Strike 2',
 };
 
-const LABEL_TIPS: Record<string, string[]> = {
-  control: [
-    'Your lower sensitivity is great for precision - use it to hit headshots',
-    'Arm aiming takes time to master - keep practicing smooth movements',
-    'Pre-aim corners with your control sens - it\'s your strength',
-    'Don\'t rush flicks - let enemies come to your crosshair',
-  ],
-  balanced: [
-    'You have versatility - adapt your playstyle to the situation',
-    'Practice both flicking and tracking to maintain your balance',
-    'Quick peeks work well with your sensitivity',
-    'You can play any role - find what feels natural',
-  ],
-  speed: [
-    'Your fast sensitivity is great for aggressive plays',
-    'Focus on quick reactions and fast tracking',
-    'Close-quarter fights are your best friend',
-    'Use movement to compensate for lower precision',
-  ],
+const SENSITIVITY_LABELS: Record<string, string> = {
+  control: 'Control (Low Sensitivity)',
+  balanced: 'Balanced',
+  speed: 'Speed (High Sensitivity)',
 };
 
-const BENCHMARK_TIPS = {
-  low: {
-    tracking: 'Focus on smooth tracking in Aim Lab - try Strafe Track',
-    flicking: 'Practice flicks in Microshot - start slow, build speed',
-    switching: 'Gridshot is your friend - rapid target switching',
-  },
-  medium: {
-    tracking: 'Good tracking! Push for smoother movements in tracking scenarios',
-    flicking: 'Nice flicks! Work on consistency under pressure',
-    switching: 'Solid switching! Keep grinding Gridshot for faster transitions',
-  },
-  high: {
-    tracking: 'Excellent tracking - you\'re ready for any tracking-heavy hero',
-    flicking: 'Deadly flicks! Focus on precision over speed now',
-    switching: 'Elite target switching! Maintain this in real matches',
-  },
-};
+async function generateAITips(body: TipContext): Promise<string[]> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('No OpenAI API key');
+  }
 
-const PERSONALITY_TIPS = [
-  'Remember: aim is a skill that takes time to develop',
-  'Bad days happen - don\'t tilt and switch settings',
-  'Warm up for 15 min before competitive play',
-  'Focus on one improvement per gaming session',
-  'Film your gameplay to analyze mistakes objectively',
-  'Crosshair placement > aim - always be ready to shoot',
-  'Game sense and positioning matter as much as raw aim',
-  'Take breaks to avoid fatigue - tired aim = bad aim',
-  'Trust your settings once you\'ve found what works',
-  'The best players make it look easy - they just practiced more',
-];
+  const { game, edpi, cm360, label, tracking, flicking, switching, aimStyle, mouseGrip } = body;
+  const gameName = GAME_NAMES[game] || 'FPS';
+  const sensitivityLabel = SENSITIVITY_LABELS[label] || 'Balanced';
+  const weakest = tracking <= flicking && tracking <= switching ? 'tracking' : flicking <= switching ? 'flicking' : 'target switching';
+  const strongest = tracking >= flicking && tracking >= switching ? 'tracking' : flicking >= switching ? 'flicking' : 'target switching';
+  
+  const prompt = `You are an elite FPS Sensitivity Analyst and Aim Coach. Analyze this player and give exactly 4 personalized coaching tips.
+
+PLAYER DATA:
+- Game: ${gameName}
+- eDPI: ${edpi}, cm/360: ${cm360.toFixed(2)}
+- Sensitivity Type: ${sensitivityLabel} 
+- Mouse Grip: ${mouseGrip}
+- Aim Style: ${aimStyle}
+- Performance: Tracking ${tracking}/100, Flicking ${flicking}/100, Switching ${switching}/100
+- Strongest: ${strongest}, Weakest: ${weakest}
+
+RESPONSE FORMAT (STRICT):
+Each tip on a new line. No labels. No bullets. Just direct advice.
+Make it feel personalized and intelligent. Sound like a real coach.
+Keep each tip under 15 words.
+Do NOT use GOOD/WATCH/ADVICE labels.`;
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are TrueSens, an elite FPS Sensitivity Analyst and Aim Coach. You help players find their optimal sensitivity and improve their aim. Be direct, smart, and personalized. Never generic.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 400,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('OpenAI API failed');
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content || '';
+  
+  const tips = content
+    .split('\n')
+    .map((line: string) => line.replace(/^[\d\.\)\-\s•]+/, '').trim())
+    .filter((line: string) => line.length > 5 && line.length < 150)
+    .slice(0, 4);
+
+  return tips;
+}
+
+async function generatePracticeTip(body: TipContext): Promise<string> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('No OpenAI API key');
+  }
+
+  const { game, edpi, cm360, label, tracking, flicking, switching, aimStyle } = body;
+  const gameName = GAME_NAMES[game] || 'FPS';
+  const sensitivityLabel = SENSITIVITY_LABELS[label] || 'Balanced';
+  const weakest = tracking <= flicking && tracking <= switching ? 'tracking' : flicking <= switching ? 'flicking' : 'target switching';
+  
+  const prompt = `You are an elite FPS Aim Coach. Give ONE specific practice recommendation.
+
+Player: ${gameName}, ${sensitivityLabel}, weakest skill: ${weakest}, eDPI: ${edpi}
+
+Format: Start with a verb. Under 12 words. Be specific.`;
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are TrueSens, an elite FPS Aim Coach. Short, actionable practice tips only.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 100,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('OpenAI API failed');
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content?.trim() || 'Practice daily to improve consistency.';
+}
 
 export async function POST(request: Request) {
   try {
     const body: TipContext = await request.json();
-    const { game, edpi, cm360, label, tracking, flicking, switching, aimStyle, mouseGrip } = body;
-
-    const tips: string[] = [];
-
-    // Game-specific tips (add 1-2)
-    const gameSpecific = GAME_TIPS[game] || GAME_TIPS.valorant;
-    tips.push(gameSpecific[Math.floor(Math.random() * gameSpecific.length)]);
-
-    // Sensitivity type tips (add 1)
-    const labelSpecific = LABEL_TIPS[label] || LABEL_TIPS.balanced;
-    tips.push(labelSpecific[Math.floor(Math.random() * labelSpecific.length)]);
-
-    // Benchmark-based tips (add 1-2 based on lowest scores)
-    const scores = [
-      { name: 'tracking', value: tracking },
-      { name: 'flicking', value: flicking },
-      { name: 'switching', value: switching },
-    ].sort((a, b) => a.value - b.value);
-
-    const lowestCategory = scores[0].name as 'tracking' | 'flicking' | 'switching';
-    const lowestScore = scores[0].value;
     
-    if (lowestScore < 40) {
-      tips.push(BENCHMARK_TIPS.low[lowestCategory]);
-    } else if (lowestScore < 60) {
-      tips.push(BENCHMARK_TIPS.medium[lowestCategory]);
-    } else {
-      tips.push(BENCHMARK_TIPS.high[lowestCategory]);
-    }
+    const [tips, practiceTip] = await Promise.all([
+      generateAITips(body).catch(() => []),
+      generatePracticeTip(body).catch(() => 'Practice daily to improve consistency.')
+    ]);
 
-    // Add general personality tip
-    tips.push(PERSONALITY_TIPS[Math.floor(Math.random() * PERSONALITY_TIPS.length)]);
-
-    // Add grip-specific tip
-    if (mouseGrip === 'claw') {
-      tips.push('Claw grip gives quick movements - perfect for aggressive plays');
-    } else if (mouseGrip === 'palm') {
-      tips.push('Palm grip offers stability - great for controlled aim');
-    } else if (mouseGrip === 'fingertip') {
-      tips.push('Fingertip grip allows precise micro-adjustments - capitalize on it');
-    }
-
-    // Add aim style specific advice
-    if (aimStyle === 'flick') {
-      tips.push('Flick shooters: clean your mousepad and desk for fast movements');
-    } else if (aimStyle === 'tracking') {
-      tips.push('Trackers: smooth is key - avoid jerky movements');
-    } else {
-      tips.push('Balanced players: you can adapt - pick your battles wisely');
-    }
-
-    return NextResponse.json({ tips });
-  } catch {
-    return NextResponse.json({ tips: PERSONALITY_TIPS.slice(0, 3) }, { status: 400 });
+    return NextResponse.json({ tips, practiceTip });
+  } catch (error) {
+    console.error('Tips API error:', error);
+    return NextResponse.json(
+      { tips: ['Focus on consistency over raw skill.', 'Warm up before ranked matches.', 'Film your gameplay to analyze mistakes.', 'Train your weakest skill daily.'], practiceTip: 'Practice daily to improve consistency.' },
+      { status: 200 }
+    );
   }
-}
-
-export async function GET() {
-  return NextResponse.json({ 
-    tips: PERSONALITY_TIPS.slice(0, 3),
-    message: 'POST to /api/tips with your data for personalized tips'
-  });
 }

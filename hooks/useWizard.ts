@@ -21,26 +21,38 @@ export function useWizard() {
   const [state, setState] = useState<WizardState>(initialState);
   const [isHydrated, setIsHydrated] = useState(false);
 
+  console.log('[useWizard] Initializing, state:', initialState);
+
   useEffect(() => {
-    const saved = loadWizardState();
-    if (saved) {
-      setState(saved);
+    console.log('[useWizard] Mounted, loading state...');
+    try {
+      const saved = loadWizardState();
+      // Reset if: step > 6 (invalid), or step 5+ without valid setup data
+      const needsReset = !saved || 
+        saved.currentStep > 6 || 
+        (saved.currentStep >= 5 && (!saved.setup || saved.setup.dpi <= 0 || saved.setup.sensitivity <= 0));
+      
+      if (needsReset) {
+        console.log('[useWizard] Invalid saved state, resetting to step 0', { saved });
+        setState(initialState);
+      } else {
+        console.log('[useWizard] Loaded saved state:', saved);
+        setState(saved);
+      }
+    } catch (e) {
+      console.error('[useWizard] Load error:', e);
     }
     setIsHydrated(true);
   }, []);
 
-  useEffect(() => {
-    if (isHydrated) {
-      saveWizardState(state);
-    }
-  }, [state, isHydrated]);
+  console.log('[useWizard] Render, isHydrated:', isHydrated, 'currentStep:', state.currentStep);
 
   const setStep = useCallback((step: number) => {
     setState(prev => ({ ...prev, currentStep: step }));
   }, []);
 
   const nextStep = useCallback(() => {
-    setState(prev => ({ ...prev, currentStep: Math.min(prev.currentStep + 1, 6) }));
+    setState(prev => ({ ...prev, currentStep: Math.min(prev.currentStep + 1, 7) }));
   }, []);
 
   const prevStep = useCallback(() => {

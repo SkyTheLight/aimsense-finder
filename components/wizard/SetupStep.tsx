@@ -1,15 +1,12 @@
 'use client';
 
+import { useMemo, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { SelectionGrid } from '@/components/ui/SelectionGrid';
-import { UserSetup, Game, MOUSE_GRIPS, AIMING_MECHANICS, GAME_ICONS } from '@/types';
+import { UserSetup, Game, MOUSE_GRIPS, AIMING_MECHANICS } from '@/types';
 import { calculateEDPI, calculateCm360, getGameConfig, getCm360Feedback, getProComparison } from '@/lib/calculations';
 import { SENSITIVITY_LIMITS } from '@/lib/constants';
-import { Mouse, Crosshair, Activity, Hand, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Mouse, Crosshair, Activity, Hand, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft } from 'lucide-react';
+import { AdaptivePanel } from './AdaptivePanel';
 
 interface SetupStepProps {
   setup: UserSetup | null;
@@ -17,6 +14,19 @@ interface SetupStepProps {
   onNext: () => void;
   onBack: () => void;
 }
+
+const games: { value: Game; label: string; color: string }[] = [
+  { 
+    value: 'valorant', 
+    label: 'VALORANT', 
+    color: '#FF4655',
+  },
+  { 
+    value: 'cs2', 
+    label: 'CS2', 
+    color: '#DE9B35',
+  },
+];
 
 export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepProps) {
   const dpi = setup?.dpi || 0;
@@ -26,37 +36,97 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
   const aimingMechanic = setup?.aimingMechanic || null;
 
   const gameConfig = useMemo(() => getGameConfig(game), [game]);
-
+  // AI-generated UI copy and AI-sense hints
+  const [aiCopy, setAiCopy] = useState<{ title: string; subtitle: string; cta?: string; helperText?: string } | null>(null);
+  const [aiSense, setAiSense] = useState<{ 
+    optimalSensitivity: number; 
+    edpi?: number; 
+    cm360?: number;
+    rationale?: string[]; 
+    confidence?: number;
+    notes?: string;
+    alternativeRange?: { min: number; max: number };
+    recommendations?: {
+      warmup: string;
+      dailyDrill: string;
+      weeklyFocus: string;
+    };
+  } | null>(null);
   const edpi = useMemo(() => dpi > 0 && sensitivity > 0 ? calculateEDPI(dpi, sensitivity) : 0, [dpi, sensitivity]);
-  const cm360 = useMemo(
-    () => dpi > 0 && sensitivity > 0 ? calculateCm360(dpi, sensitivity, game) : 0,
-    [dpi, sensitivity, game]
-  );
+  const cm360 = useMemo(() => dpi > 0 && sensitivity > 0 ? calculateCm360(dpi, sensitivity, game) : 0, [dpi, sensitivity, game]);
   const cm360Feedback = useMemo(() => cm360 > 0 ? getCm360Feedback(cm360, game) : { status: '', message: 'Enter values above' }, [cm360, game]);
   const proComparison = useMemo(() => edpi > 0 ? getProComparison(edpi, game) : { percentile: 50, range: 'Average', recommendation: '' }, [edpi, game]);
 
-  const getGameLabel = (g: Game) => {
-    const labels: Record<Game, string> = {
-      valorant: 'Valorant', cs2: 'CS2', apex: 'Apex Legends',
-      overwatch2: 'Overwatch 2', cod: 'Call of Duty', r6: 'Rainbow Six'
+  // AI-driven UI copy and AI-sense best estimate
+  useEffect(() => {
+    let mounted = true;
+    const fetchCopy = async () => {
+      try {
+        const res = await fetch('/api/ui-copy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            game, 
+            section: 'setup',
+            step: 2,
+            hasData: dpi > 0 && sensitivity > 0,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted) {
+            setAiCopy({ 
+              title: data.title || 'Setup Your Gear', 
+              subtitle: data.subtitle || 'Tell us about your mouse and game',
+              cta: data.cta,
+              helperText: data.helperText
+            });
+          }
+        }
+      } catch {
+        // ignore, fallback to default text
+      }
     };
-    return labels[g];
-  };
-  const getGameColor = (g: Game) => {
-    const colors: Record<Game, string> = {
-      valorant: '#FF4655', cs2: '#DE9B35', apex: '#DA292A',
-      overwatch2: '#FABD19', cod: '#222222', r6: '#FABD19'
+    fetchCopy();
+    return () => { mounted = false; };
+  }, [game, dpi, sensitivity]);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchSense = async () => {
+      if (dpi > 0 && sensitivity > 0) {
+        try {
+          const res = await fetch('/api/ai-sense', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              dpi, 
+              inGameSens: sensitivity, 
+              grip: mouseGrip || 'palm', 
+              mousePad: 'cloth',
+              mouseWeight: 'medium',
+              monitorSize: '24"',
+              playstyle: aimingMechanic || 'hybrid',
+              role: 'flex',
+              targetPreference: 'mixed',
+              reactionStyle: 'average',
+              game 
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (mounted) setAiSense(data as any);
+          }
+        } catch {
+          // ignore
+        }
+      }
     };
-    return colors[g];
-  };
-  const games: { value: Game; label: string; icon: string; iconColor: string; fallback: string }[] = [
-    { value: 'valorant', label: getGameLabel('valorant'), icon: GAME_ICONS.valorant, iconColor: getGameColor('valorant'), fallback: '🎯' },
-    { value: 'cs2', label: getGameLabel('cs2'), icon: GAME_ICONS.cs2, iconColor: getGameColor('cs2'), fallback: '🔫' },
-    { value: 'apex', label: 'Apex Legends', icon: GAME_ICONS.apex, iconColor: getGameColor('apex'), fallback: '⚡' },
-    { value: 'overwatch2', label: 'Overwatch 2', icon: GAME_ICONS.overwatch2, iconColor: getGameColor('overwatch2'), fallback: '🛡️' },
-    { value: 'cod', label: 'Call of Duty', icon: GAME_ICONS.cod, iconColor: getGameColor('cod'), fallback: '🎮' },
-    { value: 'r6', label: 'Rainbow Six', icon: GAME_ICONS.r6, iconColor: getGameColor('r6'), fallback: '🔰' },
-  ];
+    fetchSense();
+    return () => { mounted = false; };
+  }, [dpi, sensitivity, mouseGrip, aimingMechanic, game]);
+
+  const shouldInjectModules = (mouseGrip === 'claw') || (aiSense?.optimalSensitivity != null && aiSense.optimalSensitivity > 1.2);
 
   const handleDpiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -85,177 +155,268 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
   const isValid = dpi >= SENSITIVITY_LIMITS.minDPI && sensitivity > 0;
 
   const getTrendIcon = () => {
-    if (proComparison.percentile < 35) return <TrendingDown className="w-4 h-4 text-[#ff3366]" />;
-    if (proComparison.percentile > 65) return <TrendingUp className="w-4 h-4 text-[#6366f1]" />;
-    return <Minus className="w-4 h-4 text-[#00ff88]" />;
+    if (proComparison.percentile < 35) return <TrendingDown className="w-4 h-4 text-red-400" />;
+    if (proComparison.percentile > 65) return <TrendingUp className="w-4 h-4 text-purple-400" />;
+    return <Minus className="w-4 h-4 text-green-400" />;
   };
 
   const getCm360Color = () => {
-    if (cm360Feedback.status === 'fast') return 'text-[#6366f1]';
-    if (cm360Feedback.status === 'slow') return 'text-[#f59e0b]';
-    if (cm360Feedback.status === 'ideal') return 'text-[#00ff88]';
-    return cm360 > 0 ? 'text-white' : 'text-[#64748b]';
+    if (cm360Feedback.status === 'fast') return 'text-purple-400';
+    if (cm360Feedback.status === 'slow') return 'text-amber-400';
+    if (cm360Feedback.status === 'ideal') return 'text-green-400';
+    return cm360 > 0 ? 'text-white' : 'text-[#525a6b]';
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl mx-auto">
+      {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-2">Setup Your Gear</h2>
-        <p className="text-[#94a3b8]">Tell us about your setup</p>
+        <h2 className="text-2xl font-bold text-white mb-2">{aiCopy?.title || 'Setup Your Gear'}</h2>
+        <p className="text-[#b8c0cd]">{aiCopy?.subtitle || 'Tell us about your mouse and game'}</p>
+        {aiSense && (
+          <div className="mt-2 bg-[rgba(0,0,0,0.25)] p-2 rounded text-xs text-[#d1d5db] inline-flex items-center justify-center gap-2" style={{ display: 'inline-flex' }}>
+            <span>AI Suggestion:</span>
+            <span className="text-white font-semibold">{aiSense.optimalSensitivity?.toFixed ? aiSense.optimalSensitivity.toFixed(2) : aiSense.optimalSensitivity}</span>
+          </div>
+        )}
       </motion.div>
 
+      {/* DPI & Sens - Premium Input Cards */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="grid grid-cols-2 gap-4"
       >
-        <Card variant="bordered">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-[#00ff88]/10 flex items-center justify-center">
-              <Mouse className="w-5 h-5 text-[#00ff88]" />
+        {/* DPI Card */}
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity" />
+          <div className="bg-[rgba(13,15,20,0.8)] border border-[rgba(255,255,255,0.08)] hover:border-cyan-500/30 rounded-xl p-5 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 flex items-center justify-center">
+                  <Mouse className="w-5 h-5 text-cyan-400" />
+                </div>
+                <p className="text-sm font-medium text-[#b8c0cd]">Mouse DPI</p>
+              </div>
+              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
             </div>
-            <div>
-              <p className="text-sm text-[#94a3b8]">Mouse DPI</p>
-              <Input
+            <div className="relative">
+              <input
                 type="number"
-                placeholder="e.g. 400, 800, 1600"
+                placeholder="800"
                 value={dpi || ''}
                 onChange={handleDpiChange}
                 min={0}
                 max={SENSITIVITY_LIMITS.maxDPI}
-                className="font-mono text-lg h-10"
+                className="w-full bg-transparent text-3xl font-mono font-bold text-white placeholder-[#363b47] text-center py-2 outline-none"
               />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-20 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50" />
             </div>
+            <p className="text-center text-xs text-[#525a6b] mt-3">Common: 400 • 800 • 1600 • 3200</p>
           </div>
-        </Card>
+        </div>
 
-        <Card variant="bordered">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-[#00ff88]/10 flex items-center justify-center">
-              <Crosshair className="w-5 h-5 text-[#00ff88]" />
+        {/* Sensitivity Card */}
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity" />
+          <div className="bg-[rgba(13,15,20,0.8)] border border-[rgba(255,255,255,0.08)] hover:border-purple-500/30 rounded-xl p-5 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center">
+                  <Crosshair className="w-5 h-5 text-purple-400" />
+                </div>
+                <p className="text-sm font-medium text-[#b8c0cd]">In-Game Sens</p>
+              </div>
+              <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
             </div>
-            <div>
-              <p className="text-sm text-[#94a3b8]">In-Game Sens</p>
-              <Input
+            <div className="relative">
+              <input
                 type="number"
                 step="0.01"
-                placeholder="e.g. 0.5, 1.0, 2.0"
+                placeholder="0.79"
                 value={sensitivity || ''}
                 onChange={handleSensChange}
                 min={0}
                 max={SENSITIVITY_LIMITS.max}
-                className="font-mono text-lg h-10"
+                className="w-full bg-transparent text-3xl font-mono font-bold text-white placeholder-[#363b47] text-center py-2 outline-none"
               />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-20 h-0.5 bg-gradient-to-r from-transparent via-purple-400 to-transparent opacity-50" />
             </div>
+            <p className="text-center text-xs text-[#525a6b] mt-3">Valorant: 0.5 • CS2: 0.8 • Apex: 1.0</p>
           </div>
-        </Card>
+        </div>
       </motion.div>
 
+      {/* Game Selection - with icons */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
       >
-        <Card variant="bordered">
-          <div className="flex items-center gap-3 mb-4">
-            <Activity className="w-5 h-5 text-[#00ff88]" />
-            <span className="text-sm text-[#94a3b8]">Game</span>
-          </div>
-          <SelectionGrid
-            options={games}
-            value={game}
-            onChange={handleGameChange}
-            columns={3}
-          />
-        </Card>
+        <div className="flex items-center gap-3 mb-4">
+          <Activity className="w-5 h-5 text-cyan-400" />
+          <span className="text-sm font-medium text-white">Select Your Game</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {games.map((g) => (
+            <motion.button
+              key={g.value}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleGameChange(g.value)}
+              className={`relative py-4 px-4 rounded-xl font-bold text-base transition-all flex items-center justify-center gap-3 ${
+                game === g.value
+                  ? `border-2 text-white shadow-[0_0_20px_rgba(${g.color === '#FF4655' ? '255,70,85' : '222,155,53'},0.4)]`
+                  : 'bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-[#b8c0cd] hover:bg-[rgba(255,255,255,0.08)]'
+              }`}
+              style={{
+                background: game === g.value ? `${g.color}15` : undefined,
+                borderColor: game === g.value ? g.color : undefined,
+              }}
+            >
+              {g.value === 'valorant' ? (
+                <img src="/valorant.png" alt="Valorant" className="w-8 h-8 object-contain" />
+              ) : (
+                <img src="/cs2-logo.svg" alt="CS2" className="w-8 h-8" />
+              )}
+              {g.label}
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
 
+      {/* Mouse Grip */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <Card variant="bordered">
-          <div className="flex items-center gap-3 mb-4">
-            <Hand className="w-5 h-5 text-[#00ff88]" />
-            <span className="text-sm text-[#94a3b8]">Mouse Grip</span>
-          </div>
-          <SelectionGrid
-            options={MOUSE_GRIPS.map(g => ({ value: g.id, label: g.name, icon: g.icon, description: g.description }))}
-            value={mouseGrip}
-            onChange={handleGripChange}
-            columns={3}
-          />
-        </Card>
+        <div className="flex items-center gap-3 mb-4">
+          <Hand className="w-5 h-5 text-cyan-400" />
+          <span className="text-sm font-medium text-white">Mouse Grip</span>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {MOUSE_GRIPS.map((g) => (
+            <motion.button
+              key={g.id}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleGripChange(g.id)}
+              className={`py-3 px-3 rounded-lg text-sm transition-all ${
+                mouseGrip === g.id
+                  ? 'bg-[rgba(6,182,217,0.15)] border-2 border-cyan-400 text-cyan-400'
+                  : 'bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-[#b8c0cd] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.12)]'
+              }`}
+            >
+              {g.name}
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
 
+      {/* Adaptive Modules (injected based on AI) */}
+      {shouldInjectModules && <AdaptivePanel />}
+
+      {/* Aiming Style */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
       >
-        <Card variant="bordered">
-          <div className="flex items-center gap-3 mb-4">
-            <Hand className="w-5 h-5 text-[#00ff88]" />
-            <span className="text-sm text-[#94a3b8]">Aiming Style</span>
-          </div>
-          <SelectionGrid
-            options={AIMING_MECHANICS.map(m => ({ value: m.id, label: m.name, description: m.description }))}
-            value={aimingMechanic}
-            onChange={handleMechanicChange}
-            columns={3}
-          />
-        </Card>
+        <div className="flex items-center gap-3 mb-4">
+          <Crosshair className="w-5 h-5 text-cyan-400" />
+          <span className="text-sm font-medium text-white">Aiming Style</span>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {AIMING_MECHANICS.map((m) => (
+            <motion.button
+              key={m.id}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleMechanicChange(m.id)}
+              className={`py-3 px-3 rounded-lg text-sm transition-all ${
+                aimingMechanic === m.id
+                  ? 'bg-[rgba(6,182,217,0.15)] border-2 border-cyan-400 text-cyan-400'
+                  : 'bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-[#b8c0cd] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.12)]'
+              }`}
+            >
+              {m.name}
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
 
+      {/* Results Preview */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
+        className="bg-gradient-to-br from-[rgba(6,182,217,0.1)] to-[rgba(168,85,247,0.1)] border border-[rgba(6,182,217,0.2)] rounded-xl p-5 text-center"
       >
-        <Card variant="glow" className="text-center">
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <p className="text-xs text-[#64748b] mb-1">eDPI</p>
-              <p className="text-2xl font-mono font-bold text-[#00ff88]">{edpi || '—'}</p>
-            </div>
-            <div>
-              <p className="text-xs text-[#64748b] mb-1">cm/360</p>
-              <p className={`text-2xl font-mono font-bold ${getCm360Color()}`}>{cm360 || '—'}</p>
-            </div>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <p className="text-xs text-[#525a6b] mb-1">eDPI</p>
+            <p className="text-3xl font-mono font-bold text-gradient">{edpi || '—'}</p>
           </div>
-          {edpi > 0 && (
-            <div className="pt-3 border-t border-[#2a2a3a]">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                {getTrendIcon()}
-                <span className="text-sm text-[#94a3b8]">
-                  {proComparison.range} compared to {gameConfig.name} pros
-                </span>
-              </div>
-              <p className="text-xs text-[#64748b]">{cm360Feedback.message}</p>
+          <div>
+            <p className="text-xs text-[#525a6b] mb-1">cm/360</p>
+            <p className={`text-3xl font-mono font-bold ${getCm360Color()}`}>{cm360 || '—'}</p>
+          </div>
+        </div>
+        {edpi > 0 && (
+          <div className="pt-4 border-t border-[rgba(255,255,255,0.08)]">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              {getTrendIcon()}
+              <span className="text-sm text-[#b8c0cd]">
+                {proComparison.range} vs {gameConfig.name} pros
+              </span>
             </div>
-          )}
-        </Card>
+            <p className="text-xs text-[#525a6b]">{cm360Feedback.message}</p>
+          </div>
+        )}
       </motion.div>
 
+      {/* Navigation */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.35 }}
         className="flex gap-3"
       >
-        <Button variant="secondary" onClick={onBack}>
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[rgba(255,255,255,0.06)] text-white font-medium hover:bg-[rgba(255,255,255,0.1)] transition-all"
+        >
+          <ChevronLeft className="w-5 h-5" />
           Back
-        </Button>
-        <Button onClick={onNext} disabled={!isValid} className="flex-1">
+        </button>
+        <button
+          onClick={onNext}
+          disabled={!isValid}
+          className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-medium shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           Continue
-        </Button>
+          <ChevronRight className="w-5 h-5" />
+        </button>
       </motion.div>
+
+      {/* Skip Button */}
+      {!isValid && (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          onClick={onNext}
+          className="w-full text-center text-sm text-[#525a6b] hover:text-[#8892a2] transition-colors py-2"
+        >
+          Skip this step →
+        </motion.button>
+      )}
     </div>
   );
 }

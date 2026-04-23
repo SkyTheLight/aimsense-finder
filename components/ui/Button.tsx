@@ -10,6 +10,7 @@ interface ButtonProps {
   onClick?: MouseEventHandler<HTMLButtonElement>;
   type?: 'button' | 'submit' | 'reset';
   className?: string;
+  icon?: ReactNode;
 }
 
 export function Button({
@@ -20,28 +21,30 @@ export function Button({
   disabled,
   onClick,
   type = 'button',
+  icon,
 }: ButtonProps) {
-  const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#00ff88]/50';
+  const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00d4ff] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c14] disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variants = {
-    primary: 'bg-[#00ff88] text-[#0a0a0f] hover:bg-[#00dd77] hover:shadow-lg hover:shadow-[#00ff88]/20 active:scale-[0.98]',
-    secondary: 'bg-transparent border border-[#2a2a3a] text-white hover:border-[#00ff88]/50 hover:text-[#00ff88] hover:bg-[#00ff88]/5',
+    primary: 'bg-gradient-to-r from-[#00d4ff] to-[#7b5cff] text-[#050508] hover:shadow-[0_0_30px_rgba(0,212,255,0.4)] hover:scale-[1.02] active:scale-[0.98]',
+    secondary: 'bg-[#161a27] border border-[rgba(255,255,255,0.1)] text-white hover:border-[#00d4ff] hover:text-[#00d4ff] hover:bg-[rgba(0,212,255,0.05)]',
     ghost: 'bg-transparent text-[#94a3b8] hover:text-white hover:bg-white/5',
   };
 
   const sizes = {
-    sm: 'h-9 px-3 text-sm gap-1.5',
-    md: 'h-11 px-5 text-base gap-2',
-    lg: 'h-14 px-8 text-lg gap-2',
+    sm: 'h-9 px-4 text-sm gap-1.5 rounded-lg',
+    md: 'h-12 px-6 text-base gap-2',
+    lg: 'h-14 px-8 text-lg gap-2.5',
   };
 
   return (
     <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-50' : ''} ${className}`}
       disabled={disabled}
       onClick={onClick}
       type={type}
     >
+      {icon && <span className="flex-shrink-0">{icon}</span>}
       {children}
     </button>
   );

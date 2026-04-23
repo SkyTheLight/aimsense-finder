@@ -1,4 +1,14 @@
-export type Game = 'valorant' | 'cs2' | 'apex' | 'overwatch2' | 'cod' | 'r6';
+import { DefaultSession } from "next-auth";
+
+declare module "next-auth" {
+  interface Session {
+    user?: {
+      id?: string;
+    } & DefaultSession["user"];
+  }
+}
+
+export type Game = 'valorant' | 'cs2';
 
 export interface GameConfig {
   id: Game;
@@ -119,43 +129,27 @@ export interface WizardState {
 export const GAME_ICONS: Record<string, string> = {
   valorant: 'simple-icons:valorant',
   cs2: 'simple-icons:counterstrike',
-  apex: 'arcticons:apex-legends',
-  overwatch2: 'arcticons:overwatch',
-  cod: 'arcticons:call-of-duty',
-  r6: 'arcticons:rainbow-six-mobile',
 };
 
 export const GAME_ICON_FALLBACKS: Record<string, string> = {
   valorant: '🎯',
   cs2: '🔫',
-  apex: '⚡',
-  overwatch2: '🛡️',
-  cod: '🎮',
-  r6: '🔰',
 };
 
 export const GAMES: GameConfig[] = [
   { id: 'valorant', name: 'Valorant', icon: 'valorant', multiplier: 0.07, color: '#FF4655' },
   { id: 'cs2', name: 'CS2', icon: 'cs2', multiplier: 0.022, color: '#DE9B35' },
-  { id: 'apex', name: 'Apex Legends', icon: 'apex', multiplier: 1, color: '#DA292A' },
-  { id: 'overwatch2', name: 'Overwatch 2', icon: 'overwatch2', multiplier: 3.3333, color: '#F99E1A' },
-  { id: 'cod', name: 'Call of Duty', icon: 'cod', multiplier: 1, color: '#222222' },
-  { id: 'r6', name: 'Rainbow Six', icon: 'r6', multiplier: 0.022, color: '#FABD19' },
 ];
 
 export const GAME_COLORS: Record<string, string> = {
   valorant: '#FF4655',
   cs2: '#DE9B35',
-  apex: '#DA292A',
-  overwatch2: '#F99E1A',
-  cod: '#FABD19',
-  r6: '#FABD19',
 };
 
 export const MOUSE_GRIPS = [
   { id: 'palm', name: 'Palm Grip', icon: '✋', description: 'Full hand contact, relaxed' },
   { id: 'claw', name: 'Claw Grip', icon: '🦞', description: 'Archved palm, quick movement' },
-  { id: 'fingertip', name: 'Fingertip', icon: '👆', description: 'Fingertips only, precision' },
+  { id: 'fingertip', name: 'Fingertip Grip', icon: '👆', description: 'Fingertips only, precision' },
 ];
 
 export const AIMING_MECHANICS = [
@@ -170,3 +164,13 @@ export const VOLTAIC_BENCHMARKS = {
   strafeTrack: { name: 'Strafe Track', category: 'tracking' as const },
   sphereTrack: { name: 'Sphere Track', category: 'tracking' as const },
 };
+
+export interface HistoryEntry {
+  id?: number;
+  game: string;
+  dpi: number;
+  sensitivity: number;
+  edpi: number;
+  cm360: number;
+  createdAt?: string;
+}

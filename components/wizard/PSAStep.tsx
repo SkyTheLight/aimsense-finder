@@ -107,7 +107,7 @@ export function PSAStep({
     );
   }
 
-  return (
+return (
     <div className="space-y-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -115,12 +115,12 @@ export function PSAStep({
         className="text-center"
       >
         <h2 className="text-2xl font-bold text-white mb-2">PSA Method</h2>
-<p className="text-[#94a3b8]">
+        <p className="text-[#94a3b8]">
               {initialChoice
                 ? isComplete
                   ? 'Calibration complete!'
                   : `Step ${Math.min(iterations.length, 7)} of 7`
-                : 'Choose your starting point'}
+                : 'Find your perfect sensitivity'}
             </p>
       </motion.div>
 
@@ -130,29 +130,66 @@ export function PSAStep({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card variant="bordered">
-            <p className="text-sm text-[#94a3b8] mb-4 text-center">
-              Choose which feels better for smooth tracking:
-            </p>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { key: 'half' as const, value: psaOptions.slower, label: 'Slower' },
-                { key: 'base' as const, value: psaOptions.current, label: 'Current' },
-                { key: 'double' as const, value: psaOptions.faster, label: 'Faster' },
-              ].map((option) => (
-                <button
-                  key={option.key}
-                  onClick={() => handleInitialChoice(option.key)}
-                  className="p-4 rounded-xl border-2 border-[#2a2a3a] bg-[#1a1a24] hover:border-[#00ff88] hover:bg-[#00ff88]/5 transition-all"
-                >
-                  <p className="text-xs text-[#64748b] mb-1">{option.label}</p>
-                  <p className="text-xl font-mono font-bold text-white">{option.value}</p>
-                </button>
-              ))}
+          <Card variant="bordered" className="bg-[#12121a]">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[#00ff88]/20 text-[#00ff88] flex items-center justify-center text-xs">?</span>
+                  What is the PSA Method?
+                </h3>
+                <p className="text-sm text-[#94a3b8]">
+                  The PSA (Professional Sensitivity Adjustment) Method is a binary search technique used by pro players to find your optimal mouse sensitivity. Instead of guessing, you compare two sensitivities and pick which feels better.
+                </p>
+              </div>
+
+              <div className="border-t border-[#2a2a3a] pt-4">
+                <h4 className="text-white font-medium text-sm mb-2">How it works:</h4>
+                <ol className="text-sm text-[#94a3b8] space-y-2">
+                  <li className="flex gap-2">
+                    <span className="text-[#00ff88] font-mono">1.</span>
+                    <span>You'll compare two sensitivities side by side</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-[#00ff88] font-mono">2.</span>
+                    <span>Pick the one that feels smoother when tracking objects</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-[#00ff88] font-mono">3.</span>
+                    <span>Repeat until you find your perfect sensitivity</span>
+                  </li>
+                </ol>
+              </div>
+
+              <div className="border-t border-[#2a2a3a] pt-4">
+                <h4 className="text-white font-medium text-sm mb-2">Example:</h4>
+                <p className="text-sm text-[#94a3b8]">
+                  If your current sens is <code className="text-cyan-400">0.5</code>, you'll compare <code className="text-cyan-400">0.25</code> vs <code className="text-cyan-400">1.0</code>. Pick the smoother one, then compare alternatives around that choice. After 7 steps, you'll narrow it down to your optimal sensitivity.
+                </p>
+              </div>
+
+              <p className="text-sm text-[#94a3b8] mb-4 text-center pt-2">
+                Which feels better for smooth tracking?
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { key: 'half' as const, value: psaOptions.slower, label: 'Slower' },
+                  { key: 'base' as const, value: psaOptions.current, label: 'Current' },
+                  { key: 'double' as const, value: psaOptions.faster, label: 'Faster' },
+                ].map((option) => (
+                  <button
+                    key={option.key}
+                    onClick={() => handleInitialChoice(option.key)}
+                    className="p-4 rounded-xl border-2 border-[#2a2a3a] bg-[#1a1a24] hover:border-[#00ff88] hover:bg-[#00ff88]/5 transition-all"
+                  >
+                    <p className="text-xs text-[#64748b] mb-1">{option.label}</p>
+                    <p className="text-xl font-mono font-bold text-white">{option.value}</p>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-[#64748b] text-center mt-4">
+                Your current sensitivity: {baseSens.toFixed(3)}
+              </p>
             </div>
-            <p className="text-xs text-[#64748b] text-center mt-4">
-              Your current sensitivity: {baseSens.toFixed(3)}
-            </p>
           </Card>
         </motion.div>
       )}

@@ -1,30 +1,33 @@
 'use client';
 
-import { motion, HTMLMotionProps } from 'framer-motion';
 import { ReactNode } from 'react';
+import { motion } from 'framer-motion';
 
-interface CardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
+interface CardProps {
   children: ReactNode;
-  variant?: 'default' | 'glow' | 'bordered';
+  className?: string;
+  variant?: 'default' | 'bordered' | 'glow';
+  onClick?: () => void;
 }
 
-export function Card({ children, className = '', variant = 'default', ...props }: CardProps) {
-  const baseStyles = 'bg-[#12121a] rounded-xl p-6';
-
+export function Card({ children, className = '', variant = 'default', onClick }: CardProps) {
+  const baseClasses = 'relative overflow-hidden';
+  
   const variants = {
-    default: '',
-    glow: 'hover:shadow-[0_4px_24px_rgba(0,255,136,0.08)] border border-transparent hover:border-[#2a2a3a]',
-    bordered: 'border border-[#2a2a3a]',
+    default: 'bg-[#161a27] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6',
+    bordered: 'bg-[#161a27] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 hover:border-[rgba(0,212,255,0.3)] transition-all',
+    glow: 'bg-gradient-to-b from-[#161a27] to-[#0a0c14] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6 shadow-[0_0_40px_rgba(0,212,255,0.08)]',
   };
 
   return (
     <motion.div
-      className={`${baseStyles} ${variants[variant]} ${className}`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      {...props}
+      whileHover={onClick ? { scale: 1.01 } : {}}
+      whileTap={onClick ? { scale: 0.99 } : {}}
+      className={`${baseClasses} ${variants[variant]} ${className}`}
+      onClick={onClick}
     >
+      {/* Top gradient line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00d4ff] to-transparent opacity-30" />
       {children}
     </motion.div>
   );

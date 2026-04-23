@@ -38,6 +38,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 
 interface ResultsStepProps {
   setup: UserSetup | null;
@@ -59,41 +60,62 @@ export function ResultsStep({
   onRestart,
 }: ResultsStepProps) {
   const resultsRef = useRef<HTMLDivElement>(null);
+  const { data: session, status: sessionStatus } = useSession();
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
   const [tipsLoading, setTipsLoading] = useState(true);
   const [personalizedTips, setPersonalizedTips] = useState<string[]>([]);
+  const [tipsError, setTipsError] = useState(false);
+
+  const isLoggedIn = sessionStatus === 'authenticated' && !!session?.user?.id;
+
+  // Guard: if no setup, render loading message
+  if (!setup || !setup.dpi || !setup.sensitivity || !setup.game) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="bg-[rgba(26,29,38,0.8)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] rounded-2xl p-8 text-center">
+          <p className="text-white text-lg">Loading results...</p>
+          <p className="text-[#525a6b] text-sm mt-2">Please complete the wizard first</p>
+          <button 
+            onClick={onRestart}
+            className="mt-4 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-400"
+          >
+            Start Over
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const fetchPersonalizedTips = useCallback(async () => {
-    if (!setup || !simplified || !aimStyle) {
+    // Skip if no valid setup
+    if (!setup || !simplified || !aimStyle || !setup.dpi || !setup.sensitivity) {
       setTipsLoading(false);
+      setTipsError(true);
       return;
     }
 
-    const game = setup.game;
     const tracking = simplified?.tracking || 5;
     const flicking = simplified?.flicking || 5;
     const switching = simplified?.switching || 5;
-
     const baseSens = psaValue || 0.4;
     const presetBias = calculatePresetBias(selectedPreset);
     const aimBias = calculateAimStyleBias(aimStyle?.mechanic ?? null, aimStyle?.playstyle ?? null);
     const voltaicMod = calculateVoltaicModifier(tracking, flicking, switching);
     const finalSens = calculateFinalSensitivity(baseSens, presetBias, aimBias, voltaicMod);
-    const edpi = calculateEDPI(setup.dpi, finalSens);
-    const cm360 = ((360 * 2.54) / (setup.dpi * finalSens * (game === 'valorant' ? 0.07 : game === 'cs2' ? 0.022 : 1)));
+    const edpi = Math.round(calculateEDPI(setup.dpi, finalSens));
+    const cm360Val = Number(((360 * 2.54) / (setup.dpi * finalSens * (setup.game === 'valorant' ? 0.07 : setup.game === 'cs2' ? 0.022 : 1))).toFixed(2));
     const labelWithBorderline = getSensitivityLabelWithBorderline(finalSens, baseSens);
-    const explanationLabel = labelWithBorderline === 'borderline' ? 'balanced' : labelWithBorderline;
 
     try {
       const response = await fetch('/api/tips', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          game,
+          game: setup.game,
           edpi,
-          cm360,
-          label: explanationLabel,
+          cm360: cm360Val,
+          label: labelWithBorderline === 'borderline' ? 'balanced' : labelWithBorderline,
           tracking,
           flicking,
           switching,
@@ -107,6 +129,7 @@ export function ResultsStep({
       }
     } catch (error) {
       console.error('Failed to fetch personalized tips:', error);
+      setTipsError(true);
     } finally {
       setTipsLoading(false);
     }
@@ -116,13 +139,21 @@ export function ResultsStep({
     fetchPersonalizedTips();
   }, [fetchPersonalizedTips]);
 
-  if (!setup) return null;
+  // Guard: render with safe defaults if no setup
+  if (!setup) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <Card variant="bordered" className="text-center p-8">
+          <p className="text-white">Loading results...</p>
+        </Card>
+      </div>
+    );
+  }
 
   const game = setup.game;
   const tracking = simplified?.tracking || 5;
   const flicking = simplified?.flicking || 5;
   const switching = simplified?.switching || 5;
-
   const baseSens = psaValue || 0.4;
   const presetBias = calculatePresetBias(selectedPreset);
   const aimBias = calculateAimStyleBias(aimStyle?.mechanic ?? null, aimStyle?.playstyle ?? null);
@@ -137,7 +168,6 @@ export function ResultsStep({
   const proRange = getProRange(game);
   const tips = labelWithBorderline === 'borderline' ? SENSITIVITY_TIPS.borderline : SENSITIVITY_TIPS[labelWithBorderline === 'balanced' ? 'balanced' : labelWithBorderline === 'control' ? 'control' : 'speed'];
   const practiceTip = PRACTICE_TIPS[Math.floor(Math.random() * PRACTICE_TIPS.length)];
-
   const explanationLabel = labelWithBorderline === 'borderline' ? 'balanced' : labelWithBorderline;
   const explanation = generateExplanation(
     explanationLabel,
@@ -316,22 +346,14 @@ ${proComparison.recommendation}`;
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="p-3 bg-[#00ff88]/5 rounded-lg border border-[#00ff88]/20">
-                    <p className="text-xs text-[#00ff88] font-semibold">✅ Good</p>
-                    <p className="text-sm text-[#94a3b8]">{tips.pros}</p>
+                  <div className="p-3 bg-[rgba(255,255,255,0.04)] rounded-lg border border-[rgba(255,255,255,0.08)]">
+                    <p className="text-sm text-[#b8c0cd]">{tips.pros} {tips.advice}</p>
                   </div>
-                  <div className="p-3 bg-[#ff3366]/5 rounded-lg border border-[#ff3366]/20">
-                    <p className="text-xs text-[#ff3366] font-semibold">⚠️ Watch Out</p>
-                    <p className="text-sm text-[#94a3b8]">{tips.cons}</p>
-                  </div>
-                  <div className="p-3 bg-[#f59e0b]/5 rounded-lg border border-[#f59e0b]/20">
-                    <p className="text-xs text-[#f59e0b] font-semibold">🎯 Struggles</p>
-                    <p className="text-sm text-[#94a3b8]">{tips.struggles}</p>
-                  </div>
-                  <div className="p-3 bg-[#6366f1]/5 rounded-lg border border-[#6366f1]/20">
-                    <p className="text-xs text-[#6366f1] font-semibold">💪 Advice</p>
-                    <p className="text-sm text-[#94a3b8]">{tips.advice}</p>
-                  </div>
+                  {tips.struggles && (
+                    <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                      <p className="text-sm text-amber-300">{tips.struggles}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -433,27 +455,6 @@ ${proComparison.recommendation}`;
             </>
           )}
         </Button>
-        <Button variant="secondary" onClick={handleScreenshot} className="flex-1 sm:flex-none" disabled={saving}>
-          {saving ? (
-            <>
-              <Activity className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Camera className="w-4 h-4 mr-2" />
-              Screenshot
-            </>
-          )}
-        </Button>
-        <Button variant="secondary" onClick={() => {
-          const shareText = `🎯 My AimSense: ${finalSens} sens (${label})\neDPI: ${edpi} | cm/360: ${cm360.toFixed(2)}\n${proComparison.range} percentile\n\n#AimSenseFinder`;
-          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
-          window.open(twitterUrl, '_blank');
-        }} className="flex-1 sm:flex-none">
-          <Share2 className="w-4 h-4 mr-2" />
-          Share
-        </Button>
         <Button onClick={() => onResults(resultData)} className="flex-1">
           <Save className="w-4 h-4 mr-2" />
           Save
@@ -463,6 +464,32 @@ ${proComparison.recommendation}`;
           Restart
         </Button>
       </motion.div>
+
+      {/* Share URL */}
+      {isLoggedIn && session?.user?.name && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35 }}
+          className="flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/20"
+        >
+          <p className="text-sm text-[#94a3b8]">Share your results</p>
+          <div className="flex items-center gap-2 w-full max-w-md">
+            <input 
+              type="text" 
+              readOnly 
+              value={`https://truesens.vercel.app/${session.user.name}`}
+              className="flex-1 px-3 py-2 rounded-lg bg-[#1a1a24] text-white text-sm border border-[#2a2a3a]"
+            />
+            <button
+              onClick={handleCopy}
+              className="px-4 py-2 rounded-lg bg-cyan-500 text-white text-sm font-medium hover:bg-cyan-400 transition-colors"
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       <motion.div
         initial={{ opacity: 0 }}
