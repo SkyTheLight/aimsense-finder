@@ -1,0 +1,83 @@
+
+> truesens@1.0.0 build
+> prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+Γ£ö Generated Prisma Client (v5.22.0) to .\node_modules\@prisma\client in 72ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
+Γöé  Update available 5.22.0 -> 7.8.0                       Γöé
+Γöé                                                         Γöé
+Γöé  This is a major update - please follow the guide at    Γöé
+Γöé  https://pris.ly/d/major-version-upgrade                Γöé
+Γöé                                                         Γöé
+Γöé  Run the following to update                            Γöé
+Γöé    npm i --save-dev prisma@latest                       Γöé
+Γöé    npm i @prisma/client@latest                          Γöé
+ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
+  Γû▓ Next.js 14.2.5
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|javascript/auto|C:\Users\Skyth\OneDrive\Documents\GitHub\aimsense-finder\node_modules\next\dist\build\webpack\loaders\next-flight-css-loader.js??ruleSet[1].rules[14].oneOf[7].use[0]!C:\Users\Skyth\OneDrive\Documents\GitHub\aimsense-finder\node_modules\next\dist\build\webpack\loaders\css-loader\src\index.js??ruleSet[1].rules[14].oneOf[7].use[1]!C:\Users\Skyth\OneDrive\Documents\GitHub\aimsense-finder\node_modules\next\dist\build\webpack\loaders\postcss-loader\src\index.js??ruleSet[1].rules[14].oneOf[7].use[2]!C:\Users\Skyth\OneDrive\Documents\GitHub\aimsense-finder\app\dashboard\page.module.css|ssr': No serializer registered for CssSyntaxError
+<w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> webpack/lib/ModuleBuildError -> CssSyntaxError
+Failed to compile.
+
+./app/dashboard/page.module.css:3:1
+Syntax error: Selector ":root" is not pure (pure selectors must contain at least one local class or id)
+
+  1 | @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  2 | 
+> 3 | :root {
+    | ^
+  4 |   --bg-primary: #0B0B0F;
+  5 |   --bg-secondary: #12121A;
+
+./app/api/ai-sense/route.ts
+Error: 
+  x Expected ',', got ':'
+     ,-[C:\Users\Skyth\OneDrive\Documents\GitHub\aimsense-finder\app\api\ai-sense\route.ts:113:1]
+ 113 |       optimalSensitivity: body.inGameSens,
+ 114 |       edpi: body.dpi * body.inGameSens,
+ 115 |       cm360: parseFloat((((360 * 2.54) / (body.dpi * body.inGameSens * (body.game === 'valorant' ? 0.07 : 0.022))).toFixed(2)),
+ 116 |       rationale: ['Calculated from your setup', 'Adjusted for your grip', 'Adjusted for mousepad'],
+     :                ^
+ 117 |       confidence: 'Medium',
+ 118 |       notes: 'Fallback calculation.',
+ 119 |       alternativeRange: { min: body.inGameSens * 0.9, max: body.inGameSens * 1.1 },
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/api/ai-sense/route.ts
+
+./app/page.tsx
+Error: 
+  x Expected ',', got ':'
+    ,-[C:\Users\Skyth\OneDrive\Documents\GitHub\aimsense-finder\app\page.tsx:59:1]
+ 59 |             game: data.game,
+ 60 |             edpi: data.dpi * data.inGameSens,
+ 61 |             cm360: parseFloat(((360 * 2.54) / (data.dpi * data.inGameSens * (data.game === 'valorant' ? 0.07 : 0.022)).toFixed(1)),
+ 62 |             label: data.inGameSens < 0.4 ? 'control' : data.inGameSens > 0.8 ? 'speed' : 'balanced',
+    :                  ^
+ 63 |             tracking: 70,
+ 64 |             flicking: 65,
+ 65 |             switching: 68,
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/page.tsx
+
+
+> Build failed because of webpack errors

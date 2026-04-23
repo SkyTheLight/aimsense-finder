@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 
-type AiSenseInput = {
+export const dynamic = 'force-dynamic';
+
+interface AiSenseInput {
   dpi: number;
   inGameSens: number;
   grip: string;
@@ -15,7 +17,7 @@ type AiSenseInput = {
   game: string;
   aimWeaknesses?: string[];
   rank?: string;
-};
+}
 
 async function fetchOptimalSensitivity(input: AiSenseInput) {
   const apiKey = process.env.GROQ_API_KEY;
@@ -25,47 +27,23 @@ async function fetchOptimalSensitivity(input: AiSenseInput) {
   const mult = input.game === 'valorant' ? 0.07 : 0.022;
   const currentCm360 = parseFloat(((360 * 2.54) / (input.dpi * input.inGameSens * mult)).toFixed(1));
 
-  const prompt = `You are TrueSens, an elite FPS Sensitivity Analyst. THINK before calculating.
+  const prompt = `You are TrueSens, an elite FPS Sensitivity Analyst. Calculate optimal sensitivity.
 
-CURRENT SETUP ANALYSIS:
-- DPI: ${input.dpi} (native: ${input.dpi % 100 === 0 ? 'yes' : 'no, likely scaled'})
-- In-Game Sens: ${input.inGameSens}
-- Current eDPI: ${currentEDPI} (${currentCm360}cm/360)
-- Grip: ${input.grip} (affects control needs)
-- Mousepad: ${input.mousePad} (affects glide feel)
-- Mouse Weight: ${input.mouseWeight || 'medium'}
-- Playstyle: ${input.playstyle || 'balanced'}
-- Role: ${input.role || 'flex'}
-- Rank: ${input.rank || 'unknown'}
-- Weaknesses: ${input.aimWeaknesses?.join(', ') || 'none specified'}
+PLAYER DATA:
+- DPI: ${input.dpi}, In-Game Sens: ${input.inGameSens}, eDPI: ${currentEDPI}
+- Grip: ${input.grip}, Mousepad: ${input.mousePad}, Weight: ${input.mouseWeight || 'medium'}
+- Playstyle: ${input.playstyle || 'balanced'}, Role: ${input.role || 'flex'}
+- Game: ${input.game}, Rank: ${input.rank || 'unknown'}
 
-REASONING MODE:
-1. Calculate sens based on GRIP (claw = control priority, palm = balanced, tip = speed priority)
-2. Adjust for MOUSE WEIGHT (heavy = slight increase for momentum)
-3. Factor MOUSEPAD (cloth = moderate, hard = precision)
-4. Consider ROLE (entry = reactive, support = controlled, AWPer = precision)
-5. Factor TARGET PREFERENCE (small = lower sens, open map = higher)
-6. Adjust for identified WEAKNESSES
-
-EXPLAIN YOUR LOGIC, then output JSON:
+OUTPUT JSON:
 {
   "optimalSensitivity": X.XXX,
-  "rationale": ["REASON 1 explaining your calculation", "REASON 2", "REASON 3"],
-  "confidence": "High/Medium/Experimental",
-  "notes": "2 sentence summary of your recommendation",
+  "rationale": ["Reason 1", "Reason 2"],
+  "confidence": "High/Medium",
+  "notes": "summary",
   "alternativeRange": { "min": X.XXX, "max": X.XXX },
-  "recommendations": {
-    "warmup": "specific scenario for their style",
-    "dailyDrill": "specific training focus",
-    "weeklyFocus": "skill to prioritize"
-  }
-}
-
-RULES:
-- Each rationale should explain a DIFFERENT factor
-- Sound like you CALCULATED based on their setup
-- Don't give template explanations
-- Reference their specific numbers`;
+  "recommendations": { "warmup": "scenario", "dailyDrill": "routine", "weeklyFocus": "skill" }
+}`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/responses', {
@@ -93,7 +71,7 @@ RULES:
       const cm360 = parseFloat(((360 * 2.54) / (input.dpi * parsed.optimalSensitivity * mult)).toFixed(2));
       return { ...parsed, edpi, cm360 };
     }
-  } catch {
+  } catch (err) {
     return null;
   }
 
@@ -109,11 +87,15 @@ export async function POST(request: Request) {
       return NextResponse.json(result);
     }
 
+    const fallbackEdpi = body.dpi * body.inGameSens;
+    const fallbackMult = body.game === 'valorant' ? 0.07 : 0.022;
+    const fallbackCm360 = parseFloat(((360 * 2.54) / (body.dpi * body.inGameSens * fallbackMult)).toFixed(2));
+
     return NextResponse.json({
       optimalSensitivity: body.inGameSens,
-      edpi: body.dpi * body.inGameSens,
-      cm360: parseFloat((((360 * 2.54) / (body.dpi * body.inGameSens * (body.game === 'valorant' ? 0.07 : 0.022))).toFixed(2)),
-      rationale: ['Calculated from your setup', 'Adjusted for your grip', 'Adjusted for mousepad'],
+      edpi: fallbackEdpi,
+      cm360: fallbackCm360,
+      rationale: ['Calculated from your setup', 'Adjusted for your grip'],
       confidence: 'Medium',
       notes: 'Fallback calculation.',
       alternativeRange: { min: body.inGameSens * 0.9, max: body.inGameSens * 1.1 },
@@ -135,5 +117,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  return NextResponse.json({ message: 'POST player data to /api/ai-sense' });
+  return NextResponse.json({
+    message: 'POST player data to /api/ai-sense'
+  });
 }

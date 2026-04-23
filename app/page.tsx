@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import styles from './wizard.module.css';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -51,39 +50,46 @@ export default function HomeWizard() {
     setError(null);
     
     try {
-      const [tipsRes, senseRes] = await Promise.all([
-        fetch('/api/tips', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            game: data.game,
-            edpi: data.dpi * data.inGameSens,
-            cm360: parseFloat(((360 * 2.54) / (data.dpi * data.inGameSens * (data.game === 'valorant' ? 0.07 : 0.022)).toFixed(1)),
-            label: data.inGameSens < 0.4 ? 'control' : data.inGameSens > 0.8 ? 'speed' : 'balanced',
-            tracking: 70,
-            flicking: 65,
-            switching: 68,
-            aimStyle: data.playstyle,
-            mouseGrip: data.mouseGrip
-          })
-        }),
-        fetch('/api/ai-sense', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            dpi: data.dpi,
-            inGameSens: data.inGameSens,
-            grip: data.mouseGrip,
-            mousePad: 'cloth',
-            game: data.game
-          })
+      const game = data.game;
+      const dpi = data.dpi;
+      const inGameSens = data.inGameSens;
+      const mult = game === 'valorant' ? 0.07 : 0.022;
+      const cm360 = parseFloat(((360 * 2.54) / (dpi * inGameSens * mult)).toFixed(1));
+      const label = inGameSens < 0.4 ? 'control' : inGameSens > 0.8 ? 'speed' : 'balanced';
+      
+      const tipsRes = await fetch('/api/tips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          game,
+          edpi: dpi * inGameSens,
+          cm360,
+          label,
+          tracking: 70,
+          flicking: 65,
+          switching: 68,
+          aimStyle: data.playstyle,
+          mouseGrip: data.mouseGrip
         })
-      ]);
+      });
 
-      const [tips, sense] = await Promise.all([tipsRes.json(), senseRes.json()]);
+      const senseRes = await fetch('/api/ai-sense', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dpi,
+          inGameSens,
+          grip: data.mouseGrip,
+          mousePad: 'cloth',
+          game
+        })
+      });
+
+      const tips = await tipsRes.json();
+      const sense = await senseRes.json();
       
       setResult({
-        recommendedSens: tips.recommendedSensitivity || `${sense.optimalSensitivity}`,
+        recommendedSens: tips.recommendedSensitivity || `${sense.optimalSensitivity || 0.5}`,
         score: 72,
         rank: 'Gold',
         insights: tips.aiTips || ['Analysis complete.']
@@ -99,42 +105,42 @@ export default function HomeWizard() {
   }, [data]);
 
   return (
-    <div className={styles.wizardContainer}>
-      <div className={styles.progressBar}>
+    <div className="wizard-container">
+      <div className="progress-bar">
         {[1, 2, 3, 4].map(step => (
           <div 
             key={step}
-            className={`${styles.progressStep} ${currentStep >= step ? styles.active : ''} ${currentStep === step ? styles.current : ''}`}
+            className={`progress-step ${currentStep >= step ? 'active' : ''} ${currentStep === step ? 'current' : ''}`}
           >
-            <div className={styles.stepDot}>{step}</div>
-            <span className={styles.stepLabel}>Step {step}</span>
+            <div className="step-dot">{step}</div>
+            <span className="step-label">Step {step}</span>
           </div>
         ))}
-        <div className={styles.progressTrack}>
+        <div className="progress-track">
           <div 
-            className={styles.progressFill}
+            className="progress-fill"
             style={{ width: `${((currentStep - 1) / 3 * 100}%` }}
           />
         </div>
       </div>
 
-      <div className={styles.content}>
+      <div className="content">
         {currentStep === 1 && (
-          <div className={`${styles.stepContent} ${styles.fadeIn}`}>
-            <h1 className={styles.stepTitle}>Welcome to TrueSens</h1>
-            <p className={styles.stepSubtitle}>AI-Powered Sensitivity Calibration</p>
+          <div className="step-content fade-in">
+            <h1 className="step-title">Welcome to TrueSens</h1>
+            <p className="step-subtitle">AI-Powered Sensitivity Calibration</p>
             
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Game</label>
-              <div className={styles.gameSelect}>
+            <div className="form-group">
+              <label className="label">Game</label>
+              <div className="game-select">
                 <button
-                  className={`${styles.gameBtn} ${data.game === 'valorant' ? styles.gameActive : ''}`}
+                  className={`game-btn ${data.game === 'valorant' ? 'game-active' : ''}`}
                   onClick={() => setData({ ...data, game: 'valorant' })}
                 >
                   <span>◆</span> Valorant
                 </button>
                 <button
-                  className={`${styles.gameBtn} ${data.game === 'cs2' ? styles.gameActive : ''}`}
+                  className={`game-btn ${data.game === 'cs2' ? 'game-active' : ''}`}
                   onClick={() => setData({ ...data, game: 'cs2' })}
                 >
                   <span>◇</span> CS2
@@ -142,22 +148,22 @@ export default function HomeWizard() {
               </div>
             </div>
 
-            <button className={styles.nextBtn} onClick={handleNext}>
+            <button className="next-btn" onClick={handleNext}>
               Get Started →
             </button>
           </div>
         )}
 
         {currentStep === 2 && (
-          <div className={`${styles.stepContent} ${styles.fadeIn}`}>
-            <h2 className={styles.stepTitle}>Hardware Setup</h2>
-            <p className={styles.stepSubtitle}>Tell us about your gear</p>
+          <div className="step-content fade-in">
+            <h2 className="step-title">Hardware Setup</h2>
+            <p className="step-subtitle">Tell us about your gear</p>
             
-            <div className={styles.formGroup}>
-              <label className={styles.label}>DPI</label>
+            <div className="form-group">
+              <label className="label">DPI</label>
               <input
                 type="number"
-                className={styles.input}
+                className="input"
                 value={data.dpi}
                 onChange={(e) => setData({ ...data, dpi: parseInt(e.target.value) || 400 })}
                 min={400}
@@ -165,11 +171,11 @@ export default function HomeWizard() {
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>In-Game Sensitivity</label>
+            <div className="form-group">
+              <label className="label">In-Game Sensitivity</label>
               <input
                 type="number"
-                className={styles.input}
+                className="input"
                 value={data.inGameSens}
                 onChange={(e) => setData({ ...data, inGameSens: parseFloat(parseFloat(e.target.value).toFixed(2)) || 0.5 })}
                 min={0.1}
@@ -178,26 +184,26 @@ export default function HomeWizard() {
               />
             </div>
 
-            <div className={styles.buttonGroup}>
-              <button className={styles.backBtn} onClick={handleBack}>← Back</button>
-              <button className={styles.nextBtn} onClick={handleNext}>Next →</button>
+            <div className="button-group">
+              <button className="back-btn" onClick={handleBack}>← Back</button>
+              <button className="next-btn" onClick={handleNext}>Next →</button>
             </div>
           </div>
         )}
 
         {currentStep === 3 && (
-          <div className={`${styles.stepContent} ${styles.fadeIn}`}>
-            <h2 className={styles.stepTitle}>Playstyle & Grip</h2>
-            <p className={styles.stepSubtitle}>How do you play?</p>
+          <div className="step-content fade-in">
+            <h2 className="step-title">Playstyle & Grip</h2>
+            <p className="step-subtitle">How do you play?</p>
             
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Playstyle</label>
-              <div className={styles.optionGrid}>
-                {(['wrist', 'arm', 'hybrid'] as const).map(style => (
+            <div className="form-group">
+              <label className="label">Playstyle</label>
+              <div className="option-grid">
+                {['wrist', 'arm', 'hybrid'] as const).map(style => (
                   <button
                     key={style}
-                    className={`${styles.optionBtn} ${data.playstyle === style ? styles.optionActive : ''}`}
-                    onClick={() => setData({ ...data, playstyle: style })}
+                    className={`option-btn ${data.playstyle === style ? 'option-active' : ''}`}
+                    onClick={() => setData({ ...data, playstyle: style as 'wrist' | 'arm' | 'hybrid' })}
                   >
                     {style.charAt(0).toUpperCase() + style.slice(1)}
                   </button>
@@ -205,14 +211,14 @@ export default function HomeWizard() {
               </div>
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Mouse Grip</label>
-              <div className={styles.optionGrid}>
-                {(['fingertip', 'claw', 'palm'] as const).map(grip => (
+            <div className="form-group">
+              <label className="label">Mouse Grip</label>
+              <div className="option-grid">
+                {['fingertip', 'claw', 'palm'] as const).map(grip => (
                   <button
                     key={grip}
-                    className={`${styles.optionBtn} ${data.mouseGrip === grip ? styles.optionActive : ''}`}
-                    onClick={() => setData({ ...data, mouseGrip: grip })}
+                    className={`option-btn ${data.mouseGrip === grip ? 'option-active' : ''}`}
+                    onClick={() => setData({ ...data, mouseGrip: grip as 'fingertip' | 'claw' | 'palm' })}
                   >
                     {grip.charAt(0).toUpperCase() + grip.slice(1)}
                   </button>
@@ -220,16 +226,16 @@ export default function HomeWizard() {
               </div>
             </div>
 
-            <div className={styles.buttonGroup}>
-              <button className={styles.backBtn} onClick={handleBack}>← Back</button>
+            <div className="button-group">
+              <button className="back-btn" onClick={handleBack}>← Back</button>
               <button 
-                className={`${styles.analyzeBtn} ${loading ? styles.loading : ''}`}
+                className={`analyze-btn ${loading ? 'loading' : ''}`}
                 onClick={handleStartAnalysis}
                 disabled={loading}
               >
                 {loading ? (
                   <>
-                    <span className={styles.spinner}></span>
+                    <span className="spinner"></span>
                     Analyzing...
                   </>
                 ) : (
@@ -241,41 +247,41 @@ export default function HomeWizard() {
         )}
 
         {currentStep === 4 && (
-          <div className={`${styles.stepContent} ${styles.fadeIn}`}>
-            <div className={styles.resultCard}>
-              <h2 className={styles.stepTitle}>Analysis Complete</h2>
-              <p className={styles.stepSubtitle}>Your personalized sensitivity</p>
+          <div className="step-content fade-in">
+            <div className="result-card">
+              <h2 className="step-title">Analysis Complete</h2>
+              <p className="step-subtitle">Your personalized sensitivity</p>
               
               {error ? (
-                <div className={styles.error}>{error}</div>
+                <div className="error">{error}</div>
               ) : result ? (
                 <>
-                  <div className={styles.sensDisplay}>
-                    <span className={styles.sensValue}>{result.recommendedSens}</span>
-                    <span className={styles.sensLabel}>Recommended Sensitivity</span>
+                  <div className="sens-display">
+                    <span className="sens-value">{result.recommendedSens}</span>
+                    <span className="sens-label">Recommended Sensitivity</span>
                   </div>
 
-                  <div className={styles.scoreDisplay}>
-                    <div className={styles.scoreItem}>
-                      <span className={styles.scoreValue}>{result.score}</span>
-                      <span className={styles.scoreLabel}>Score</span>
+                  <div className="score-display">
+                    <div className="score-item">
+                      <span className="score-value">{result.score}</span>
+                      <span className="score-label">Score</span>
                     </div>
-                    <div className={styles.scoreItem}>
-                      <span className={`${styles.rankBadge} gradienText`}>{result.rank}</span>
-                      <span className={styles.scoreLabel}>Rank</span>
+                    <div className="score-item">
+                      <span className="rank-badge gradien-text">{result.rank}</span>
+                      <span className="score-label">Rank</span>
                     </div>
                   </div>
 
-                  <div className={styles.insightsList}>
+                  <div className="insights-list">
                     {result.insights.map((insight, i) => (
-                      <div key={i} className={styles.insightItem}>
-                        <span className={styles.insightNum}>{i + 1}</span>
+                      <div key={i} className="insight-item">
+                        <span className="insight-num">{i + 1}</span>
                         <span>{insight}</span>
                       </div>
                     ))}
                   </div>
 
-                  <a href="/dashboard" className={styles.dashboardBtn}>
+                  <a href="/dashboard" className="dashboard-btn">
                     Go to Dashboard →
                   </a>
                 </>
