@@ -2,16 +2,17 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
   Target, MousePointer, Zap, Gauge, Crosshair, Activity,
   Settings, History, Play, Sun, Moon, Download, RefreshCw,
   ChevronRight, TrendingUp, TrendingDown, Minus, Wifi, Zap as Lightning,
   Video, FileText, Share2, Copy, ExternalLink, Calendar,
   Trophy, Award, Medal, Crown, Star, Sparkles, BookOpen,
   MessageCircle, Send, Bell, Volume2, VolumeX, Smartphone, Monitor,
-  ArrowRight, Maximize2, MoreHorizontal
+  ArrowRight, Maximize2, MoreHorizontal, Menu, X
 } from 'lucide-react';
 
+// ==================== TYPES ====================
 interface MetricCard {
   id: string;
   label: string;
@@ -19,6 +20,7 @@ interface MetricCard {
   trend: 'up' | 'down' | 'stable';
   icon: React.ReactNode;
   description?: string;
+  sparkline?: number[];
 }
 
 interface PerformanceData {
@@ -52,6 +54,35 @@ interface AICoachTip {
   priority: 'high' | 'medium' | 'low';
 }
 
+// ==================== SPARKLINE COMPONENT ====================
+function Sparkline({ data, color = '#8B5CF6', width = 60, height = 24 }: { data: number[]; color?: string; width?: number; height?: number }) {
+  if (!data || data.length < 2) return null;
+
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+
+  const points = data.map((val, i) => {
+    const x = (i / (data.length - 1)) * width;
+    const y = height - ((val - min) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg width={width} height={height} className="opacity-50 hover:opacity-100 transition-opacity">
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ==================== MAIN COMPONENT ====================
 const TrueSensDashboard = () => {
   // ===================== STATE =====================
   const [isLoading, setIsLoading] = useState(true);
@@ -61,7 +92,8 @@ const TrueSensDashboard = () => {
   const [activeNav, setActiveNav] = useState('dashboard');
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   // Data state
   const [sensitivityData, setSensitivityData] = useState({
     current: 0.50,
@@ -71,7 +103,6 @@ const TrueSensDashboard = () => {
     max: 0.54
   });
   const [sensitivitySlider, setSensitivitySlider] = useState(0.50);
-  const [sliderPosition, setSliderPosition] = useState(50);
 
   // ===================== STATIC DATA =====================
   const performanceData: PerformanceData = {
@@ -83,13 +114,13 @@ const TrueSensDashboard = () => {
     confidence: 65
   };
 
-  const metrics: MetricCard[] = [
-    { id: 'accuracy', label: 'Accuracy', value: 71, trend: 'up', icon: <Crosshair className="w-5 h-5" />, description: 'Overall aim precision' },
-    { id: 'tracking', label: 'Tracking', value: 40, trend: 'down', icon: <MousePointer className="w-5 h-5" />, description: 'Moving target ability' },
-    { id: 'flick', label: 'Flick Precision', value: 35, trend: 'down', icon: <Zap className="w-5 h-5" />, description: 'Snap shot accuracy' },
-    { id: 'speed', label: 'Speed', value: 65, trend: 'up', icon: <Gauge className="w-5 h-5" />, description: 'Target acquisition' },
-    { id: 'consistency', label: 'Consistency', value: 60, trend: 'stable', icon: <Activity className="w-5 h-5" />, description: 'Score stability' },
-  ];
+  const metrics: MetricCard[] = useMemo(() => [
+    { id: 'accuracy', label: 'Accuracy', value: 71, trend: 'up', icon: <Crosshair className="w-5 h-5" />, description: 'Overall aim precision', sparkline: [68, 69, 67, 70, 71, 70, 71] },
+    { id: 'tracking', label: 'Tracking', value: 40, trend: 'down', icon: <MousePointer className="w-5 h-5" />, description: 'Moving target ability', sparkline: [45, 44, 43, 42, 41, 40, 40] },
+    { id: 'flick', label: 'Flick Precision', value: 35, trend: 'down', icon: <Zap className="w-5 h-5" />, description: 'Snap shot accuracy', sparkline: [40, 38, 37, 36, 35, 35, 35] },
+    { id: 'speed', label: 'Speed', value: 65, trend: 'up', icon: <Gauge className="w-5 h-5" />, description: 'Target acquisition', sparkline: [60, 61, 62, 63, 64, 65, 65] },
+    { id: 'consistency', label: 'Consistency', value: 60, trend: 'stable', icon: <Activity className="w-5 h-5" />, description: 'Score stability', sparkline: [58, 59, 60, 60, 61, 60, 60] },
+  ], []);
 
   const sensitivityHistory: SensitivityHistory[] = [
     { date: '2024-01', value: 0.52, score: 68 },
@@ -148,7 +179,6 @@ const TrueSensDashboard = () => {
 
   const handleSliderChange = useCallback((value: number) => {
     setSensitivitySlider(value);
-    setSliderPosition(((value - 0.1) / 0.9) * 100);
   }, []);
 
   const handleExport = useCallback(() => {
@@ -188,8 +218,8 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
 
   // ===================== STYLES =====================
   const bg = darkMode ? 'bg-[#0B0E14]' : 'bg-slate-50';
-  const sidebarBg = darkMode ? 'bg-[#0F1118]' : 'bg-white';
-  const cardBg = darkMode ? 'bg-[#151820]' : 'bg-white';
+  const sidebarBg = darkMode ? 'bg-[#0F1118]/95 backdrop-blur-xl' : 'bg-white/95 backdrop-blur-xl';
+  const cardBg = darkMode ? 'bg-[#151820]/80 backdrop-blur-lg' : 'bg-white/80 backdrop-blur-lg';
   const borderColor = darkMode ? 'border-slate-800/50' : 'border-slate-200';
   const textPrimary = darkMode ? 'text-white' : 'text-slate-900';
   const textSecondary = darkMode ? 'text-slate-400' : 'text-slate-500';
@@ -204,7 +234,7 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
 
   const getRankPosition = (rank: string) => rankTiers.findIndex(r => r.name === rank);
 
-  // ===================== RENDER =====================
+  // ===================== LOADING SCREEN =====================
   if (isLoading) {
     return (
       <div className={`${bg} min-h-screen flex items-center justify-center`}>
@@ -234,6 +264,10 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
     );
   }
 
+  // ===================== MAIN RENDER =====================
+  const sidebarWidth = sidebarCollapsed ? 'w-20' : 'w-64';
+  const mainOffset = sidebarCollapsed ? 'ml-20' : 'ml-64';
+
   return (
     <div className={`${bg} min-h-screen flex`}>
       {/* ===================== SIDEBAR ===================== */}
@@ -241,30 +275,37 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className={`${sidebarBg} w-72 h-screen fixed left-0 top-0 flex flex-col z-50 hidden md:flex`}
+        className={`${sidebarBg} ${borderColor} border-r ${sidebarWidth} h-screen fixed left-0 top-0 flex flex-col z-50 transition-all duration-300`}
       >
-        {/* Visual divider gradient */}
-        <div className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500/50 to-transparent" />
-        <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-r from-transparent to-purple-500/10" />
+        {/* Collapse Toggle */}
+        <button
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          className="absolute -right-3 top-20 w-6 h-6 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white z-10"
+        >
+          {sidebarCollapsed ? <ChevronRight className="w-3 h-3" /> : <Menu className="w-3 h-3" />}
+        </button>
+
         {/* Logo */}
-        <div className="p-6 border-b border-slate-800">
+        <div className={`p-6 border-b border-slate-800 ${sidebarCollapsed ? 'px-3' : ''}`}>
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-3 cursor-pointer"
+            className={`flex items-center gap-3 ${sidebarCollapsed ? 'justify-center' : ''} cursor-pointer`}
           >
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-purple-500/20 flex-shrink-0">
               <span className="text-xl font-black text-white">T</span>
             </div>
-            <div>
-              <h1 className={`text-lg font-bold ${textPrimary}`}>TrueSens</h1>
-              <p className={`text-xs ${textSecondary}`}>Aim Optimization</p>
-            </div>
+            {!sidebarCollapsed && (
+              <div>
+                <h1 className={`text-lg font-bold ${textPrimary}`}>TrueSens</h1>
+                <p className={`text-xs ${textSecondary}`}>Aim Optimization</p>
+              </div>
+            )}
           </motion.div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className={`flex-1 ${sidebarCollapsed ? 'px-2' : 'p-4'} space-y-2`}>
           {navItems.map((item, index) => (
             <motion.button
               key={item.id}
@@ -272,52 +313,60 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.1 }}
               onClick={() => setActiveNav(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${
+              className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3.5 rounded-xl transition-all duration-200 ${
                 activeNav === item.id
                   ? 'bg-gradient-to-r from-purple-500/10 to-blue-500/10 text-cyan-400 border border-purple-500/20 shadow-lg shadow-purple-500/10'
                   : `${textSecondary} hover:${textPrimary} hover:bg-white/5`
               }`}
+              title={sidebarCollapsed ? item.label : undefined}
             >
-              <item.icon className="w-5 h-5" />
-              <span className="font-medium">{item.label}</span>
-              {activeNav === item.id && (
-                <motion.div
-                  layoutId="activeIndicator"
-                  className="ml-auto w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50"
-                />
+              <item.icon className="w-5 h-5 flex-shrink-0" />
+              {!sidebarCollapsed && (
+                <>
+                  <span className="font-medium">{item.label}</span>
+                  {activeNav === item.id && (
+                    <motion.div
+                      layoutId="activeIndicator"
+                      className="ml-auto w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50"
+                    />
+                  )}
+                </>
               )}
             </motion.button>
           ))}
         </nav>
 
         {/* Rank Progress */}
-        <div className="p-4 border-t border-slate-800">
-          <div className={`${cardBg} rounded-xl p-4 border ${borderColor}`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className={`text-xs font-semibold ${textMuted}`}>Rank Progress</span>
-              <span className="text-xs font-bold text-purple-400">85%</span>
-            </div>
-            <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: '85%' }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-              />
-            </div>
-            <div className="flex justify-between mt-2">
+        <div className={`${sidebarCollapsed ? 'p-2' : 'p-4'} border-t border-slate-800`}>
+          <div className={`${cardBg} rounded-xl ${sidebarCollapsed ? 'p-2' : 'p-4'} border ${borderColor}`}>
+            {!sidebarCollapsed && (
+              <>
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`text-xs font-semibold ${textMuted}`}>Rank Progress</span>
+                  <span className="text-xs font-bold text-purple-400">85%</span>
+                </div>
+                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: '85%' }}
+                    transition={{ delay: 0.8, duration: 0.5 }}
+                  />
+                </div>
+              </>
+            )}
+            <div className={`flex ${sidebarCollapsed ? 'flex-col gap-1' : 'justify-between mt-2'}`}>
               {rankTiers.slice(0, 4).map((rank) => {
                 const position = getRankPosition(rank.name);
                 const currentPos = getRankPosition(performanceData.rank);
                 return (
                   <div
                     key={rank.name}
-                    className={`w-2 h-2 rounded-full ${
-                      position <= currentPos ? '' : 'bg-slate-700'
-                    }`}
+                    className={`w-2 h-2 rounded-full ${position <= currentPos ? '' : 'bg-slate-700'} ${sidebarCollapsed ? 'mx-auto' : ''}`}
                     style={{ backgroundColor: position <= currentPos ? rank.color : undefined }}
+                    title={rank.name}
                   >
-                    {rank.icon}
+                    {!sidebarCollapsed && rank.icon}
                   </div>
                 );
               })}
@@ -326,37 +375,40 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
         </div>
 
         {/* System Status */}
-        <div className="p-4 border-t border-slate-800">
-          <div className={`${cardBg} rounded-xl p-4 border ${borderColor}`}>
-            <div className="flex items-center gap-2 mb-3">
+        <div className={`${sidebarCollapsed ? 'p-2' : 'p-4'} border-t border-slate-800`}>
+          <div className={`${cardBg} rounded-xl ${sidebarCollapsed ? 'p-2' : 'p-4'} border ${borderColor}`}>
+            <div className={`flex items-center gap-2 mb-3 ${sidebarCollapsed ? 'justify-center' : ''}`}>
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className={`text-xs font-medium ${textSecondary}`}>System Online</span>
+              {!sidebarCollapsed && <span className={`text-xs font-medium ${textSecondary}`}>System Online</span>}
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className={textMuted}>Latency</span>
-                <span className="text-green-400 font-mono">12ms</span>
+            {!sidebarCollapsed && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className={textMuted}>Latency</span>
+                  <span className="text-green-400 font-mono">12ms</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className={textMuted}>Server</span>
+                  <span className="text-green-400 font-mono">US-East</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className={textMuted}>API Status</span>
+                  <span className="text-green-400 font-mono">Healthy</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className={textMuted}>Server</span>
-                <span className="text-green-400 font-mono">US-East</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className={textMuted}>API Status</span>
-                <span className="text-green-400 font-mono">Healthy</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Theme Toggle */}
-        <div className="p-4 border-t border-slate-800">
-          <div className="flex gap-2">
+        {/* Theme & Sound Toggle */}
+        <div className={`${sidebarCollapsed ? 'p-2' : 'p-4'} border-t border-slate-800`}>
+          <div className={`flex ${sidebarCollapsed ? 'flex-col gap-2' : 'gap-2'}`}>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setDarkMode(!darkMode)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl ${textSecondary} hover:${textPrimary} transition-colors`}
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl ${textSecondary} hover:${textPrimary} transition-colors ${sidebarCollapsed ? 'px-2' : 'flex-1'}`}
+              title="Toggle theme"
             >
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </motion.button>
@@ -364,7 +416,8 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl ${textSecondary} hover:${textPrimary} transition-colors`}
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl ${textSecondary} hover:${textPrimary} transition-colors ${sidebarCollapsed ? 'px-2' : 'flex-1'}`}
+              title="Toggle sound"
             >
               {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
             </motion.button>
@@ -373,8 +426,8 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
       </motion.aside>
 
       {/* ===================== MAIN CONTENT ===================== */}
-      <main className="flex-1 min-h-screen pl-72">
-        <div className="pr-8 py-6 pl-8 max-w-[1600px] mx-auto">
+      <main className={`flex-1 min-h-screen ${mainOffset}`}>
+        <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto">
           
           {/* Mobile Header */}
           <div className="flex md:hidden items-center justify-between mb-4">
@@ -393,12 +446,12 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
           <motion.header
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+            className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6"
           >
             <div>
               <h1 className={`text-2xl md:text-3xl font-bold ${textPrimary}`}>Dashboard</h1>
               <p className={`text-sm ${textSecondary}`}>
-                Welcome back • {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
+                Welcome back • {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })} • {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
 
@@ -440,14 +493,14 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
             </div>
           </motion.header>
 
-          {/* ===================== SCORE SECTION ===================== */}
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          {/* ===================== SCORE & METRICS SECTION ===================== */}
+          <section className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 mb-6">
             {/* Performance Score Card */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className={`${cardBg} ${borderColor} rounded-2xl p-6 md:p-8 relative overflow-hidden group lg:row-span-2`}
+              className={`${cardBg} ${borderColor} rounded-2xl p-6 md:p-8 relative overflow-hidden group lg:col-span-2`}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-purple-500/50 via-blue-500/50 to-transparent" />
@@ -513,9 +566,9 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
               </div>
             </motion.div>
 
-            {/* Metrics Grid */}
-            <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-              {metrics.slice(0, 4).map((metric, index) => (
+            {/* Metrics Grid - 3x2 Layout */}
+            <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+              {metrics.map((metric, index) => (
                 <motion.div
                   key={metric.id}
                   initial={{ y: 20, opacity: 0 }}
@@ -540,43 +593,15 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
                     <div className="text-2xl md:text-3xl font-bold text-white mt-auto mb-1">
                       {metric.value}
                     </div>
-                    <div className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                    <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
                       {metric.label}
                     </div>
+                    {metric.sparkline && (
+                      <Sparkline data={metric.sparkline} color={metric.trend === 'up' ? '#10B981' : metric.trend === 'down' ? '#EF4444' : '#6B7280'} />
+                    )}
                   </div>
                 </motion.div>
               ))}
-              {/* 5th Card (Consistency) - Centered */}
-              <motion.div
-                key={metrics[4].id}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.55 }}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className={`${cardBg} ${borderColor} rounded-2xl p-4 md:p-5 relative overflow-hidden group cursor-pointer col-span-2 md:col-span-1 md:mx-auto md:w-full`}
-                style={{ maxWidth: '280px' }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="flex items-center justify-between mb-2 md:mb-3">
-                    <span className="text-cyan-400">{metrics[4].icon}</span>
-                    <span className={`text-xs font-bold ${
-                      metrics[4].trend === 'up' ? 'text-green-400' :
-                      metrics[4].trend === 'down' ? 'text-red-400' : 'text-slate-500'
-                    }`}>
-                      {metrics[4].trend === 'up' && '↑'}
-                      {metrics[4].trend === 'down' && '↓'}
-                      {metrics[4].trend === 'stable' && '→'}
-                    </span>
-                  </div>
-                  <div className="text-2xl md:text-3xl font-bold text-white mt-auto mb-1">
-                    {metrics[4].value}
-                  </div>
-                  <div className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                    {metrics[4].label}
-                  </div>
-                </div>
-              </motion.div>
             </div>
           </section>
 
@@ -585,86 +610,125 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className={`${cardBg} ${borderColor} rounded-2xl p-6 md:p-8 backdrop-blur-xl bg-opacity-80 relative overflow-hidden`}
-            style={{ 
+            className={`${cardBg} ${borderColor} rounded-2xl p-6 md:p-8 backdrop-blur-xl bg-opacity-80 relative overflow-hidden mb-6`}
+            style={{
               background: `linear-gradient(135deg, ${darkMode ? '#151820cc' : '#ffffffcc'}, ${darkMode ? '#0f1118cc' : '#f8fafccc'})`,
               backdropFilter: 'blur(20px)',
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-cyan-500/5 rounded-2xl" />
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-purple-500/50 via-transparent to-cyan-500/50" />
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
-              <div>
-                <h2 className={`text-xl font-bold ${textPrimary}`}>Sensitivity Engine</h2>
-                <p className={`text-sm ${textSecondary}`}>AI-powered optimization</p>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30">
-                <Zap className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs font-bold text-cyan-400">AI POWERED</span>
-              </div>
-            </div>
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ boxShadow: 'inset 0 0 40px rgba(139, 92, 246, 0.15)' }} />
 
-            {/* Values Row */}
-            <div className="grid grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-              <motion.div whileHover={{ scale: 1.02 }} className={`${cardBg} border ${borderColor} rounded-2xl p-4 md:p-6 text-center`}>
-                <div className={`text-xs font-semibold uppercase tracking-widest ${textMuted} mb-2 md:mb-3`}>Current</div>
-                <div className="text-3xl md:text-4xl font-mono font-bold text-slate-300">
-                  {sensitivityData.current.toFixed(2)}
+            <div className="relative z-10">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
+                <div>
+                  <h2 className={`text-xl font-bold ${textPrimary}`}>Sensitivity Engine</h2>
+                  <p className={`text-sm ${textSecondary}`}>AI-powered optimization</p>
                 </div>
-              </motion.div>
-
-              <div className="flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2">
-                  <ChevronRight className="w-6 md:w-8 h-6 md:h-8 text-green-400" />
-                  <span className="text-sm font-bold text-green-400">
-                    {sensitivityData.change > 0 ? '+' : ''}{sensitivityData.change}%
-                  </span>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30">
+                  <Zap className="w-4 h-4 text-cyan-400" />
+                  <span className="text-xs font-bold text-cyan-400">AI POWERED</span>
                 </div>
               </div>
 
-              <motion.div whileHover={{ scale: 1.02 }} className="bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/30 rounded-2xl p-4 md:p-6 text-center relative overflow-hidden" style={{ boxShadow: '0 0 40px rgba(139, 92, 246, 0.15)' }}>
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-cyan-500/5" />
-                <div className="relative z-10">
-                  <div className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-2 md:mb-3">Recommended</div>
-                  <div className="text-3xl md:text-4xl font-mono font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                    {sensitivityData.recommended.toFixed(2)}
+              {/* Values Row */}
+              <div className="grid grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+                <motion.div whileHover={{ scale: 1.02 }} className={`${cardBg} border ${borderColor} rounded-2xl p-4 md:p-6 text-center`}>
+                  <div className={`text-xs font-semibold uppercase tracking-widest ${textMuted} mb-2 md:mb-3`}>Current</div>
+                  <div className="text-3xl md:text-4xl font-mono font-bold text-slate-300">
+                    {sensitivityData.current.toFixed(2)}
+                  </div>
+                </motion.div>
+
+                <div className="flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <ChevronRight className="w-6 md:w-8 h-6 md:h-8 text-green-400" />
+                    <span className="text-sm font-bold text-green-400">
+                      {sensitivityData.change > 0 ? '+' : ''}{sensitivityData.change}%
+                    </span>
                   </div>
                 </div>
-              </motion.div>
+
+                <motion.div whileHover={{ scale: 1.02 }} className="bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/30 rounded-2xl p-4 md:p-6 text-center relative overflow-hidden" style={{ boxShadow: '0 0 40px rgba(139, 92, 246, 0.15)' }}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-cyan-500/5" />
+                  <div className="relative z-10">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-2 md:mb-3">Recommended</div>
+                    <div className="text-3xl md:text-4xl font-mono font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                      {sensitivityData.recommended.toFixed(2)}
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Slider */}
+              <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
+                <div className="flex items-center justify-between text-sm">
+                  <span className={textSecondary}>Optimal Range</span>
+                  <span className="font-mono text-sm text-slate-300">
+                    {sensitivityData.min.toFixed(2)} - {sensitivityData.max.toFixed(2)}
+                  </span>
+                </div>
+                
+                <div className="relative h-3 bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="absolute h-full bg-gradient-to-r from-purple-500 via-cyan-500 to-blue-500 rounded-full" 
+                    style={{ width: '66%' }} 
+                  />
+                  <input 
+                    type="range" 
+                    min="0.1" 
+                    max="1" 
+                    step="0.01" 
+                    value={sensitivitySlider} 
+                    onChange={(e) => handleSliderChange(parseFloat(e.target.value))} 
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" 
+                  />
+                  <motion.div 
+                    className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-lg shadow-purple-500/30 border-2 border-purple-500 z-10" 
+                    style={{ left: `calc(${((sensitivitySlider - 0.1) / 0.9) * 100}% - 10px)` }} 
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-xs font-mono text-slate-500">
+                  <span>0.10</span>
+                  <span className="text-cyan-400 font-bold text-sm">{sensitivitySlider.toFixed(2)}</span>
+                  <span>1.00</span>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <motion.button 
+                whileHover={{ scale: 1.01 }} 
+                whileTap={{ scale: 0.99 }} 
+                onClick={handleRecalibrate} 
+                disabled={isRecalibrating} 
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 md:py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isRecalibrating ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    <span>Analyzing Sensitivity...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lightning className="w-5 h-5" />
+                    <span>Recalibrate with New Sensitivity</span>
+                  </>
+                )}
+              </motion.button>
             </div>
-
-            {/* Slider */}
-            <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
-              <div className="flex items-center justify-between text-sm">
-                <span className={textSecondary}>Optimal Range</span>
-                <span className="font-mono text-sm text-slate-300">
-                  {sensitivityData.min.toFixed(2)} - {sensitivityData.max.toFixed(2)}
-                </span>
-              </div>
-              
-              <div className="relative h-2 md:h-3 bg-slate-800 rounded-full overflow-hidden">
-                <motion.div className="absolute h-full bg-gradient-to-r from-purple-500 via-cyan-500 to-blue-500 rounded-full" style={{ width: '66%' }} />
-                <input type="range" min="0.1" max="1" step="0.01" value={sensitivitySlider} onChange={(e) => handleSliderChange(parseFloat(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
-                <motion.div className="absolute top-1/2 -translate-y-1/2 w-4 md:w-5 h-4 md:h-5 bg-white rounded-full shadow-lg shadow-purple-500/30 border-2 border-purple-500 z-10" style={{ left: `calc(${sliderPosition}% - 8px)` }} />
-              </div>
-
-              <div className="flex items-center justify-between text-xs font-mono text-slate-500">
-                <span>0.10</span>
-                <span className="text-cyan-400 font-bold text-sm">{sensitivitySlider.toFixed(2)}</span>
-                <span>1.00</span>
-              </div>
-            </div>
-
-            {/* Action Button */}
-            <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={handleRecalibrate} disabled={isRecalibrating} className="w-full flex items-center justify-center gap-2 px-6 py-3 md:py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-              {isRecalibrating ? (<><RefreshCw className="w-5 h-5 animate-spin" /><span>Analyzing Sensitivity...</span></>) : (<><Lightning className="w-5 h-5" /><span>Recalibrate with New Sensitivity</span></>)}
-            </motion.button>
           </motion.section>
 
           {/* ===================== AI COACH & TRAINING ===================== */}
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
             {/* AI Coach */}
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className={`${cardBg} ${borderColor} rounded-2xl p-6`}>
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }} 
+              animate={{ y: 0, opacity: 1 }} 
+              transition={{ delay: 0.4 }} 
+              className={`${cardBg} ${borderColor} rounded-2xl p-6`}
+            >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
@@ -681,7 +745,12 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
                 </div>
               </div>
 
-              <motion.div initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-xl mb-4">
+              <motion.div 
+                initial={{ x: -10, opacity: 0 }} 
+                animate={{ x: 0, opacity: 1 }} 
+                transition={{ delay: 0.5 }} 
+                className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-xl mb-4"
+              >
                 <div className="flex items-center gap-2 mb-2">
                   <Target className="w-4 h-4 text-purple-400" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-purple-400">Priority Focus</span>
@@ -691,8 +760,18 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
 
               <div className="space-y-3">
                 {coachTips.map((tip, index) => (
-                  <motion.div key={tip.id} initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.55 + index * 0.1 }} className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer">
-                    <div className="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                  <motion.div 
+                    key={tip.id} 
+                    initial={{ x: -10, opacity: 0 }} 
+                    animate={{ x: 0, opacity: 1 }} 
+                    transition={{ delay: 0.55 + index * 0.1 }} 
+                    className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${
+                      tip.priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                      tip.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-green-500/20 text-green-400'
+                    }`}>
                       {tip.id}
                     </div>
                     <p className="text-sm text-slate-300">{tip.text}</p>
@@ -702,7 +781,12 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
             </motion.div>
 
             {/* Training Videos */}
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className={`${cardBg} ${borderColor} rounded-2xl p-6`}>
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }} 
+              animate={{ y: 0, opacity: 1 }} 
+              transition={{ delay: 0.5 }} 
+              className={`${cardBg} ${borderColor} rounded-2xl p-6`}
+            >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
@@ -720,7 +804,13 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
 
               <div className="space-y-4">
                 {trainingVideos.map((video, index) => (
-                  <motion.div key={video.id} initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.6 + index * 0.1 }} className="flex gap-4 p-3 bg-slate-800/50 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer group">
+                  <motion.div 
+                    key={video.id} 
+                    initial={{ x: -10, opacity: 0 }} 
+                    animate={{ x: 0, opacity: 1 }} 
+                    transition={{ delay: 0.6 + index * 0.1 }} 
+                    className="flex gap-4 p-3 bg-slate-800/50 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer group"
+                  >
                     <div className={`w-24 md:w-32 h-14 md:h-16 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       video.thumbnail === 'red' ? 'bg-gradient-to-br from-red-500/30 to-red-600/30' :
                       video.thumbnail === 'blue' ? 'bg-gradient-to-br from-blue-500/30 to-blue-600/30' :
@@ -744,7 +834,12 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
           </section>
 
           {/* ===================== SENSITIVITY HISTORY ===================== */}
-          <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }} className={`${cardBg} ${borderColor} rounded-2xl p-6`}>
+          <motion.section 
+            initial={{ y: 20, opacity: 0 }} 
+            animate={{ y: 0, opacity: 1 }} 
+            transition={{ delay: 0.6 }} 
+            className={`${cardBg} ${borderColor} rounded-2xl p-6 mb-6`}
+          >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
                 <h2 className={`text-xl font-bold ${textPrimary}`}>Sensitivity History</h2>
@@ -752,7 +847,12 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
               </div>
               <div className="flex gap-2">
                 {['D', 'W', 'M'].map((range, i) => (
-                  <button key={range} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${i === 1 ? 'bg-purple-500/20 text-purple-400' : `${textSecondary} hover:text-white`}`}>
+                  <button 
+                    key={range} 
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      i === 1 ? 'bg-purple-500/20 text-purple-400' : `${textSecondary} hover:text-white`
+                    }`}
+                  >
                     {range}
                   </button>
                 ))}
@@ -762,7 +862,13 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
             {/* Chart */}
             <div className="h-48 flex items-end gap-2 md:gap-3">
               {sensitivityHistory.map((item, i) => (
-                <motion.div key={item.date} initial={{ height: 0 }} animate={{ height: `${item.score}%` }} transition={{ delay: 0.7 + i * 0.1, duration: 0.5 }} className="flex-1 bg-gradient-to-t from-purple-500/50 to-cyan-500/50 rounded-t-lg relative group cursor-pointer">
+                <motion.div 
+                  key={item.date} 
+                  initial={{ height: 0 }} 
+                  animate={{ height: `${item.score}%` }} 
+                  transition={{ delay: 0.7 + i * 0.1, duration: 0.5 }} 
+                  className="flex-1 bg-gradient-to-t from-purple-500/50 to-cyan-500/50 rounded-t-lg relative group cursor-pointer"
+                >
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 px-2 py-1 rounded text-xs text-white whitespace-nowrap z-10">
                     <div className="font-bold">{item.value.toFixed(2)}</div>
                     <div className="text-slate-400">Score: {item.score}</div>
@@ -798,8 +904,20 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setMobileMenuOpen(false)}>
-            <motion.div initial={{ x: -100 }} animate={{ x: 0 }} exit={{ x: -100 }} className="w-64 h-full bg-[#0F1118] p-4" onClick={(e) => e.stopPropagation()}>
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <motion.div 
+              initial={{ x: -100 }} 
+              animate={{ x: 0 }} 
+              exit={{ x: -100 }} 
+              className="w-64 h-full bg-[#0F1118] p-4" 
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Same nav content */}
             </motion.div>
           </motion.div>
