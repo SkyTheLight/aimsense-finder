@@ -266,7 +266,7 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
 
   // ===================== MAIN RENDER =====================
   const sidebarWidth = sidebarCollapsed ? 'w-20' : 'w-64';
-  const mainOffset = sidebarCollapsed ? 'ml-20' : 'ml-64';
+  const mainOffset = sidebarCollapsed ? 'md:ml-20' : 'md:ml-64';
 
   return (
     <div className={`${bg} min-h-screen flex`}>
