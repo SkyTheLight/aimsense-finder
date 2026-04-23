@@ -1,529 +1,430 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Edit2, User, MapPin, Gamepad2, ExternalLink, Copy, Twitter, Trash2, Sparkles, TrendingUp, History, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import styles from './page.module.css';
 
-interface SavedSettings {
-  id: number;
-  game: string;
-  dpi: number;
-  sensitivity: number;
-  edpi: number;
-  cm360: number;
-  mouseGrip: string;
+interface PerformanceData {
+  score: number;
+  rank: string;
+  confidence: number;
+  trend: 'Improving' | 'Stable' | 'Declining';
+  accuracy: number;
+  tracking: number;
+  flickPrecision: number;
+  speed: number;
+  consistency: number;
+  currentSens: number;
+  recommendedSens: number;
+  sensRange: { min: number; max: number };
+  adjustment: string;
   aimStyle: string;
-  isCurrent: boolean;
-  createdAt: string;
+  insights: string[];
+  history: { date: string; score: number }[];
 }
-
-interface HistoryEntry {
-  id?: number;
-  game: string;
-  dpi: number;
-  sensitivity: number;
-  edpi: number;
-  cm360: number;
-  createdAt?: string;
-}
-
-interface ProfileData {
-  name?: string;
-  email?: string;
-  username?: string;
-  image?: string;
-  bio?: string;
-  favoriteGame?: string;
-  country?: string;
-  isPro?: boolean;
-  createdAt?: string;
-  _count?: { settings: number; history: number };
-}
-
-const games = ['VALORANT', 'CS2', 'APEX', 'OW2', 'FORTNITE', 'COD', 'RAVENS'];
-const countries = ['US', 'EU', 'KR', 'JP', 'BR', 'RU', 'IN', 'AU', 'CA', 'UK'];
 
 export default function DashboardPage() {
-  const { data: session, status, update: updateSession } = useSession();
-  const router = useRouter();
-  const [settings, setSettings] = useState<SavedSettings[]>([]);
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
+  const [data, setData] = useState<PerformanceData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<ProfileData>({});
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [profileForm, setProfileForm] = useState({ bio: '', favoriteGame: '', country: '' });
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [username, setUsername] = useState('');
-  const [usernameLoading, setUsernameLoading] = useState(false);
-  const [usernameError, setUsernameError] = useState('');
+  const [recalibrating, setRecalibrating] = useState(false);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
-  }, [status, router]);
+    loadPerformanceData();
+  }, []);
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchData();
-      fetchProfile();
-    }
-  }, [status]);
-
-  const fetchData = async () => {
+  async function loadPerformanceData() {
+    setLoading(true);
     try {
-      const [settingsRes, historyRes] = await Promise.all([
-        fetch('/api/user/settings'),
-        fetch('/api/user/history'),
-      ]);
-      const settingsData = await settingsRes.json();
-      const historyData = await historyRes.json();
-      setSettings(settingsData.settings || []);
-      setHistory(historyData.history || []);
+      const body = JSON.stringify({
+        game: 'valorant',
+        edpi: 400,
+        cm360: 77,
+        label: 'balanced',
+        tracking: 72,
+        flicking: 68,
+        switching: 75,
+        aimStyle: 'hybrid',
+        mouseGrip: 'palm',
+        rank: 'platinum'
+      });
+
+      const res = await fetch('/api/tips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body
+      });
+
+      const result = await res.json();
+
+      const mockData: PerformanceData = {
+        score: 71,
+        rank: 'Gold',
+        confidence: 78,
+        trend: 'Improving',
+        accuracy: 74,
+        tracking: 72,
+        flickPrecision: 68,
+        speed: 65,
+        consistency: 70,
+        currentSens: 0.50,
+        recommendedSens: result.recommendedSensitivity?.includes('-') 
+          ? parseFloat(result.recommendedSensitivity.split('-')[0]) 
+          : parseFloat(result.recommendedSensitivity) || 0.48,
+        sensRange: { min: 0.45, max: 0.55 },
+        adjustment: '-4%',
+        aimStyle: 'Hybrid',
+        insights: [
+          result.hiddenInsight || 'Your tracking score suggests room for improvement in fluid movements.',
+          'Consider micro-adjustments before peeking corners.',
+          result.improvementPriority || 'Focus on tracking consistency.'
+        ],
+        history: [
+          { date: 'Mon', score: 65 },
+          { date: 'Tue', score: 68 },
+          { date: 'Wed', score: 70 },
+          { date: 'Thu', score: 69 },
+          { date: 'Fri', score: 72 },
+          { date: 'Sat', score: 74 },
+          { date: 'Sun', score: 71 }
+        ]
+      };
+
+      setData(mockData);
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      console.error('Failed to load data:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const fetchProfile = async () => {
-    try {
-      const res = await fetch('/api/user/profile');
-      const data = await res.json();
-      if (data.user) {
-        setProfile(data.user);
-        setProfileForm({
-          bio: data.user.bio || '',
-          favoriteGame: data.user.favoriteGame || '',
-          country: data.user.country || '',
-        });
-        setUsername(data.user.username || '');
-      }
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-    }
-  };
+  async function handleRecalibrate() {
+    setRecalibrating(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await loadPerformanceData();
+    setRecalibrating(false);
+  }
 
-  const updateProfile = async () => {
-    setProfileLoading(true);
-    try {
-      const res = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profileForm),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setEditingProfile(false);
-        fetchProfile();
-      }
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-    } finally {
-      setProfileLoading(false);
-    }
-  };
+  function getRankColor(rank: string): string {
+    const colors: Record<string, string> = {
+      Iron: '#6B7280',
+      Bronze: '#CD7F32',
+      Silver: '#C0C0C0',
+      Gold: '#FFD700',
+      Platinum: '#00CED1',
+      Diamond: '#B9F2FF',
+      Ascendant: '#00FF7F',
+      Radiant: '#FF6B6B',
+      Pro: '#FF00FF'
+    };
+    return colors[rank] || '#3B82F6';
+  }
 
-  const updateUsername = async () => {
-    if (!username || username === profile.username) return;
-    setUsernameLoading(true);
-    setUsernameError('');
-    try {
-      const res = await fetch('/api/user/username', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setUsernameError(data.error);
-      } else {
-        fetchProfile();
-        updateSession();
-      }
-    } catch {
-      setUsernameError('Failed to update');
-    } finally {
-      setUsernameLoading(false);
-    }
-  };
+  function getTrendIcon(trend: string): string {
+    if (trend === 'Improving') return '↑';
+    if (trend === 'Declining') return '↓';
+    return '→';
+  }
 
-  const copyLink = () => {
-    if (profile.username) {
-      navigator.clipboard.writeText(`https://truesens.vercel.app/${profile.username}`);
-    }
-  };
+  function getTrendColor(trend: string): string {
+    if (trend === 'Improving') return '#10B981';
+    if (trend === 'Declining') return '#EF4444';
+    return '#6B7280';
+  }
 
-  if (status === 'loading' || loading) {
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: '◈' },
+    { id: 'analyzer', label: 'Sensitivity Analyzer', icon: '◎' },
+    { id: 'history', label: 'Performance History', icon: '◇' },
+    { id: 'training', label: 'Training Modes', icon: '◆' },
+    { id: 'settings', label: 'Settings', icon: '☾' }
+  ];
+
+  const metrics = [
+    { key: 'accuracy', label: 'Accuracy', value: data?.accuracy || 0, icon: '◎' },
+    { key: 'tracking', label: 'Tracking', value: data?.tracking || 0, icon: '◇' },
+    { key: 'flickPrecision', label: 'Flick Precision', value: data?.flickPrecision || 0, icon: '◆' },
+    { key: 'speed', label: 'Speed', value: data?.speed || 0, icon: '◉' },
+    { key: 'consistency', label: 'Consistency', value: data?.consistency || 0, icon: '◇' }
+  ];
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#00d4ff]"></div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loader}></div>
+        <p>Analyzing your performance...</p>
       </div>
     );
   }
 
-  const user = session?.user as any;
-  const latestSetting = settings[0];
-
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
-      {/* Animated Background */}
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,212,255,0.06)_0%,transparent_50%)] pointer-events-none -z-10" />
-      
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md bg-[#0a0a0f]/80 border-b border-[rgba(255,255,255,0.06)]">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-white">TrueSens</span>
-          </a>
-          <div className="flex items-center gap-4">
-            {user?.image && (
-              <img src={user.image} alt="" className="w-9 h-9 rounded-full ring-2 ring-[rgba(0,212,255,0.3)]" />
-            )}
+    <div className={styles.dashboardContainer}>
+      <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.collapsed : ''}`}>
+        <div className={styles.logo}>
+          <span className={styles.logoIcon}>T</span>
+          {!sidebarCollapsed && <span className={styles.logoText}>TrueSens</span>}
+        </div>
+
+        <nav className={styles.nav}>
+          {navItems.map(item => (
             <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-sm text-[#94a3b8] hover:text-white transition-colors"
+              key={item.id}
+              className={`${styles.navItem} ${activeTab === item.id ? styles.active : ''}`}
+              onClick={() => setActiveTab(item.id)}
             >
-              Sign Out
+              <span className={styles.navIcon}>{item.icon}</span>
+              {!sidebarCollapsed && <span>{item.label}</span>}
+            </button>
+          ))}
+        </nav>
+
+        <button 
+          className={styles.collapseBtn}
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+        >
+          {sidebarCollapsed ? '→' : '←'}
+        </button>
+      </aside>
+
+      <main className={styles.main}>
+        <header className={styles.topBar}>
+          <div className={styles.topBarLeft}>
+            <h1 className={styles.pageTitle}>
+              {navItems.find(n => n.id === activeTab)?.label || 'Dashboard'}
+            </h1>
+          </div>
+
+          <div className={styles.topBarRight}>
+            <div className={styles.userInfo}>
+              <div className={styles.avatar}>P</div>
+              <div className={styles.userDetails}>
+                <span className={styles.userName}>Player</span>
+                <span 
+                  className={styles.rankBadge}
+                  style={{ background: getRankColor(data?.rank || 'Gold') }}
+                >
+                  {data?.rank}
+                </span>
+              </div>
+            </div>
+
+            <button 
+              className={styles.recalibrateBtn}
+              onClick={handleRecalibrate}
+              disabled={recalibrating}
+            >
+              <span className={styles.btnIcon}>⟳</span>
+              {recalibrating ? 'Analyzing...' : 'Recalibrate'}
             </button>
           </div>
-        </div>
-      </nav>
+        </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Profile Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-[#161a27] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6 mb-8"
-        >
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Avatar */}
-            <div className="flex-shrink-0">
-              {user?.image ? (
-                <img src={user.image} alt="" className="w-24 h-24 rounded-2xl ring-4 ring-[rgba(0,212,255,0.2)]" />
-              ) : (
-                <div className="w-24 h-24 rounded-2xl bg-[#1c2133] flex items-center justify-center">
-                  <User className="w-10 h-10 text-[#64748b]" />
+        <div className={styles.content}>
+          <div className={styles.topSection}>
+            <div className={`${styles.scoreCard} glass-card`}>
+              <div className={styles.scoreHeader}>
+                <span className={styles.scoreLabel}>Performance Score</span>
+                <span 
+                  className={styles.trendBadge}
+                  style={{ color: getTrendColor(data?.trend || 'Stable') }}
+                >
+                  {getTrendIcon(data?.trend)} {data?.trend}
+                </span>
+              </div>
+              
+              <div className={styles.scoreValue}>
+                <span className="gradient-text">{data?.score}</span>
+                <span className={styles.scoreMax}>/100</span>
+              </div>
+
+              <div 
+                className={styles.rankBadgeLarge}
+                style={{ borderColor: getRankColor(data?.rank || 'Gold') }}
+              >
+                {data?.rank}
+              </div>
+
+              <div className={styles.confidenceBar}>
+                <span>Confidence</span>
+                <div className={styles.confidenceTrack}>
+                  <div 
+                    className={styles.confidenceFill}
+                    style={{ width: `${data?.confidence || 0}%` }}
+                  ></div>
                 </div>
-              )}
+                <span>{data?.confidence}%</span>
+              </div>
             </div>
-            
-            {/* Info */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold text-white mb-1">
-                    {profile.username ? `@${profile.username}` : (user?.name || 'Gamer')}
-                  </h1>
-                  <p className="text-[#64748b] mb-2">{user?.email}</p>
-                  {profile.bio && (
-                    <p className="text-[#94a3b8] mb-3">{profile.bio}</p>
-                  )}
-                  <div className="flex flex-wrap gap-3">
-                    {profile.favoriteGame && (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-[rgba(0,212,255,0.1)] text-[#00d4ff] rounded-full text-sm">
-                        <Gamepad2 className="w-4 h-4" />
-                        {profile.favoriteGame}
-                      </span>
-                    )}
-                    {profile.country && (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-[rgba(255,255,255,0.06)] text-[#94a3b8] rounded-full text-sm">
-                        <MapPin className="w-4 h-4" />
-                        {profile.country}
-                      </span>
-                    )}
-                    {profile.username && (
-                      <a href={`/${profile.username}`} className="flex items-center gap-1.5 px-3 py-1 bg-[rgba(0,212,255,0.1)] text-[#00d4ff] rounded-full text-sm hover:bg-[rgba(0,212,255,0.2)] transition-colors">
-                        <ExternalLink className="w-4 h-4" />
-                        View Profile
-                      </a>
-                    )}
+
+            <div className={styles.metricsGrid}>
+              {metrics.map(metric => (
+                <div key={metric.key} className={`${styles.metricCard} glass-card glass-card-hover`}>
+                  <span className={styles.metricIcon}>{metric.icon}</span>
+                  <div className={styles.metricInfo}>
+                    <span className={styles.metricValue}>{metric.value}</span>
+                    <span className={styles.metricLabel}>{metric.label}</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => setEditingProfile(!editingProfile)}
-                  className="p-2 text-[#64748b] hover:text-white hover:bg-[rgba(255,255,255,0.06)] rounded-lg transition-colors"
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.middleSection}>
+            <div className={`${styles.sensOptimizer} glass-card`}>
+              <h3 className={styles.sectionTitle}>Sensitivity Optimizer</h3>
+
+              <div className={styles.sensValues}>
+                <div className={styles.sensCurrent}>
+                  <span className={styles.sensLabel}>Current</span>
+                  <span className={styles.sensNumber}>{data?.currentSens}</span>
+                </div>
+                <div className={styles.sensArrow}>→</div>
+                <div className={styles.sensRecommended}>
+                  <span className={styles.sensLabel}>Recommended</span>
+                  <span className={`${styles.sensNumber} ${styles.sensHighlight}`}>
+                    {data?.recommendedSens}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.sensRange}>
+                <span className={styles.rangeLabel}>Optimal Range</span>
+                <div className={styles.rangeTrack}>
+                  <div 
+                    className={styles.rangeFill}
+                    style={{
+                      left: '30%',
+                      width: '40%'
+                    }}
+                  ></div>
+                  <div 
+                    className={styles.rangeThumb}
+                    style={{ left: '50%' }}
+                  ></div>
+                </div>
+                <div className={styles.rangeValues}>
+                  <span>{data?.sensRange.min}</span>
+                  <span>{data?.recommendedSens}</span>
+                  <span>{data?.sensRange.max}</span>
+                </div>
+              </div>
+
+              <div className={styles.adjustment}>
+                <span className={styles.adjustmentLabel}>Adjustment</span>
+                <span 
+                  className={styles.adjustmentValue}
+                  style={{ color: parseFloat(data?.adjustment || '0') < 0 ? '#10B981' : '#F59E0B' }}
                 >
-                  <Edit2 className="w-5 h-5" />
-                </button>
+                  {data?.adjustment}
+                </span>
+              </div>
+
+              <button className={styles.testAgainBtn}>
+                Test Again
+              </button>
+            </div>
+
+            <div className={`${styles.performanceGraph} glass-card`}>
+              <div className={styles.graphHeader}>
+                <h3 className={styles.sectionTitle}>Performance History</h3>
+                <div className={styles.timeToggle}>
+                  {(['daily', 'weekly', 'monthly'] as const).map(range => (
+                    <button
+                      key={range}
+                      className={`${styles.toggleBtn} ${timeRange === range ? styles.active : ''}`}
+                      onClick={() => setTimeRange(range)}
+                    >
+                      {range.charAt(0).toUpperCase() + range.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.graphContainer}>
+                <div className={styles.graphYAxis}>
+                  <span>100</span>
+                  <span>75</span>
+                  <span>50</span>
+                  <span>25</span>
+                  <span>0</span>
+                </div>
+                <div className={styles.graphArea}>
+                  <svg className={styles.graphSvg} viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.5" />
+                        <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d={data?.history ? `M 0 ${100 - data.history[0].score} ${data.history.map((p, i) => `L ${(i / (data.history.length - 1)) * 100} ${100 - p.score}`).join(' ')}` : ''}
+                      fill="none"
+                      stroke="url(#lineGradient)"
+                      strokeWidth="2"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    <path
+                      d={data?.history ? `M 0 100 L 0 ${100 - data.history[0].score} ${data.history.map((p, i) => `L ${(i / (data.history.length - 1)) * 100} ${100 - p.score}`).join(' ')} L 100 100 Z` : ''}
+                      fill="url(#lineGradient)"
+                    />
+                  </svg>
+                </div>
+                <div className={styles.graphXAxis}>
+                  {data?.history.map(p => (
+                    <span key={p.date}>{p.date}</span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-          
-          {/* Edit Form */}
-          {editingProfile && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-6 pt-6 border-t border-[rgba(255,255,255,0.06)]"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm text-[#94a3b8] mb-2">Username</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                      placeholder="yourname"
-                      className="flex-1 px-4 py-2.5 bg-[#0a0a0f] border border-[rgba(255,255,255,0.1)] rounded-lg text-white placeholder-[#64748b] focus:border-[#00d4ff] focus:outline-none transition-colors"
-                      maxLength={20}
-                    />
-                    <button
-                      onClick={updateUsername}
-                      disabled={usernameLoading || username.length < 3}
-                      className="px-4 py-2.5 bg-[#00d4ff] text-black font-medium rounded-lg hover:bg-[#00b8e0] transition-colors disabled:opacity-50"
-                    >
-                      {usernameLoading ? '...' : 'Save'}
-                    </button>
-                  </div>
-                  {usernameError && <p className="text-[#ff3366] text-sm mt-1">{usernameError}</p>}
-                </div>
-                
-                <div>
-                  <label className="block text-sm text-[#94a3b8] mb-2">Favorite Game</label>
-                  <select
-                    value={profileForm.favoriteGame}
-                    onChange={(e) => setProfileForm({ ...profileForm, favoriteGame: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-[#0a0a0f] border border-[rgba(255,255,255,0.1)] rounded-lg text-white focus:border-[#00d4ff] focus:outline-none transition-colors"
-                  >
-                    <option value="">Select game...</option>
-                    {games.map(g => (
-                      <option key={g} value={g}>{g}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm text-[#94a3b8] mb-2">Country</label>
-                  <select
-                    value={profileForm.country}
-                    onChange={(e) => setProfileForm({ ...profileForm, country: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-[#0a0a0f] border border-[rgba(255,255,255,0.1)] rounded-lg text-white focus:border-[#00d4ff] focus:outline-none transition-colors"
-                  >
-                    <option value="">Select country...</option>
-                    {countries.map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm text-[#94a3b8] mb-2">Bio</label>
-                <textarea
-                  value={profileForm.bio}
-                  onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value.slice(0, 500) })}
-                  placeholder="Tell us about yourself..."
-                  className="w-full px-4 py-2.5 bg-[#0a0a0f] border border-[rgba(255,255,255,0.1)] rounded-lg text-white placeholder-[#64748b] focus:border-[#00d4ff] focus:outline-none transition-colors resize-none"
-                  rows={3}
-                />
-                <p className="text-xs text-[#64748b] mt-1">{profileForm.bio.length}/500</p>
-              </div>
-              
-              <button
-                onClick={updateProfile}
-                disabled={profileLoading}
-                className="px-6 py-2.5 bg-[#00d4ff] text-black font-medium rounded-lg hover:bg-[#00b8e0] transition-colors disabled:opacity-50"
-              >
-                {profileLoading ? 'Saving...' : 'Save Profile'}
-              </button>
-            </motion.div>
-          )}
-        </motion.div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-[#161a27] border border-[rgba(255,255,255,0.06)] rounded-xl p-5"
-          >
-            <TrendingUp className="w-5 h-5 text-[#00d4ff] mb-2" />
-            <p className="text-2xl font-bold text-white">{profile._count?.settings || 0}</p>
-            <p className="text-sm text-[#64748b]">Saved Settings</p>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-[#161a27] border border-[rgba(255,255,255,0.06)] rounded-xl p-5"
-          >
-            <Sparkles className="w-5 h-5 text-[#00d4ff] mb-2" />
-            <p className="text-2xl font-bold text-white">{settings.filter(s => s.isCurrent).length}</p>
-            <p className="text-sm text-[#64748b]">Active Profiles</p>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-[#161a27] border border-[rgba(255,255,255,0.06)] rounded-xl p-5"
-          >
-            <History className="w-5 h-5 text-[#00d4ff] mb-2" />
-            <p className="text-2xl font-bold text-white">{profile._count?.history || 0}</p>
-            <p className="text-sm text-[#64748b]">History Entries</p>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-[#161a27] border border-[rgba(255,255,255,0.06)] rounded-xl p-5"
-          >
-            <Settings className="w-5 h-5 text-[#f59e0b] mb-2" />
-            <p className="text-2xl font-bold text-[#f59e0b]">FREE</p>
-            <p className="text-sm text-[#64748b]">Plan</p>
-          </motion.div>
-        </div>
-
-        {/* Current Settings & Share */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Current Settings */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="lg:col-span-2 bg-[#161a27] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6"
-          >
-            <h2 className="text-lg font-semibold text-white mb-4">Current Settings</h2>
-            {latestSetting ? (
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="px-3 py-1 bg-[#00d4ff]/20 text-[#00d4ff] rounded-lg font-medium uppercase">
-                      {latestSetting.game}
-                    </span>
-                    {latestSetting.isCurrent && (
-                      <span className="px-2 py-1 bg-[#00ff88]/20 text-[#00ff88] rounded text-xs">Active</span>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-[#0a0a0f] rounded-lg p-4">
-                      <p className="text-[#64748b] text-sm mb-1">DPI</p>
-                      <p className="text-xl font-bold text-white">{latestSetting.dpi}</p>
-                    </div>
-                    <div className="bg-[#0a0a0f] rounded-lg p-4">
-                      <p className="text-[#64748b] text-sm mb-1">Sensitivity</p>
-                      <p className="text-xl font-bold text-white">{latestSetting.sensitivity}</p>
-                    </div>
-                    <div className="bg-[#0a0a0f] rounded-lg p-4">
-                      <p className="text-[#64748b] text-sm mb-1">eDPI</p>
-                      <p className="text-xl font-bold text-[#00d4ff]">{latestSetting.edpi}</p>
-                    </div>
-                    <div className="bg-[#0a0a0f] rounded-lg p-4">
-                      <p className="text-[#64748b] text-sm mb-1">cm/360</p>
-                      <p className="text-xl font-bold text-white">{latestSetting.cm360.toFixed(1)}</p>
+          <div className={styles.bottomSection}>
+            <div className={`${styles.aimStyleCard} glass-card`}>
+              <h3 className={styles.sectionTitle}>Aim Style Analysis</h3>
+              <div className={styles.aimStyleDisplay}>
+                <div className={styles.styleLabel}>
+                  <span className="gradient-text">{data?.aimStyle}</span>
+                </div>
+                <div className={styles.styleBars}>
+                  <div className={styles.styleBar}>
+                    <span>Flick</span>
+                    <div className={styles.barTrack}>
+                      <div className={styles.barFill} style={{ width: '70%' }}></div>
                     </div>
                   </div>
-                  <div className="flex gap-4 mt-4">
-                    <div className="flex-1 bg-[#0a0a0f] rounded-lg p-3">
-                      <p className="text-[#64748b] text-xs mb-1">Mouse Grip</p>
-                      <p className="text-white capitalize">{latestSetting.mouseGrip || '-'}</p>
+                  <div className={styles.styleBar}>
+                    <span>Track</span>
+                    <div className={styles.barTrack}>
+                      <div className={styles.barFill} style={{ width: '85%' }}></div>
                     </div>
-                    <div className="flex-1 bg-[#0a0a0f] rounded-lg p-3">
-                      <p className="text-[#64748b] text-xs mb-1">Aim Style</p>
-                      <p className="text-white capitalize">{latestSetting.aimStyle || '-'}</p>
+                  </div>
+                  <div className={styles.styleBar}>
+                    <span>Switch</span>
+                    <div className={styles.barTrack}>
+                      <div className={styles.barFill} style={{ width: '65%' }}></div>
                     </div>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-[#64748b] mb-4">No settings saved yet</p>
-                <a
-                  href="/"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#00d4ff] text-black font-medium rounded-lg hover:bg-[#00b8e0] transition-colors"
-                >
-                  <Sparkles className="w-5 h-5" />
-                  Find Your Sens
-                </a>
-              </div>
-            )}
-          </motion.div>
-
-          {/* Share */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="bg-[#161a27] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6"
-          >
-            <h2 className="text-lg font-semibold text-white mb-4">Share Your Setup</h2>
-            <p className="text-[#64748b] text-sm mb-4">
-              Share your sensitivity with the world
-            </p>
-            <div className="space-y-3">
-              <button
-                onClick={copyLink}
-                disabled={!profile.username}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#00d4ff] text-black font-medium rounded-lg hover:bg-[#00b8e0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Copy className="w-5 h-5" />
-                Copy Link
-              </button>
-              {profile.username && (
-                <a
-                  href={`https://twitter.com/intent/tweet?text=Check+out+my+aim+settings&url=https://truesens.vercel.app/${profile.username}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#1da1f2] text-white font-medium rounded-lg hover:bg-[#1a91da] transition-colors"
-                >
-                  <Twitter className="w-5 h-5" />
-                  Share on Twitter
-                </a>
-              )}
             </div>
-          </motion.div>
-        </div>
 
-        {/* History */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="bg-[#161a27] border border-[rgba(255,255,255,0.06)] rounded-2xl p-6"
-        >
-          <h2 className="text-lg font-semibold text-white mb-4">History</h2>
-          {history.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-[#64748b] text-sm border-b border-[rgba(255,255,255,0.06)]">
-                    <th className="pb-3">Game</th>
-                    <th className="pb-3">DPI</th>
-                    <th className="pb-3">Sens</th>
-                    <th className="pb-3">eDPI</th>
-                    <th className="pb-3">cm/360</th>
-                    <th className="pb-3">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.slice(0, 10).map((entry, i) => (
-                    <tr key={i} className="border-b border-[rgba(255,255,255,0.04)]">
-                      <td className="py-3 text-white font-medium uppercase">{entry.game}</td>
-                      <td className="py-3 text-[#94a3b8]">{entry.dpi}</td>
-                      <td className="py-3 text-[#94a3b8]">{entry.sensitivity}</td>
-                      <td className="py-3 text-[#00d4ff] font-mono">{entry.edpi}</td>
-                      <td className="py-3 text-[#94a3b8]">{entry.cm360.toFixed(1)}</td>
-                      <td className="py-3 text-[#64748b] text-sm">
-                        {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className={`${styles.insightsCard} glass-card`}>
+              <h3 className={styles.sectionTitle}>AI Insights</h3>
+              <ul className={styles.insightsList}>
+                {data?.insights.map((insight, i) => (
+                  <li key={i} className={styles.insightItem}>
+                    <span className={styles.insightIcon}>›</span>
+                    <span>{insight}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className={styles.aiBadge}>
+                <span>AI POWERED</span>
+              </div>
             </div>
-          ) : (
-            <p className="text-center text-[#64748b] py-8">No history yet</p>
-          )}
-        </motion.div>
+          </div>
+        </div>
       </main>
     </div>
   );
