@@ -1,3 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg-primary: #0B0B0F;
+  --accent-blue: #3B82F6;
+  --accent-purple: #8B5CF6;
+  --text-primary: #FFFFFF;
+  --text-secondary: #9CA3AF;
+  --success: #10B981;
+  --warning: #F59E0B;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
 .wizardContainer {
   min-height: 100vh;
   background: radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),

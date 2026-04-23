@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
 import { useState, useCallback } from 'react';
 import styles from './wizard.module.css';
 
-type Step = 0 | 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4;
 
 interface WizardData {
   dpi: number;
@@ -58,7 +58,7 @@ export default function HomeWizard() {
           body: JSON.stringify({
             game: data.game,
             edpi: data.dpi * data.inGameSens,
-            cm360: parseFloat(((360 * 2.54) / (data.dpi * data.inGameSens * (data.game === 'valorant' ? 0.07 : 0.022))).toFixed(1)),
+            cm360: parseFloat(((360 * 2.54) / (data.dpi * data.inGameSens * (data.game === 'valorant' ? 0.07 : 0.022)).toFixed(1)),
             label: data.inGameSens < 0.4 ? 'control' : data.inGameSens > 0.8 ? 'speed' : 'balanced',
             tracking: 70,
             flicking: 65,
@@ -98,42 +98,57 @@ export default function HomeWizard() {
     }
   }, [data]);
 
-return (
+  return (
     <div className={styles.wizardContainer}>
-      {currentStep > 0 && (
-        <div className={styles.progressBar}>
-          {[1, 2, 3, 4].map(step => (
-            <div 
-              key={step}
-              className={`${styles.progressStep} ${currentStep >= step ? styles.active : ''} ${currentStep === step ? styles.current : ''}`}
-            >
-              <div className={styles.stepDot}>{step}</div>
-              <span className={styles.stepLabel}>{step === 1 ? 'Game' : step === 2 ? 'Hardware' : step === 3 ? 'Style' : 'Result'}</span>
-            </div>
-          ))}
-          <div className={styles.progressTrack}>
-            <div 
-              className={styles.progressFill}
-              style={{ width: ((currentStep - 1) / 3 * 100) + '%' }}
-            />
+      <div className={styles.progressBar}>
+        {[1, 2, 3, 4].map(step => (
+          <div 
+            key={step}
+            className={`${styles.progressStep} ${currentStep >= step ? styles.active : ''} ${currentStep === step ? styles.current : ''}`}
+          >
+            <div className={styles.stepDot}>{step}</div>
+            <span className={styles.stepLabel}>Step {step}</span>
           </div>
+        ))}
+        <div className={styles.progressTrack}>
+          <div 
+            className={styles.progressFill}
+            style={{ width: `${((currentStep - 1) / 3 * 100}%` }}
+          />
         </div>
-      )}
+      </div>
 
       <div className={styles.content}>
-        {currentStep === 0 && (
+        {currentStep === 1 && (
           <div className={`${styles.stepContent} ${styles.fadeIn}`}>
             <h1 className={styles.stepTitle}>Welcome to TrueSens</h1>
             <p className={styles.stepSubtitle}>AI-Powered Sensitivity Calibration</p>
-            <p className={styles.stepDesc}>Optimize your aim with personalized sensitivity recommendations powered by AI. Enter your setup, and we'll calculate your perfect sensitivity settings.</p>
             
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Game</label>
+              <div className={styles.gameSelect}>
+                <button
+                  className={`${styles.gameBtn} ${data.game === 'valorant' ? styles.gameActive : ''}`}
+                  onClick={() => setData({ ...data, game: 'valorant' })}
+                >
+                  <span>◆</span> Valorant
+                </button>
+                <button
+                  className={`${styles.gameBtn} ${data.game === 'cs2' ? styles.gameActive : ''}`}
+                  onClick={() => setData({ ...data, game: 'cs2' })}
+                >
+                  <span>◇</span> CS2
+                </button>
+              </div>
+            </div>
+
             <button className={styles.nextBtn} onClick={handleNext}>
               Get Started →
             </button>
           </div>
         )}
 
-        {currentStep === 1 && (
+        {currentStep === 2 && (
           <div className={`${styles.stepContent} ${styles.fadeIn}`}>
             <h2 className={styles.stepTitle}>Hardware Setup</h2>
             <p className={styles.stepSubtitle}>Tell us about your gear</p>
@@ -164,8 +179,8 @@ return (
             </div>
 
             <div className={styles.buttonGroup}>
-              <button className={styles.backBtn} onClick={handleBack}>ΓåÉ Back</button>
-              <button className={styles.nextBtn} onClick={handleNext}>Next ΓåÆ</button>
+              <button className={styles.backBtn} onClick={handleBack}>← Back</button>
+              <button className={styles.nextBtn} onClick={handleNext}>Next →</button>
             </div>
           </div>
         )}
@@ -206,7 +221,7 @@ return (
             </div>
 
             <div className={styles.buttonGroup}>
-              <button className={styles.backBtn} onClick={handleBack}>ΓåÉ Back</button>
+              <button className={styles.backBtn} onClick={handleBack}>← Back</button>
               <button 
                 className={`${styles.analyzeBtn} ${loading ? styles.loading : ''}`}
                 onClick={handleStartAnalysis}
@@ -218,7 +233,7 @@ return (
                     Analyzing...
                   </>
                 ) : (
-                  'Start Analysis ΓåÆ'
+                  'Start Analysis →'
                 )}
               </button>
             </div>
@@ -261,7 +276,7 @@ return (
                   </div>
 
                   <a href="/dashboard" className={styles.dashboardBtn}>
-                    Go to Dashboard ΓåÆ
+                    Go to Dashboard →
                   </a>
                 </>
               ) : null}
