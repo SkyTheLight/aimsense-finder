@@ -16,53 +16,91 @@ interface TipContext {
   overshooting?: boolean;
   undershooting?: boolean;
   aimIssue?: string;
+  previousScores?: {
+    tracking: number;
+    flicking: number;
+    switching: number;
+  };
 }
 
 async function generateAIAnalysis(body: TipContext) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return null;
 
-  const scoreGap = {
-    tracking: body.tracking,
-    flicking: body.flicking,
-    switching: body.switching
-  };
-  const weakestKey = Object.keys(scoreGap).reduce((a, b) => scoreGap[a] < scoreGap[b] ? a : b);
-  const strongestKey = Object.keys(scoreGap).reduce((a, b) => scoreGap[a] > scoreGap[b] ? a : b);
-  const gapSize = scoreGap[strongestKey] - scoreGap[weakestKey];
+  const scores = { t: body.tracking, f: body.flicking, s: body.switching };
+  const keys = Object.keys(scores) as Array<'t' | 'f' | 's'>;
+  const weakest = keys.reduce((a, b) => scores[a] < scores[b] ? a : b);
+  const strongest = keys.reduce((a, b) => scores[a] > scores[b] ? a : b);
+  const gap = scores[strongest] - scores[weakest];
   
-  const problemFlag = body.overshooting ? 'OVERSHOOTING' : body.undershooting ? 'UNDERSHOOTING' : body.aimIssue ? `ISSUE: ${body.aimIssue}` : 'NONE';
+  const scoreVariance = Math.sqrt(
+    Math.pow(scores.t - (scores.t + scores.f + scores.s) / 3, 2) +
+    Math.pow(scores.f - (scores.t + scores.f + scores.s) / 3, 2) +
+    Math.pow(scores.s - (scores.t + scores.f + scores.s) / 3, 2)
+  ) / 3;
+  
+  const isImbalanced = gap > 20;
+  const hasTrend = body.previousScores && (
+    body.previousScores.tracking !== body.tracking ||
+    body.previousScores.flicking !== body.flicking ||
+    body.previousScores.switching !== body.switching
+  );
 
-  const prompt = `REASONING ENGINE ACTIVE. Analyze this player from scratch.
+  const prompt = `ADVANCED FPS ANALYSIS ENGINE. Deep reasoning required.
 
-STATE:
-- Game: ${body.game}
-- eDPI: ${body.edpi} | cm/360: ${body.cm360} | Type: ${body.label}
+PLAYER STATE:
+- Game: ${body.game} | eDPI: ${body.edpi} | cm/360: ${body.cm360} | Type: ${body.label}
 - Style: ${body.aimStyle} | Grip: ${body.mouseGrip} | Rank: ${body.rank || 'unknown'}
-- Scores: T${body.tracking} F${body.flicking} S${body.switching}
-- Gap: ${gapSize} between ${strongestKey}(${scoreGap[strongestKey]}) and ${weakestKey}(${scoreGap[weakestKey]})
-- Problem: ${problemFlag}
+- Scores: T${body.tracking} F${body.flicking} S${body.switching} | Variance: ${scoreVariance.toFixed(1)}
+- Problem Flag: ${body.overshooting ? 'OVERSHOOTING' : body.undershooting ? 'UNDERSHOOTING' : body.aimIssue || 'NONE'}
+${hasTrend ? `- TREND DETECTED: Previous scores differ from current` : ''}
 
-REASONING REQUIRED:
-1. WHY is ${weakestKey} their weakest? (habit? sens? tension? reaction?)
-2. Is sensitivity CAUSING this or just not helping?
-3. What specific behavior would change their ${weakestKey} score?
-4. How does ${body.aimStyle} + ${body.mouseGrip} affect their problem?
-5. ${problemFlag !== 'NONE' ? `DIAGNOSE ${problemFlag}: root cause?` : 'No flagged problem - what hidden issue might they have?'}
+DEEP ANALYSIS:
+1. SCORE PATTERN ANALYSIS
+   - Weakest: ${weakest} (${scores[weakest]}) - WHY? (habit? tension? visual?)
+   - Strongest: ${strongest} (${scores[strongest]}) - Is this their identity or a crutch?
+   - Gap: ${gap} - ${isImbalanced ? 'SIGNIFICANT IMBALANCE detected' : 'Relatively balanced'}
+   - Variance: ${scoreVariance.toFixed(1)} - ${scoreVariance > 10 ? 'High inconsistency pattern' : 'Consistent performer'}
 
-BUILD response. VARY structure. DO NOT use fixed templates.
+2. ROOT CAUSE DIAGNOSIS
+   ${body.overshooting ? `- OVERSHOOTING: Is this panic flicking, tension, or sens too high?
+     * If tension: Grip pressure, adrenaline, or bad pre-aim routine
+     * If sens: Check cm/360 - below 30cm is aggressive, above 50cm is controlled` : ''}
+   ${body.undershooting ? `- UNDERSHOOTING: Is this hesitation, sens too low, or visual lag?
+     * If hesitation: Decision anxiety, confidence, or overthinking
+     * If sens: Check if they\'re correcting mid-movement` : ''}
+   ${!body.overshooting && !body.undershooting ? `- No flagged issue - but low ${weakest} score suggests underlying ${weakest === 't' ? 'tracking tension' : weaknes === 'f' ? 'flick control issue' : 'switching rhythm problem'}` : ''}
 
-OUTPUT:
+3. SENSITIVITY CORRELATION
+   - Current eDPI ${body.edpi} = ${body.cm360}cm/360 (${parseFloat(body.cm360) < 35 ? 'LOW (precision)' : parseFloat(body.cm360) > 50 ? 'HIGH (speed)' : 'MID (balanced)'})
+   - Does sensitivity explain their score pattern? Or is it habits/tension?
+
+4. GRIP + STYLE INTERACTION
+   - ${body.mouseGrip} grip + ${body.aimStyle} style = 
+     ${body.mouseGrip === 'palm' ? 'More surface area = natural tracking, less precise flicks' : ''}
+     ${body.mouseGrip === 'claw' ? 'Leverage = faster flicks, potential tension in tracking' : ''}
+     ${body.mouseGrip === 'tip' ? 'Precise control, less stability' : ''}
+
+5. HIDDEN INSIGHT DISCOVERY
+   ${gap > 15 ? `Score gap of ${gap} suggests specialized play - they\'ve trained one skill intensely while neglecting others` : ''}
+   ${scoreVariance > 8 ? `High variance means inconsistent warmup routine or fatigue affecting performance` : ''}
+   ${hasTrend ? `Improving ${body.previousScores?.tracking && body.tracking > body.previousScores.tracking ? 'tracking' : body.previousScores?.flicking && body.flicking > body.previousScores.flicking ? 'flicking' : 'switching'} - training is working` : ''}
+
+REASONING ENGINE OUTPUT (FRESH CONSTRUCTION):
 {
   "recommendedSensitivity": "X.XX",
-  "whyThisFits": "EXPLANATION based on THIS player's specific data",
-  "aiTips": ["UNIQUE action for THIS player", "DIFFERENT approach", "ADAPTIVE method", "CONTEXT-SPECIFIC drill"],
-  "improvementPriority": "SINGLE most impactful change",
-  "hiddenInsight": "SOMETHING THEY DON'T KNOW about their gameplay",
-  "confidence": "High/Medium"
-}
-
-STRUCTURE: Fresh each request. Reference specific numbers. Sound like you just analyzed their replay.`;
+  "whyThisFits": "EXPLAIN specific to their eDPI, grip, and score pattern",
+  "aiTips": [
+    "SPECIFIC drill addressing their ${weakest} gap with clear mechanism",
+    "HABIT correction for ${body.overshooting ? 'overshoot' : body.undershooting ? 'undershoot' : 'pattern'} with exact method",
+    "ADAPTIVE method for their ${body.aimStyle} style and ${body.mouseGrip} grip combination",
+    "CONTEXT-AWARE training considering ${body.rank} rank and game ${body.game}"
+  ],
+  "improvementPriority": "THE ONE change that unlocks their potential",
+  "hiddenInsight": "UNDISCOVERED PATTERN they don\'t see in their own gameplay",
+  "confidence": "High/Medium/Experimental",
+  "reasoning": "Your 1-sentence analysis of their core issue"
+}`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/responses', {
@@ -107,22 +145,22 @@ export async function POST(request: Request) {
     const weakest = body.tracking <= body.flicking ? 'tracking' : 'flicking';
     return NextResponse.json({
       recommendedSensitivity: `${(body.edpi / 800).toFixed(2)}`,
-      whyThisFits: `Based on your ${body.label} sensitivity.`,
+      whyThisFits: `Your ${body.label} profile suggests this range.`,
       aiTips: [
-        `Target your ${weakest} gap directly.`,
-        'Build a consistent pre-round routine.',
-        'Focus on one adjustment at a time.',
-        'Film and review your sessions.'
+        `Target your ${weakest} gap with focused practice.`,
+        'Build consistent pre-round routine.',
+        'Film sessions to identify patterns.',
+        'Train one skill per session.'
       ],
       improvementPriority: weakest,
-      hiddenInsight: 'Score gaps reveal habit patterns, not just skill.',
+      hiddenInsight: 'Score gaps reveal habit patterns.',
       confidence: 'Medium',
       fallback: true
     });
   } catch (error) {
     console.error('Tips error:', error);
     return NextResponse.json(
-      { recommendedSensitivity: '0.79', aiTips: ['Analyze your score gaps.'], improvementPriority: 'consistency', hiddenInsight: 'Consistency beats raw skill.', confidence: 'Experimental' },
+      { recommendedSensitivity: '0.79', aiTips: ['Analyze your gaps.'], improvementPriority: 'consistency', hiddenInsight: 'Consistency beats raw skill.', confidence: 'Experimental' },
       { status: 200 }
     );
   }
