@@ -373,8 +373,8 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
       </motion.aside>
 
       {/* ===================== MAIN CONTENT ===================== */}
-      <main className="flex-1 min-h-screen md:ml-72 lg:ml-72 xl:ml-80">
-        <div className="pr-8 py-6 max-w-[1600px] mx-auto">
+      <main className="flex-1 min-h-screen pl-72">
+        <div className="pr-8 py-6 pl-8 max-w-[1600px] mx-auto">
           
           {/* Mobile Header */}
           <div className="flex md:hidden items-center justify-between mb-4">
