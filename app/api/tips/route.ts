@@ -12,6 +12,10 @@ interface TipContext {
   switching: number;
   aimStyle: string;
   mouseGrip: string;
+  rank?: string;
+  overshooting?: boolean;
+  undershooting?: boolean;
+  aimIssue?: string;
 }
 
 const GAME_NAMES: Record<string, string> = {
@@ -19,132 +23,135 @@ const GAME_NAMES: Record<string, string> = {
   cs2: 'Counter-Strike 2',
 };
 
-const SENSITIVITY_LABELS: Record<string, string> = {
-  control: 'Control (Low Sensitivity)',
-  balanced: 'Balanced',
-  speed: 'Speed (High Sensitivity)',
-};
+async function generateAIAnalysis(body: TipContext) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return null;
 
-async function generateAITips(body: TipContext): Promise<string[]> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  
-  if (!apiKey) {
-    throw new Error('No OpenAI API key');
-  }
-
-  const { game, edpi, cm360, label, tracking, flicking, switching, aimStyle, mouseGrip } = body;
+  const { game, edpi, cm360, label, tracking, flicking, switching, aimStyle, mouseGrip, rank, overshooting, undershooting, aimIssue } = body;
   const gameName = GAME_NAMES[game] || 'FPS';
-  const sensitivityLabel = SENSITIVITY_LABELS[label] || 'Balanced';
   const weakest = tracking <= flicking && tracking <= switching ? 'tracking' : flicking <= switching ? 'flicking' : 'target switching';
-  const strongest = tracking >= flicking && tracking >= switching ? 'tracking' : flicking >= switching ? 'flicking' : 'target switching';
-  
-  const prompt = `You are an elite FPS Sensitivity Analyst and Aim Coach. Analyze this player and give exactly 4 personalized coaching tips.
 
-PLAYER DATA:
-- Game: ${gameName}
-- eDPI: ${edpi}, cm/360: ${cm360.toFixed(2)}
-- Sensitivity Type: ${sensitivityLabel} 
-- Mouse Grip: ${mouseGrip}
-- Aim Style: ${aimStyle}
-- Performance: Tracking ${tracking}/100, Flicking ${flicking}/100, Switching ${switching}/100
-- Strongest: ${strongest}, Weakest: ${weakest}
+  const prompt = `You are TrueSens, an elite FPS Sensitivity Analyst and Aim Coach. Analyze deeply.
 
-RESPONSE FORMAT (STRICT):
-Each tip on a new line. No labels. No bullets. Just direct advice.
-Make it feel personalized and intelligent. Sound like a real coach.
-Keep each tip under 15 words.
-Do NOT use GOOD/WATCH/ADVICE labels.`;
+INTERNAL ANALYSIS:
+- Player type: ${aimStyle || 'hybrid'} aimer with ${mouseGrip} grip
+- Current: eDPI ${edpi}, cm/360 ${cm360.toFixed(1)}, ranked "${rank || 'unknown'}"
+- Performance: Tracking ${tracking}, Flicking ${flicking}, Switching ${switching}
+- Weakest: ${weakest}
+${overshooting ? '- Problem: Overshooting targets' : ''}
+${undershooting ? '- Problem: Undershooting/falling short' : ''}
+${aimIssue ? `- Primary issue: ${aimIssue}` : ''}
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are TrueSens, an elite FPS Sensitivity Analyst and Aim Coach. You help players find their optimal sensitivity and improve their aim. Be direct, smart, and personalized. Never generic.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 400,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error('OpenAI API failed');
-  }
-
-  const data = await response.json();
-  const content = data.choices?.[0]?.message?.content || '';
-  
-  const tips = content
-    .split('\n')
-    .map((line: string) => line.replace(/^[\d\.\)\-\s•]+/, '').trim())
-    .filter((line: string) => line.length > 5 && line.length < 150)
-    .slice(0, 4);
-
-  return tips;
+OUTPUT (STRICT JSON):
+{
+  "recommendedSensitivity": "X.XX or X.XX-X.XX",
+  "whyThisFits": "2-3 sentences using THEIR data",
+  "aiTips": ["specific tip", "specific tip", "specific tip", "specific tip"],
+  "improvementPriority": "THE #1 thing to train first",
+  "hiddenInsight": "One thing they may not realize",
+  "confidence": "High, Medium, or Experimental"
 }
 
-async function generatePracticeTip(body: TipContext): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  
-  if (!apiKey) {
-    throw new Error('No OpenAI API key');
+RULES: Never generic. Every tip must reference their specific numbers. Sound like elite coach.`;
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/responses', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        input: prompt,
+      }),
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const content = data?.output?.[0]?.content?.[0]?.text?.trim();
+    if (!content) return null;
+
+    const parsed = JSON.parse(content);
+    if (parsed.aiTips && parsed.recommendedSensitivity) {
+      return parsed;
+    }
+  } catch {
+    // continue
   }
 
-  const { game, edpi, cm360, label, tracking, flicking, switching, aimStyle } = body;
-  const gameName = GAME_NAMES[game] || 'FPS';
-  const sensitivityLabel = SENSITIVITY_LABELS[label] || 'Balanced';
-  const weakest = tracking <= flicking && tracking <= switching ? 'tracking' : flicking <= switching ? 'flicking' : 'target switching';
-  
-  const prompt = `You are an elite FPS Aim Coach. Give ONE specific practice recommendation.
+  return null;
+}
 
-Player: ${gameName}, ${sensitivityLabel}, weakest skill: ${weakest}, eDPI: ${edpi}
+async function generatePracticeTip(body: TipContext) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return 'Practice your weakest skill daily for 15 min.';
 
-Format: Start with a verb. Under 12 words. Be specific.`;
+  const weakest = body.tracking <= body.flicking && body.tracking <= body.switching ? 'tracking' : body.flicking <= body.switching ? 'flicking' : 'target switching';
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are TrueSens, an elite FPS Aim Coach. Short, actionable practice tips only.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 100,
-    }),
-  });
+  const prompt = `One sentence practice tip. Player: ${body.game}, weakest: ${weakest}, eDPI: ${body.edpi}. Under 12 words, start with verb.`;
 
-  if (!response.ok) {
-    throw new Error('OpenAI API failed');
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/responses', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        input: prompt,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data?.output?.[0]?.content?.[0]?.text?.trim() || 'Practice daily.';
+    }
+  } catch {
+    // continue
   }
 
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content?.trim() || 'Practice daily to improve consistency.';
+  return 'Practice your weakest skill daily for 15 min.';
 }
 
 export async function POST(request: Request) {
   try {
     const body: TipContext = await request.json();
-    
-    const [tips, practiceTip] = await Promise.all([
-      generateAITips(body).catch(() => []),
-      generatePracticeTip(body).catch(() => 'Practice daily to improve consistency.')
+
+    const [analysis, practiceTip] = await Promise.all([
+      generateAIAnalysis(body),
+      generatePracticeTip(body)
     ]);
 
-    return NextResponse.json({ tips, practiceTip });
+    if (analysis) {
+      return NextResponse.json({
+        ...analysis,
+        practiceTip: practiceTip || analysis.aiTips?.[3] || 'Practice daily.',
+        fallback: false
+      });
+    }
+
+    return NextResponse.json({
+      recommendedSensitivity: '0.75 - 0.85',
+      whyThisFits: `Based on your ${body.label} sensitivity and ${body.aimStyle} style, this range balances control and reactivity.`,
+      aiTips: [
+        `Your ${body.tracking <= 50 ? 'tracking' : 'flicking'} needs attention based on scores below 50.`,
+        'Film your gameplay to identify crosshair placement habits.',
+        'Focus on one skill per training session.',
+        'Build a consistent warmup routine.'
+      ],
+      improvementPriority: body.tracking <= body.flicking ? 'tracking' : 'flicking',
+      hiddenInsight: 'Most players blame sensitivity when the real issue is tension or inconsistent routine.',
+      confidence: 'Medium',
+      practiceTip: practiceTip || 'Practice your weakest skill daily.',
+      fallback: true
+    });
   } catch (error) {
     console.error('Tips API error:', error);
     return NextResponse.json(
-      { tips: ['Focus on consistency over raw skill.', 'Warm up before ranked matches.', 'Film your gameplay to analyze mistakes.', 'Train your weakest skill daily.'], practiceTip: 'Practice daily to improve consistency.' },
+      { recommendedSensitivity: '0.79', aiTips: ['Focus on consistency.', 'Warm up before ranked.', 'Film gameplay.', 'Train weakest skill.'], improvementPriority: 'consistency', hiddenInsight: 'Consistency beats raw skill.', confidence: 'Experimental' },
       { status: 200 }
     );
   }
