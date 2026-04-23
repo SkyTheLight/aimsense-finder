@@ -275,7 +275,7 @@ ${metrics.map(m => `${m.label}: ${m.value}`).join('\n')}`;
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className={`${sidebarBg} ${borderColor} border-r ${sidebarWidth} h-screen fixed left-0 top-0 flex flex-col z-50 transition-all duration-300`}
+        className={`${sidebarBg} ${borderColor} border-r ${sidebarWidth} h-screen fixed left-0 top-0 flex flex-col z-50 transition-all duration-300 hidden lg:flex`}
       >
         {/* Collapse Toggle */}
         <button
