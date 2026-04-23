@@ -19,6 +19,7 @@ type AiSenseInput = {
 
 async function fetchOptimalSensitivity(input: AiSenseInput) {
   const apiKey = process.env.GROQ_API_KEY;
+  console.log('[ai-sense] GROQ_API_KEY exists:', !!apiKey, apiKey ? apiKey.substring(0, 10) + '...' : 'MISSING');
   if (!apiKey) return null;
 
   const { dpi, inGameSens, grip, mousePad, mouseWeight, playstyle, role, targetPreference, reactionStyle, game, aimWeaknesses, rank } = input;
@@ -48,6 +49,7 @@ OUTPUT (STRICT JSON):
 }`;
 
   try {
+    console.log('[ai-sense] Calling Groq API...');
     const response = await fetch('https://api.groq.com/openai/v1/responses', {
       method: 'POST',
       headers: {
@@ -60,9 +62,16 @@ OUTPUT (STRICT JSON):
       }),
     });
 
-    if (!response.ok) return null;
+    console.log('[ai-sense] Groq response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[ai-sense] Groq error:', errorText);
+      return null;
+    }
 
     const data = await response.json();
+    console.log('[ai-sense] Groq response:', JSON.stringify(data).substring(0, 200));
     const content = data?.output?.[0]?.content?.[0]?.text?.trim();
     if (!content) return null;
 
