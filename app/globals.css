@@ -49,14 +49,36 @@
   --app-border-medium: rgba(255, 255, 255, 0.10);
   --app-border-strong: rgba(255, 255, 255, 0.14);
   --app-border-accent: rgba(14, 165, 233, 0.35);
-  --app-text-primary: #F1F5F9;
+  --app-text-primary: #E5E7EB;
   --app-text-secondary: #94A3B8;
   --app-text-muted: #64748B;
   --app-text-subtle: #475569;
+  --app-accent: #38BDF8;
+  --app-accent-2: #818CF8;
+  --app-accent-soft: rgba(56, 189, 248, 0.15);
+  --app-accent-glow: rgba(56, 189, 248, 0.3);
+  --app-success: #34D399;
+  --app-warning: #FBBF24;
+  --app-danger: #F87171;
+}
+
+:root[data-theme='light'] {
+  --app-bg: #F8FAFC;
+  --app-surface: #FFFFFF;
+  --app-surface-soft: #F1F5F9;
+  --app-surface-hover: #E2E8F0;
+  --app-border: rgba(15, 23, 42, 0.08);
+  --app-border-medium: rgba(15, 23, 42, 0.14);
+  --app-border-strong: rgba(15, 23, 42, 0.2);
+  --app-border-accent: rgba(14, 165, 233, 0.35);
+  --app-text-primary: #0F172A;
+  --app-text-secondary: #475569;
+  --app-text-muted: #94A3B8;
+  --app-text-subtle: #CBD5E1;
   --app-accent: #0EA5E9;
   --app-accent-2: #8B5CF6;
   --app-accent-soft: rgba(14, 165, 233, 0.12);
-  --app-accent-glow: rgba(14, 165, 233, 0.25);
+  --app-accent-glow: rgba(14, 165, 233, 0.2);
   --app-success: #10B981;
   --app-warning: #F59E0B;
   --app-danger: #EF4444;
