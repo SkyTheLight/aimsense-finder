@@ -37,7 +37,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
 
   return (
     <>
-      <div className="mx-auto flex w-full min-w-[1180px] max-w-[1180px] flex-col gap-6 pb-10">
+      <div className="flex w-full flex-col space-y-8">
         <HeroSection onStart={() => setShowOptions(true)} />
         <TrustSection />
         <WorkflowSection />
@@ -62,21 +62,21 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 18, scale: 0.98 }}
               transition={{ duration: 0.28, ease: 'easeOut' }}
-              className="fixed left-1/2 top-1/2 z-[60] w-[min(92vw,560px)] -translate-x-1/2 -translate-y-1/2 rounded-[32px] border border-[var(--app-border-strong)] bg-[var(--app-surface)] p-6 shadow-[0_40px_120px_rgba(2,6,23,0.28)] sm:p-8"
+              className="fixed left-1/2 top-1/2 z-[60] w-[min(92vw,560px)] -translate-x-1/2 -translate-y-1/2 rounded-[32px] border border-[var(--app-border-strong)] bg-[var(--app-surface)] p-8 shadow-[0_40px_120px_rgba(2,6,23,0.28)]"
             >
-              <div className="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-6">
+              <div className="space-y-6 rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-[var(--app-accent)]">
                   Start Flow
                 </div>
-                <h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-[var(--app-text-primary)]">
+                <h2 className="text-3xl font-semibold tracking-[-0.04em] text-[var(--app-text-primary)]">
                   Enter the calibration experience your way.
                 </h2>
-                <p className="mt-3 text-sm leading-7 text-[var(--app-text-secondary)]">
+                <p className="text-sm leading-7 text-[var(--app-text-secondary)]">
                   You can begin immediately as a guest, or sign in with Google to save settings, track history,
                   and share your profile later.
                 </p>
 
-                <div className="mt-6 grid gap-3">
+                <div className="grid gap-4">
                   <button
                     type="button"
                     onClick={onStart}
@@ -84,7 +84,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
                   >
                     <div>
                       <div className="text-base font-semibold">Continue as guest</div>
-                      <div className="mt-1 text-sm text-white/80">Fastest path. Start calibrating now.</div>
+                      <div className="text-sm text-white/80">Fastest path. Start calibrating now.</div>
                     </div>
                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </button>
@@ -96,7 +96,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
                   >
                     <div>
                       <div className="text-base font-semibold">Continue with Google</div>
-                      <div className="mt-1 text-sm text-slate-600">{identity}</div>
+                      <div className="text-sm text-slate-600">{identity}</div>
                     </div>
                     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -107,7 +107,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
                   </button>
                 </div>
 
-                <div className="mt-6 grid gap-2 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-3">
                   {credibility.map((item) => (
                     <div
                       key={item}
@@ -119,7 +119,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
                   ))}
                 </div>
 
-                <div className="mt-5 flex items-center justify-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-[var(--app-text-muted)]">
+                <div className="flex items-center justify-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-[var(--app-text-muted)]">
                   <ShieldCheck className="h-4 w-4 text-[var(--app-accent)]" />
                   Data stays tied to your account only if you choose to sign in
                 </div>
