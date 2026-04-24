@@ -8,10 +8,11 @@ interface FinalCtaSectionProps {
 
 export function FinalCtaSection({ onStart }: FinalCtaSectionProps) {
   return (
-    <section className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-8 text-center space-y-6">
-      <div className="space-y-2">
+    <section className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-8 text-center space-y-6 py-16">
+      <div className="space-y-4">
+        <div className="text-sm text-[var(--app-accent)] uppercase tracking-wide">Get Started</div>
         <h2 className="text-xl font-semibold text-[var(--app-text-primary)]">Ready to find your sens?</h2>
-        <p className="text-sm text-[var(--app-text-secondary)]">Get your personalized sensitivity recommendation in 3 minutes.</p>
+        <p className="text-base leading-relaxed text-[var(--app-text-secondary)]">Get your personalized sensitivity recommendation in 3 minutes.</p>
       </div>
       <button
         onClick={onStart}

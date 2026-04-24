@@ -11,25 +11,36 @@ export const viewport: Viewport = {
 };
 
 const inter = Inter({
-  variable: "--font-inter", 
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains", 
+  variable: "--font-jetbrains",
   subsets: ["latin"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: 'TrueSens | AI-Powered Aim Optimization',
-  icons: { 
-    icon: '/truesensicon.png',
-    apple: '/truesensicon.png',
+  title: "TrueSens | AI-Powered Aim Optimization",
+  icons: {
+    icon: "/truesensicon.png",
+    apple: "/truesensicon.png",
   },
-  description: 'World-class AI-powered aim optimization platform. Real-time esports performance analytics, sensitivity tuning, and personalized coaching.',
-  keywords: ['aim', 'sensitivity', 'AI', 'esports', 'valorant', 'cs2', 'optimization', 'analytics', 'gaming'],
+  description:
+    "World-class AI-powered aim optimization platform. Real-time esports performance analytics, sensitivity tuning, and personalized coaching.",
+  keywords: [
+    "aim",
+    "sensitivity",
+    "AI",
+    "esports",
+    "valorant",
+    "cs2",
+    "optimization",
+    "analytics",
+    "gaming",
+  ],
 };
 
 export default function RootLayout({
@@ -38,18 +49,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} data-theme="dark">
-      <body className="min-h-screen bg-[#060912] text-slate-100 antialiased font-sans selection:bg-cyan-500/30 selection:text-cyan-100">
+    <html
+      lang="en"
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      data-theme="dark"
+    >
+      <body className="min-h-screen bg-[var(--app-bg)] text-[var(--app-text-primary)] antialiased font-sans selection:bg-[var(--app-accent-soft)] selection:text-[var(--app-text-primary)]">
         <ClientProviders>
           <ParticleBackground />
-          {/* Main container: centered, max-width, py-16 for breathing room */}
-          <div className="relative z-10 min-h-screen flex flex-col items-center px-6 py-16">
-            <div className="w-full max-w-4xl">
-              {children}
-            </div>
-          </div>
+          <div className="relative z-10 min-h-screen">{children}</div>
         </ClientProviders>
       </body>
     </html>
   );
 }
+

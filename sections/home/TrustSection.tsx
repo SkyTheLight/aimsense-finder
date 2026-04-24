@@ -12,11 +12,11 @@ const trustCards = [
 
 export function TrustSection() {
   return (
-    <section className="grid gap-4 lg:grid-cols-2">
-      <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 space-y-3">
+    <section className="grid gap-6 lg:grid-cols-2 py-16">
+      <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-8 space-y-4 transition-colors hover:bg-[var(--app-surface-soft)]">
         <div className="text-sm text-[var(--app-accent)] uppercase tracking-wide">Why It Works</div>
         <h2 className="text-xl font-semibold text-[var(--app-text-primary)]">Premium aim tuning workflow</h2>
-        <p className="text-sm text-[var(--app-text-secondary)]">Fixes weak hierarchy, cramped layout, and unclear CTAs.</p>
+        <p className="text-base leading-relaxed text-[var(--app-text-secondary)]">Fixes weak hierarchy, cramped layout, and unclear CTAs.</p>
       </div>
       <div className="grid grid-cols-2 gap-4">
         {trustCards.map((card, i) => (
@@ -25,11 +25,11 @@ export function TrustSection() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-4 space-y-2"
+            className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 space-y-3 transition-colors hover:bg-[var(--app-surface-soft)]"
           >
             <card.icon className="h-5 w-5 text-[var(--app-accent)]" />
             <h3 className="text-sm font-medium text-[var(--app-text-primary)]">{card.title}</h3>
-            <p className="text-xs text-[var(--app-text-muted)]">{card.body}</p>
+            <p className="text-sm text-[var(--app-text-muted)]">{card.body}</p>
           </motion.div>
         ))}
       </div>

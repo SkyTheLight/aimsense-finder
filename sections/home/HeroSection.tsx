@@ -15,8 +15,8 @@ const heroStats = [
 
 export function HeroSection({ onStart }: HeroSectionProps) {
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-8">
-      <div className="relative flex flex-col items-center text-center space-y-6">
+    <section className="relative overflow-hidden rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-12 py-20">
+      <div className="relative flex flex-col items-center text-center space-y-8">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -40,7 +40,7 @@ export function HeroSection({ onStart }: HeroSectionProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="max-w-lg text-[var(--app-text-secondary)]"
+          className="max-w-lg text-lg leading-relaxed text-[var(--app-text-secondary)]"
         >
           Combine your setup, pro benchmarks, and AI feedback into one guided calibration flow.
         </motion.p>
@@ -60,11 +60,11 @@ export function HeroSection({ onStart }: HeroSectionProps) {
           </button>
         </motion.div>
 
-        <div className="flex gap-4 mt-6">
+        <div className="flex gap-5 mt-6">
           {heroStats.map((stat, i) => (
-            <div key={i} className="rounded-lg border border-[var(--app-border)] bg-[var(--app-surface)] px-6 py-3 text-center">
+            <div key={i} className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] px-10 py-5 text-center space-y-2 transition-colors hover:bg-[var(--app-surface-soft)]">
               <div className="text-xl font-bold text-[var(--app-text-primary)]">{stat.value}</div>
-              <div className="text-xs text-[var(--app-text-muted)]">{stat.label}</div>
+              <div className="text-sm text-[var(--app-text-muted)]">{stat.label}</div>
             </div>
           ))}
         </div>
