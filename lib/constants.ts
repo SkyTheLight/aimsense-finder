@@ -1,10 +1,10 @@
 import { Game, ProPreset } from '@/types';
 
 export const STEPS = [
-  { id: 0, title: 'Welcome', label: 'Start' },
-  { id: 1, title: 'Setup', label: 'Configure' },
-  { id: 2, title: 'Equipment', label: 'Gear' },
-  { id: 3, title: 'PSA Method', label: 'Calibrate' },
+  { id: 0, title: 'Player Identity', label: 'Who' },
+  { id: 1, title: 'Input System', label: 'Setup' },
+  { id: 2, title: 'Behavior', label: 'Stability' },
+  { id: 3, title: 'PSA', label: 'Calibrate' },
   { id: 4, title: 'Results', label: 'Final' },
 ];
 

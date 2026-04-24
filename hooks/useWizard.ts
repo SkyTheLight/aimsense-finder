@@ -6,11 +6,10 @@ import { saveWizardState, loadWizardState } from '@/lib/storage';
 
 const initialState: WizardState = {
   currentStep: 0,
-  setup: { dpi: 0, sensitivity: 0, game: 'valorant', mouseGrip: null, aimingMechanic: null,
-    mouseWeight: null, mouseSizeFeel: null, aimIssues: [], mousepadSize: null, mousepadSurface: null,
+  setup: { dpi: 0, sensitivity: 0, game: 'valorant', playerRole: null, playstyleCategory: null, mainWeapon: null, biggestAimingIssue: null, aimIssues: [],
+    mouseGrip: null, aimingMechanic: null, mouseWeight: null, mouseSizeFeel: null, mousepadSize: null, mousepadSurface: null,
     runningOutOfSpace: null, armPosition: null, armAnchoring: null, sittingPosture: null,
-    warmup: null, warmupDuration: null, warmupMethod: null, consistencyFeeling: null,
-    mainWeapon: null, playerRole: null, biggestAimingIssue: null },
+    warmup: null, warmupDuration: null, warmupMethod: null, consistencyFeeling: null },
   selectedPreset: null,
   psaIterations: [],
   psaFinal: null,
@@ -63,8 +62,8 @@ export function useWizard() {
     setState(prev => ({ ...prev, currentStep: Math.max(prev.currentStep - 1, 0) }));
   }, []);
 
-  const setSetup = useCallback((setup: UserSetup) => {
-    setState(prev => ({ ...prev, setup }));
+  const setSetup = useCallback((setup: Partial<UserSetup> | ((prev: UserSetup) => Partial<UserSetup>)) => {
+    setState(prev => ({ ...prev, setup: typeof setup === 'function' ? { ...prev.setup!, ...setup(prev.setup!) } : { ...prev.setup!, ...setup } }));
   }, []);
 
   const setSelectedPreset = useCallback((preset: ProPreset | null) => {

@@ -6,10 +6,9 @@ import { LayoutDashboard, Sparkles } from 'lucide-react';
 import { UserSetup } from '@/types';
 import { useWizard } from '@/hooks/useWizard';
 import { ProgressIndicator } from './ProgressIndicator';
-import { WelcomeStep } from './WelcomeStep';
-import { WarningStep } from './WarningStep';
-import { EquipmentStep } from './EquipmentStep';
-import { SetupStep } from './SetupStep';
+import { IdentityStep } from './IdentityStep';
+import { InputStep } from './InputStep';
+import { BehaviorStep } from './BehaviorStep';
 import { PSAStep } from './PSAStep';
 import { ResultsStep } from './ResultsStep';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -55,25 +54,11 @@ export function WizardContainer() {
   const renderStep = () => {
     switch (currentStep) {
       case 0:
-        return <WelcomeStep onStart={nextStep} />;
+        return <IdentityStep setup={state.setup} onSetupChange={setSetup} onNext={nextStep} onBack={prevStep} />;
       case 1:
-        return (
-          <SetupStep
-            setup={state.setup}
-            onSetupChange={setSetup}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        );
+        return <InputStep setup={state.setup} onSetupChange={setSetup} onNext={nextStep} onBack={prevStep} />;
       case 2:
-        return (
-          <EquipmentStep
-            setup={state.setup}
-            onSetupChange={setSetup as (setup: Partial<UserSetup>) => void}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        );
+        return <BehaviorStep setup={state.setup} onSetupChange={setSetup} onNext={nextStep} onBack={prevStep} />;
       case 3:
         return (
           <PSAStep
@@ -106,15 +91,6 @@ export function WizardContainer() {
               setResults(results);
               nextStep();
             }}
-            onRestart={reset}
-          />
-        );
-      case 5:
-        return (
-          <WarningStep
-            results={state.results!}
-            onConfirm={() => nextStep()}
-            onBack={prevStep}
             onRestart={reset}
           />
         );

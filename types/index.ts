@@ -26,6 +26,11 @@ export type AimingMechanic = 'wrist' | 'arm' | 'hybrid';
 export type MouseGrip = 'palm' | 'claw' | 'fingertip';
 export type Playstyle = 'flick' | 'tracking' | 'balanced';
 
+export type PlayerRole = 'entry' | 'support' | 'awper' | 'hybrid';
+export type PlaystyleCategory = 'aggressive' | 'passive' | 'hybrid';
+export type MainWeapon = 'rifle' | 'awp' | 'smg' | 'shotgun';
+export type AimIssue = 'overflicking' | 'underflicking' | 'shaky_aim' | 'inconsistent' | 'poor_micro';
+
 export type MouseWeight = 'ultralight' | 'light' | 'medium' | 'heavy' | 'unknown';
 export type MouseSizeFeel = 'too_big' | 'too_small' | 'just_right';
 export type MousepadSize = 'small' | 'medium' | 'large' | 'xl';
@@ -33,9 +38,6 @@ export type MousepadSurface = 'control' | 'balanced' | 'speed';
 export type ArmPosition = 'flat' | 'angled' | 'raised';
 export type ArmAnchoring = 'anchored' | 'floating';
 export type SittingPosture = 'upright' | 'leaning' | 'slouched';
-export type AimIssue = 'overflicking' | 'underflicking' | 'shaky_aim' | 'poor_micro';
-export type PlayerRole = 'aggressive' | 'passive' | 'hybrid';
-export type MainWeapon = 'rifle' | 'awp';
 export type WarmupMethod = 'aim_trainer' | 'deathmatch' | 'range';
 export type ConsistencyFeeling = 'consistent' | 'inconsistent';
 
@@ -43,11 +45,15 @@ export interface UserSetup {
   dpi: number;
   sensitivity: number;
   game: Game;
+  playerRole: PlayerRole | null;
+  playstyleCategory: PlaystyleCategory | null;
+  mainWeapon: MainWeapon | null;
+  biggestAimingIssue: AimIssue | null;
+  aimIssues: AimIssue[];
   mouseGrip: MouseGrip | null;
   aimingMechanic: AimingMechanic | null;
   mouseWeight: MouseWeight | null;
   mouseSizeFeel: MouseSizeFeel | null;
-  aimIssues: AimIssue[];
   mousepadSize: MousepadSize | null;
   mousepadSurface: MousepadSurface | null;
   runningOutOfSpace: boolean | null;
@@ -58,9 +64,6 @@ export interface UserSetup {
   warmupDuration: number | null;
   warmupMethod: WarmupMethod | null;
   consistencyFeeling: ConsistencyFeeling | null;
-  mainWeapon: MainWeapon | null;
-  playerRole: PlayerRole | null;
-  biggestAimingIssue: AimIssue | null;
 }
 
 export interface CalculatedMetrics {
