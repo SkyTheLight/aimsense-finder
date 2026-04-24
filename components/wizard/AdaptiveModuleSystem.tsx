@@ -53,10 +53,10 @@ const modules: ModuleConfig[] = [
     component: () => (
       <Card variant="bordered">
         <div className="flex items-center gap-2 mb-3">
-          <Video className="w-4 h-4 text-cyan-400" />
-          <span className="text-sm font-medium text-white">Recommended Learning</span>
+          <Video className="w-4 h-4 text-[var(--app-accent)]" />
+          <span className="text-sm font-medium text-[var(--app-text-primary)]">Recommended Learning</span>
         </div>
-        <p className="text-xs text-[#b8c0cd]">Based on your benchmark performance, we've curated specific training videos.</p>
+        <p className="text-xs text-[var(--app-text-secondary)]">Based on your benchmark performance, we've curated specific training videos.</p>
       </Card>
     ),
   },
@@ -69,9 +69,9 @@ const modules: ModuleConfig[] = [
       <Card variant="glow">
         <div className="flex items-center gap-2 mb-3">
           <Lightbulb className="w-4 h-4 text-amber-400" />
-          <span className="text-sm font-medium text-white">Skill Insights</span>
+          <span className="text-sm font-medium text-[var(--app-text-primary)]">Skill Insights</span>
         </div>
-        <p className="text-xs text-[#b8c0cd]">Your training focus should be on micro-adjustments and crosshair placement.</p>
+        <p className="text-xs text-[var(--app-text-secondary)]">Your training focus should be on micro-adjustments and crosshair placement.</p>
       </Card>
     ),
   },
@@ -84,15 +84,15 @@ const modules: ModuleConfig[] = [
       <Card variant="bordered">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="w-4 h-4 text-green-400" />
-          <span className="text-sm font-medium text-white">Weekly Progress</span>
+          <span className="text-sm font-medium text-[var(--app-text-primary)]">Weekly Progress</span>
         </div>
         <div className="space-y-2">
           <div className="flex justify-between text-xs">
-            <span className="text-[#b8c0cd]">Tracking</span>
+            <span className="text-[var(--app-text-secondary)]">Tracking</span>
             <span className="text-green-400">+5%</span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-[#b8c0cd]">Flicking</span>
+            <span className="text-[var(--app-text-secondary)]">Flicking</span>
             <span className="text-green-400">+3%</span>
           </div>
         </div>
@@ -108,9 +108,9 @@ const modules: ModuleConfig[] = [
       <Card variant="bordered">
         <div className="flex items-center gap-2 mb-3">
           <Zap className="w-4 h-4 text-amber-400" />
-          <span className="text-sm font-medium text-white">Today's Warmup</span>
+          <span className="text-sm font-medium text-[var(--app-text-primary)]">Today's Warmup</span>
         </div>
-        <div className="space-y-2 text-xs text-[#b8c0cd]">
+        <div className="space-y-2 text-xs text-[var(--app-text-secondary)]">
           <p>• 3 min Smooth Tracking (Easy)</p>
           <p>• 3 min Reflexshot (Medium)</p>
           <p>• 3 min Gridshot Ultimate</p>
@@ -126,8 +126,8 @@ const modules: ModuleConfig[] = [
     component: () => (
       <Card variant="bordered">
         <div className="flex items-center gap-2 mb-3">
-          <Settings className="w-4 h-4 text-cyan-400" />
-          <span className="text-sm font-medium text-white">Advanced Options</span>
+          <Settings className="w-4 h-4 text-[var(--app-accent)]" />
+          <span className="text-sm font-medium text-[var(--app-text-primary)]">Advanced Options</span>
         </div>
         <div className="space-y-2">
           <Button variant="secondary" className="w-full text-xs">Mouse Acceleration</Button>

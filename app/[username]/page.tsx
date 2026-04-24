@@ -144,7 +144,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-[0.85fr_1.15fr] gap-6">
         <section className="rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
           <div
-            className="flex h-28 w-28 items-center justify-center rounded-[32px] text-4xl font-semibold text-white"
+            className="flex h-28 w-28 items-center justify-center rounded-[32px] text-4xl font-semibold text-[var(--app-text-primary)]"
             style={{ background: `linear-gradient(135deg, ${rankColor}, ${rankColor}80)` }}
           >
             {username.charAt(0).toUpperCase()}
