@@ -3,11 +3,9 @@ import { Game, ProPreset } from '@/types';
 export const STEPS = [
   { id: 0, title: 'Welcome', label: 'Start' },
   { id: 1, title: 'Setup', label: 'Configure' },
-  { id: 2, title: 'Pro Presets', label: 'Presets' },
+  { id: 2, title: 'Equipment', label: 'Gear' },
   { id: 3, title: 'PSA Method', label: 'Calibrate' },
-  { id: 4, title: 'Aim Style', label: 'Profile' },
-  { id: 5, title: 'Performance', label: 'Test' },
-  { id: 6, title: 'Results', label: 'Final' },
+  { id: 4, title: 'Results', label: 'Final' },
 ];
 
 export const DEFAULT_DPI = 0;

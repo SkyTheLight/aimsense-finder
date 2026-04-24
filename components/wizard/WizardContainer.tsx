@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LayoutDashboard, Sparkles } from 'lucide-react';
+import { UserSetup } from '@/types';
 import { useWizard } from '@/hooks/useWizard';
 import { ProgressIndicator } from './ProgressIndicator';
 import { WelcomeStep } from './WelcomeStep';
 import { WarningStep } from './WarningStep';
+import { EquipmentStep } from './EquipmentStep';
 import { SetupStep } from './SetupStep';
-import { PresetStep } from './PresetStep';
 import { PSAStep } from './PSAStep';
-import { BenchmarkStep } from './BenchmarkStep';
 import { ResultsStep } from './ResultsStep';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
@@ -67,12 +67,9 @@ export function WizardContainer() {
         );
       case 2:
         return (
-          <PresetStep
+          <EquipmentStep
             setup={state.setup}
-            selectedPreset={state.selectedPreset}
-            selectedAimStyle={state.setup?.aimingMechanic || 'hybrid'}
-            selectedGrip={state.setup?.mouseGrip || 'claw'}
-            onPresetChange={setSelectedPreset}
+            onSetupChange={setSetup as (setup: Partial<UserSetup>) => void}
             onNext={nextStep}
             onBack={prevStep}
           />
@@ -90,17 +87,6 @@ export function WizardContainer() {
           />
         );
       case 4:
-        return (
-          <BenchmarkStep
-            benchmarks={state.benchmarks}
-            simplified={state.simplified}
-            onBenchmarksChange={setBenchmarks}
-            onSimplifiedChange={() => {}}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        );
-      case 5:
         return (
           <ResultsStep
             setup={state.setup || null}
@@ -123,7 +109,7 @@ export function WizardContainer() {
             onRestart={reset}
           />
         );
-      case 6:
+      case 5:
         return (
           <WarningStep
             results={state.results!}
@@ -137,7 +123,7 @@ export function WizardContainer() {
     }
   };
 
-  const showProgress = currentStep > 0 && currentStep < 6;
+  const showProgress = currentStep > 0 && currentStep < 5;
 
   return (
     <div className="min-h-screen w-full bg-[var(--app-bg)] text-[var(--app-text-primary)] transition-colors duration-300">

@@ -9,7 +9,7 @@ interface ProgressIndicatorProps {
 }
 
 export function ProgressIndicator({ currentStep }: ProgressIndicatorProps) {
-  const visibleSteps = STEPS.filter((step) => step.id > 0 && step.id < 6);
+  const visibleSteps = STEPS.filter((step) => step.id > 0 && step.id < 5);
   const currentVisibleIndex = Math.max(0, visibleSteps.findIndex((step) => step.id === currentStep));
   const progressWidth = visibleSteps.length > 1 ? (currentVisibleIndex / (visibleSteps.length - 1)) * 100 : 0;
 
@@ -35,7 +35,7 @@ export function ProgressIndicator({ currentStep }: ProgressIndicatorProps) {
           animate={{ width: `${progressWidth}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         />
-        <div className="relative grid grid-cols-5 gap-2">
+        <div className="relative grid grid-cols-4 gap-2">
           {visibleSteps.map((step, index) => {
             const stepNumber = index + 1;
             const isComplete = index < currentVisibleIndex;

@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FinalResults, UserSetup, ProPreset } from '@/types';
 import { calculateEDPI, calculateAimStyleBias, calculateVoltaicModifier, calculateFinalSensitivity, getSensitivityLabel, getSensitivityLabelWithBorderline, isBorderline, generateExplanation, getProComparison, getProRange, calculatePresetBias } from '@/lib/calculations';
+import { analyzePlayer } from '@/lib/analysis';
+import { analyzeUserWithData, convertAnalysisToCoachInput } from '@/lib/coach';
 import { AIM_LAB_TASKS, PRACTICE_TIPS, BORDERLINE_TIPS, SENSITIVITY_TIPS } from '@/lib/constants';
 import { Trophy, Save, RefreshCcw, Copy, CheckCircle, TrendingUp, TrendingDown, Minus, Lightbulb, AlertTriangle, Loader2, Target, Zap, Scale } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -55,6 +57,13 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
   }, [setup, simplified, aimStyle, psaValue, selectedPreset]);
 
   useEffect(() => { fetchPersonalizedTips(); }, [fetchPersonalizedTips]);
+
+  const coachAnalysis = useMemo(() => {
+    if (!setup) return null;
+    const analysis = analyzePlayer(setup, aimStyle?.playstyle ?? null);
+    const coachInput = convertAnalysisToCoachInput(setup, analysis);
+    return analyzeUserWithData(coachInput);
+  }, [setup, aimStyle]);
 
   const game = setup.game;
   const tracking = simplified?.tracking || 5, flicking = simplified?.flicking || 5, switching = simplified?.switching || 5;
@@ -167,6 +176,67 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
           </div>
         </Card>
       </motion.div>
+
+      {coachAnalysis && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <Card variant="bordered">
+            <div className="space-y-6">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="h-5 w-5 text-green-500" />
+                <h3 className="text-lg font-semibold text-[var(--app-text-primary)]">AI Coach Analysis</h3>
+              </div>
+              
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h4 className="font-medium text-[var(--app-accent)]">1. MAIN LIMITING FACTOR</h4>
+                  <p className="text-[var(--app-text-secondary)]">{coachAnalysis.mainLimitingFactor}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-[var(--app-accent)]">2. HOLDING YOU BACK</h4>
+                  {coachAnalysis.holdingBack.map((h, i) => (
+                    <p key={i} className="text-[var(--app-text-secondary)]">- {h}</p>
+                  ))}
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-[var(--app-accent)]">3. SENS CHANGE</h4>
+                  <p className="text-green-500 font-medium">{coachAnalysis.sensChange}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-[var(--app-accent)]">4. MUST DO NEXT</h4>
+                  {coachAnalysis.mustDoNext.map((m, i) => (
+                    <p key={i} className="text-[var(--app-text-secondary)]">- {m}</p>
+                  ))}
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-[var(--app-accent)]">5. FIX ORDER</h4>
+                  <p className="text-green-500">1st: {coachAnalysis.fixOrder.first}</p>
+                  <p className="text-green-500/80">2nd: {coachAnalysis.fixOrder.second}</p>
+                  <p className="text-green-500/60 text-xs">3rd: {coachAnalysis.fixOrder.optional}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-[var(--app-accent)]">6. STATUS</h4>
+                  <p className="text-[var(--app-text-secondary)] capitalize">{coachAnalysis.status}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-[var(--app-accent)]">7. NEXT STEP RULE</h4>
+                  <p className="text-[var(--app-text-muted)] text-xs">{coachAnalysis.nextStepRule}</p>
+                </div>
+
+                <div className="rounded-lg bg-[var(--app-surface)] p-3 border border-[var(--app-border)]">
+                  <h4 className="font-medium text-[var(--app-accent)]">8. FEEDBACK QUESTION</h4>
+                  <pre className="text-xs text-[var(--app-text-muted)] mt-1 whitespace-pre-wrap">{coachAnalysis.feedbackQuestion}</pre>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      )}
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-6 flex flex-wrap gap-4">
         <Button variant="secondary" onClick={handleCopy} className="flex-none">{copied ? (<><CheckCircle className="w-4 h-4 mr-2" />Copied!</>) : (<><Copy className="w-4 h-4 mr-2" />Copy</>)}</Button>

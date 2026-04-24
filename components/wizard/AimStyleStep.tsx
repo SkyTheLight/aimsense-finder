@@ -1,12 +1,11 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SelectionGrid } from '@/components/ui/SelectionGrid';
 import { AimStyleData, AimingMechanic, Playstyle } from '@/types';
-import { Hand, Zap, Crosshair, Activity, Lightbulb, Dumbbell, RefreshCw, Target, Scale } from 'lucide-react';
 
 interface AimStyleStepProps {
   aimStyle: AimStyleData | null;
@@ -21,16 +20,16 @@ export function AimStyleStep({
   onNext,
   onBack,
 }: AimStyleStepProps) {
-  const mechanics: { value: AimingMechanic; label: string; icon: React.ReactNode; description: string }[] = [
-    { value: 'wrist', label: 'Wrist', icon: <Hand className="w-5 h-5" />, description: 'Small movements, fast flicks' },
-    { value: 'arm', label: 'Arm', icon: <Dumbbell className="w-5 h-5" />, description: 'Large movements, smooth' },
-    { value: 'hybrid', label: 'Hybrid', icon: <RefreshCw className="w-5 h-5" />, description: 'Balanced approach' },
+  const mechanics: { value: AimingMechanic; label: string; icon: string; iconColor?: string; description: string }[] = [
+    { value: 'wrist', label: 'Wrist', icon: 'mdi:hand-back-left', iconColor: '#00ff88', description: 'Small movements, fast flicks' },
+    { value: 'arm', label: 'Arm', icon: 'mdi:arm-flex', iconColor: '#00ff88', description: 'Large movements, smooth' },
+    { value: 'hybrid', label: 'Hybrid', icon: 'mdi:swap-horizontal', iconColor: '#00ff88', description: 'Balanced approach' },
   ];
 
-  const playstyles: { value: Playstyle; label: string; icon: React.ReactNode; description: string }[] = [
-    { value: 'flick', label: 'Fast Flicks', icon: <Zap className="w-5 h-5" />, description: 'Quick reactions' },
-    { value: 'tracking', label: 'Tracking', icon: <Target className="w-5 h-5" />, description: 'Smooth following' },
-    { value: 'balanced', label: 'Balanced', icon: <Scale className="w-5 h-5" />, description: 'Both equally' },
+  const playstyles: { value: Playstyle; label: string; icon: string; iconColor?: string; description: string }[] = [
+    { value: 'flick', label: 'Fast Flicks', icon: 'mdi:flash', iconColor: '#00ff88', description: 'Quick reactions' },
+    { value: 'tracking', label: 'Tracking', icon: 'mdi:target', iconColor: '#00ff88', description: 'Smooth following' },
+    { value: 'balanced', label: 'Balanced', icon: 'mdi:scale-balance', iconColor: '#00ff88', description: 'Both equally' },
   ];
 
   const isComplete = aimStyle?.mechanic && aimStyle?.playstyle;
@@ -53,7 +52,7 @@ export function AimStyleStep({
       >
         <Card variant="bordered">
           <div className="flex items-center gap-3 mb-4">
-            <Hand className="w-5 h-5 text-[#00ff88]" />
+            <Icon icon="mdi:hand-back-left" className="w-5 h-5 text-[#00ff88]" />
             <h3 className="text-white font-semibold">Aiming Mechanic</h3>
           </div>
           <SelectionGrid
@@ -72,7 +71,7 @@ export function AimStyleStep({
       >
         <Card variant="bordered">
           <div className="flex items-center gap-3 mb-4">
-            <Crosshair className="w-5 h-5 text-[#00ff88]" />
+            <Icon icon="mdi:crosshair" className="w-5 h-5 text-[#00ff88]" />
             <h3 className="text-white font-semibold">Playstyle Preference</h3>
           </div>
           <SelectionGrid
@@ -91,7 +90,7 @@ export function AimStyleStep({
           transition={{ delay: 0.2 }}
         >
           <Card variant="glow" className="text-center">
-            <Activity className="w-8 h-8 text-[#00ff88] mx-auto mb-3" />
+            <Icon icon="mdi:heart-pulse" className="w-8 h-8 text-[#00ff88] mx-auto mb-3" />
             <p className="text-white font-semibold">
               {aimStyle!.mechanic === 'wrist'
                 ? 'Wrist Aimer'
