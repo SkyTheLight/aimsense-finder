@@ -8,8 +8,10 @@ import { FinalResults, UserSetup, ProPreset } from '@/types';
 import { calculateEDPI, calculateAimStyleBias, calculateVoltaicModifier, calculateFinalSensitivity, getSensitivityLabel, getSensitivityLabelWithBorderline, isBorderline, generateExplanation, getProComparison, getProRange, calculatePresetBias } from '@/lib/calculations';
 import { analyzePlayer } from '@/lib/analysis';
 import { analyzeUserWithData, convertAnalysisToCoachInput } from '@/lib/coach';
+import { generateDashboard } from '@/lib/dashboard';
+import { generateLearningSystem } from '@/lib/learning';
 import { AIM_LAB_TASKS, PRACTICE_TIPS, BORDERLINE_TIPS, SENSITIVITY_TIPS } from '@/lib/constants';
-import { Trophy, Save, RefreshCcw, Copy, CheckCircle, TrendingUp, TrendingDown, Minus, Lightbulb, AlertTriangle, Loader2, Target, Zap, Scale } from 'lucide-react';
+import { Trophy, Save, RefreshCcw, Copy, CheckCircle, TrendingUp, TrendingDown, Minus, Lightbulb, AlertTriangle, Loader2, Target, Zap, Scale, BarChart3, Brain, Settings } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
 interface ResultsStepProps {
@@ -27,6 +29,7 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
   const [copied, setCopied] = useState(false);
   const [tipsLoading, setTipsLoading] = useState(true);
   const [personalizedTips, setPersonalizedTips] = useState<string[]>([]);
+  const [activeMode, setActiveMode] = useState<'coach' | 'dashboard' | 'learning'>('coach');
   const isLoggedIn = sessionStatus === 'authenticated' && !!session?.user?.id;
 
   if (!setup || !setup.dpi || !setup.sensitivity || !setup.game) {
@@ -64,6 +67,18 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
     const coachInput = convertAnalysisToCoachInput(setup, analysis);
     return analyzeUserWithData(coachInput);
   }, [setup, aimStyle]);
+
+  const dashboardData = useMemo(() => {
+    if (!setup || !coachAnalysis) return null;
+    const analysis = analyzePlayer(setup, aimStyle?.playstyle ?? null);
+    return generateDashboard({ user: setup, analysis, history: null });
+  }, [setup, aimStyle, coachAnalysis]);
+
+  const learningData = useMemo(() => {
+    if (!setup || !coachAnalysis) return null;
+    const analysis = analyzePlayer(setup, aimStyle?.playstyle ?? null);
+    return generateLearningSystem({ user: { grip: setup.mouseGrip, sens: setup.sensitivity, posture: setup.sittingPosture }, analysis, history: null });
+  }, [setup, aimStyle, coachAnalysis]);
 
   const game = setup.game;
   const tracking = simplified?.tracking || 5, flicking = simplified?.flicking || 5, switching = simplified?.switching || 5;
@@ -177,7 +192,20 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
         </Card>
       </motion.div>
 
-      {coachAnalysis && (
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <Card variant="bordered">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2"><BarChart3 className="h-5 w-5 text-green-500" /><p className="text-[var(--app-text-primary)] font-semibold">AI Engine</p></div>
+            <div className="flex gap-1 bg-[var(--app-surface)] rounded-lg p-1">
+              <button onClick={() => setActiveMode('coach')} className={`px-3 py-1 rounded text-xs font-medium ${activeMode === 'coach' ? 'bg-[var(--app-accent)] text-white' : 'text-[var(--app-text-muted)]'}`}>Fix</button>
+              <button onClick={() => setActiveMode('dashboard')} className={`px-3 py-1 rounded text-xs font-medium ${activeMode === 'dashboard' ? 'bg-[var(--app-accent)] text-white' : 'text-[var(--app-text-muted)]'}`}>Dash</button>
+              <button onClick={() => setActiveMode('learning')} className={`px-3 py-1 rounded text-xs font-medium ${activeMode === 'learning' ? 'bg-[var(--app-accent)] text-white' : 'text-[var(--app-text-muted)]'}`}>Learn</button>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {activeMode === 'coach' && coachAnalysis && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <Card variant="bordered">
             <div className="space-y-6">
@@ -232,6 +260,65 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
                   <h4 className="font-medium text-[var(--app-accent)]">8. FEEDBACK QUESTION</h4>
                   <pre className="text-xs text-[var(--app-text-muted)] mt-1 whitespace-pre-wrap">{coachAnalysis.feedbackQuestion}</pre>
                 </div>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
+      {activeMode === 'dashboard' && dashboardData && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <Card variant="bordered">
+            <div className="space-y-4 text-sm">
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">1. PERFORMANCE TREND</h4>
+                <p className="text-[var(--app-text-secondary)]">{dashboardData.performanceTrend}</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">2. SCORE EVOLUTION</h4>
+                <p className="text-[var(--app-text-secondary)]">Current: {dashboardData.scoreEvolution.current}/100 | Avg: {dashboardData.scoreEvolution.average}/100 | Best: {dashboardData.scoreEvolution.best}/100</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">3. AIM EVOLUTION</h4>
+                <p className="text-[var(--app-text-secondary)]">Type: {dashboardData.aimEvolution.current}</p>
+                <p className="text-[var(--app-text-muted)] text-xs">Prev: {dashboardData.aimEvolution.previous || 'N/A'} | {dashboardData.aimEvolution.trend}</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">4. ISSUE PATTERN</h4>
+                <p className="text-[var(--app-text-secondary)]">{dashboardData.issuePattern.recurring.length ? dashboardData.issuePattern.recurring.join(', ') : 'None detected'}</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">5. INSIGHT</h4>
+                <p className="text-[var(--app-text-secondary)]">{dashboardData.improvementInsight}</p>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
+      {activeMode === 'learning' && learningData && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <Card variant="bordered">
+            <div className="space-y-4 text-sm">
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">1. PLAYER MODEL</h4>
+                <p className="text-[var(--app-text-secondary)]">{learningData.playerModel}</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">2. PATTERNS</h4>
+                {learningData.behaviorPatterns.map((p, i) => (
+                  <p key={i} className="text-[var(--app-text-secondary)]">- {p}</p>
+                ))}
+              </div>
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">3. ADJUSTMENTS</h4>
+                {learningData.ruleAdjustments.map((r, i) => (
+                  <p key={i} className="text-[var(--app-text-muted)] text-xs">[{r.type}] {r.change}: {r.reason}</p>
+                ))}
+              </div>
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">4. NEXT SESSION</h4>
+                <p className="text-[var(--app-text-secondary)]">{learningData.nextSessionStrategy}</p>
               </div>
             </div>
           </Card>
