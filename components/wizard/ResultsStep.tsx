@@ -10,6 +10,7 @@ import { analyzePlayer } from '@/lib/analysis';
 import { analyzeUserWithData, convertAnalysisToCoachInput } from '@/lib/coach';
 import { generateDashboard } from '@/lib/dashboard';
 import { generateLearningSystem } from '@/lib/learning';
+import { generateArchitecture } from '@/lib/architecture';
 import { AIM_LAB_TASKS, PRACTICE_TIPS, BORDERLINE_TIPS, SENSITIVITY_TIPS } from '@/lib/constants';
 import { Trophy, Save, RefreshCcw, Copy, CheckCircle, TrendingUp, TrendingDown, Minus, Lightbulb, AlertTriangle, Loader2, Target, Zap, Scale, BarChart3, Brain, Settings } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -29,7 +30,7 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
   const [copied, setCopied] = useState(false);
   const [tipsLoading, setTipsLoading] = useState(true);
   const [personalizedTips, setPersonalizedTips] = useState<string[]>([]);
-  const [activeMode, setActiveMode] = useState<'coach' | 'dashboard' | 'learning'>('coach');
+  const [activeMode, setActiveMode] = useState<'coach' | 'dashboard' | 'learning' | 'architecture'>('coach');
   const isLoggedIn = sessionStatus === 'authenticated' && !!session?.user?.id;
 
   if (!setup || !setup.dpi || !setup.sensitivity || !setup.game) {
@@ -79,6 +80,10 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
     const analysis = analyzePlayer(setup, aimStyle?.playstyle ?? null);
     return generateLearningSystem({ user: { grip: setup.mouseGrip, sens: setup.sensitivity, posture: setup.sittingPosture }, analysis, history: null });
   }, [setup, aimStyle, coachAnalysis]);
+
+  const architectureData = useMemo(() => {
+    return generateArchitecture();
+  }, []);
 
   const game = setup.game;
   const tracking = simplified?.tracking || 5, flicking = simplified?.flicking || 5, switching = simplified?.switching || 5;
@@ -200,6 +205,7 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
               <button onClick={() => setActiveMode('coach')} className={`px-3 py-1 rounded text-xs font-medium ${activeMode === 'coach' ? 'bg-[var(--app-accent)] text-white' : 'text-[var(--app-text-muted)]'}`}>Fix</button>
               <button onClick={() => setActiveMode('dashboard')} className={`px-3 py-1 rounded text-xs font-medium ${activeMode === 'dashboard' ? 'bg-[var(--app-accent)] text-white' : 'text-[var(--app-text-muted)]'}`}>Dash</button>
               <button onClick={() => setActiveMode('learning')} className={`px-3 py-1 rounded text-xs font-medium ${activeMode === 'learning' ? 'bg-[var(--app-accent)] text-white' : 'text-[var(--app-text-muted)]'}`}>Learn</button>
+              <button onClick={() => setActiveMode('architecture')} className={`px-3 py-1 rounded text-xs font-medium ${activeMode === 'architecture' ? 'bg-[var(--app-accent)] text-white' : 'text-[var(--app-text-muted)]'}`}>Sys</button>
             </div>
           </div>
         </Card>
@@ -319,6 +325,37 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
               <div>
                 <h4 className="font-medium text-[var(--app-accent)]">4. NEXT SESSION</h4>
                 <p className="text-[var(--app-text-secondary)]">{learningData.nextSessionStrategy}</p>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
+      {activeMode === 'architecture' && architectureData && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <Card variant="bordered">
+            <div className="space-y-4 text-sm">
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">1. SYSTEM FLOW</h4>
+                <p className="text-[var(--app-text-secondary)]">{architectureData.currentFlow}</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">2. BOTTLENECKS</h4>
+                {architectureData.bottlenecks.map((b, i) => (
+                  <p key={i} className="text-[var(--app-text-muted)] text-xs">[{b.severity}] {b.location}: {b.issue}</p>
+                ))}
+              </div>
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">3. IMPROVEMENTS</h4>
+                {architectureData.improvements.map((i, idx) => (
+                  <p key={idx} className="text-[var(--app-text-secondary)] text-xs">[{i.priority}] {i.area}: {i.suggestion}</p>
+                ))}
+              </div>
+              <div>
+                <h4 className="font-medium text-[var(--app-accent)]">4. UPGRADES</h4>
+                {architectureData.intelligenceUpgrades.map((u, idx) => (
+                  <p key={idx} className="text-[var(--app-text-muted)] text-xs">{u.type}: {u.upgrade} → {u.impact}</p>
+                ))}
               </div>
             </div>
           </Card>
