@@ -23,7 +23,56 @@ interface TipContext {
   };
 }
 
-async function generateAIAnalysis(body: TipContext) {
+const VALID_LABELS = ['control', 'speed', 'balanced', 'precision', 'aggressive'];
+const VALID_AIM_STYLES = ['wrist', 'arm', 'hybrid', 'fingertip', 'claw', 'palm'];
+const VALID_GRIPS = ['palm', 'claw', 'tip', 'hybrid', 'fingertip'];
+const VALID_GAMES = ['valorant', 'cs2', 'overwatch2', 'apex legends', 'fortnite'];
+
+function sanitizeInput(input: TipContext): { valid: boolean; error?: string; data?: TipContext } {
+  if (!input.game || typeof input.game !== 'string') {
+    return { valid: false, error: 'Game is required' };
+  }
+  if (typeof input.edpi !== 'number' || input.edpi < 100 || input.edpi > 10000) {
+    return { valid: false, error: 'eDPI must be between 100 and 10000' };
+  }
+  if (typeof input.cm360 !== 'number' || input.cm360 < 10 || input.cm360 > 100) {
+    return { valid: false, error: 'cm/360 must be between 10 and 100' };
+  }
+  if (typeof input.tracking !== 'number' || input.tracking < 0 || input.tracking > 100) {
+    return { valid: false, error: 'Tracking score must be 0-100' };
+  }
+  if (typeof input.flicking !== 'number' || input.flicking < 0 || input.flicking > 100) {
+    return { valid: false, error: 'Flicking score must be 0-100' };
+  }
+  if (typeof input.switching !== 'number' || input.switching < 0 || input.switching > 100) {
+    return { valid: false, error: 'Switching score must be 0-100' };
+  }
+
+  const sanitized: TipContext = {
+    game: input.game.toLowerCase().replace(/\s+/g, ''),
+    edpi: Math.round(input.edpi),
+    cm360: parseFloat(input.cm360.toFixed(1)),
+    label: (input.label || 'balanced').toLowerCase(),
+    tracking: Math.round(input.tracking),
+    flicking: Math.round(input.flicking),
+    switching: Math.round(input.switching),
+    aimStyle: (input.aimStyle || 'hybrid').toLowerCase(),
+    mouseGrip: (input.mouseGrip || 'palm').toLowerCase(),
+    rank: input.rank?.toLowerCase() || 'unknown',
+    overshooting: Boolean(input.overshooting),
+    undershooting: Boolean(input.undershooting),
+    aimIssue: input.aimIssue?.toLowerCase(),
+    previousScores: input.previousScores ? {
+      tracking: Math.round(input.previousScores.tracking),
+      flicking: Math.round(input.previousScores.flicking),
+      switching: Math.round(input.previousScores.switching),
+    } : undefined,
+  };
+
+  return { valid: true, data: sanitized };
+}
+
+async function generateAIAnalysis(body: TipContext, signal?: AbortSignal) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return null;
 
@@ -68,7 +117,7 @@ DEEP ANALYSIS:
      * If sens: Check cm/360 - below 30cm is aggressive, above 50cm is controlled` : ''}
    ${body.undershooting ? `- UNDERSHOOTING: Is this hesitation, sens too low, or visual lag?
      * If hesitation: Decision anxiety, confidence, or overthinking
-     * If sens: Check if they\'re correcting mid-movement` : ''}
+     * If sens: Check if they're correcting mid-movement` : ''}
    ${!body.overshooting && !body.undershooting ? `- No flagged issue - but low ${weakest} score suggests underlying ${weakest === 't' ? 'tracking tension' : weakest === 'f' ? 'flick control issue' : 'switching rhythm problem'}` : ''}
 
 3. SENSITIVITY CORRELATION
@@ -82,11 +131,11 @@ DEEP ANALYSIS:
      ${body.mouseGrip === 'tip' ? 'Precise control, less stability' : ''}
 
 5. HIDDEN INSIGHT DISCOVERY
-   ${gap > 15 ? `Score gap of ${gap} suggests specialized play - they\'ve trained one skill intensely while neglecting others` : ''}
+   ${gap > 15 ? `Score gap of ${gap} suggests specialized play - they've trained one skill intensely while neglecting others` : ''}
    ${scoreVariance > 8 ? `High variance means inconsistent warmup routine or fatigue affecting performance` : ''}
    ${hasTrend ? `Improving ${body.previousScores?.tracking && body.tracking > body.previousScores.tracking ? 'tracking' : body.previousScores?.flicking && body.flicking > body.previousScores.flicking ? 'flicking' : 'switching'} - training is working` : ''}
 
-REASONING ENGINE OUTPUT (FRESH CONSTRUCTION):
+REASONING ENGINE OUTPUT (valid JSON only):
 {
   "recommendedSensitivity": "X.XX",
   "whyThisFits": "EXPLAIN specific to their eDPI, grip, and score pattern",
@@ -97,12 +146,15 @@ REASONING ENGINE OUTPUT (FRESH CONSTRUCTION):
     "CONTEXT-AWARE training considering ${body.rank} rank and game ${body.game}"
   ],
   "improvementPriority": "THE ONE change that unlocks their potential",
-  "hiddenInsight": "UNDISCOVERED PATTERN they don\'t see in their own gameplay",
+  "hiddenInsight": "UNDISCOVERED PATTERN they don't see in their own gameplay",
   "confidence": "High/Medium/Experimental",
   "reasoning": "Your 1-sentence analysis of their core issue"
 }`;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    
     const response = await fetch('https://api.groq.com/openai/v1/responses', {
       method: 'POST',
       headers: {
@@ -113,9 +165,15 @@ REASONING ENGINE OUTPUT (FRESH CONSTRUCTION):
         model: 'llama-3.1-8b-instant',
         input: prompt,
       }),
+      signal: signal || controller.signal,
     });
+    
+    clearTimeout(timeout);
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.error('Groq API error:', response.status);
+      return null;
+    }
 
     const data = await response.json();
     const msg = data.output?.find((o: { type: string }) => o.type === 'message');
@@ -126,42 +184,89 @@ REASONING ENGINE OUTPUT (FRESH CONSTRUCTION):
     if (parsed.aiTips && parsed.recommendedSensitivity) {
       return parsed;
     }
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      console.error('Tips request timeout');
+    } else {
+      console.error('Tips generation error:', err);
+    }
     return null;
   }
 
   return null;
 }
 
+function getFallbackResponse(body: TipContext) {
+  const scores = { t: body.tracking, f: body.flicking, s: body.switching };
+  const keys = Object.keys(scores) as Array<'t' | 'f' | 's'>;
+  const weakest = keys.reduce((a, b) => scores[a] < scores[b] ? a : b);
+  
+  return {
+    recommendedSensitivity: `${(body.edpi / 800).toFixed(2)}`,
+    whyThisFits: `Your ${body.label} profile suggests this range.`,
+    aiTips: [
+      `Target your ${weakest} gap with focused practice.`,
+      'Build consistent pre-round routine.',
+      'Film sessions to identify patterns.',
+      'Train one skill per session.'
+    ],
+    improvementPriority: weakest,
+    hiddenInsight: 'Score gaps reveal habit patterns.',
+    confidence: 'Medium',
+    fallback: true
+  };
+}
+
 export async function POST(request: Request) {
   try {
-    const body: TipContext = await request.json();
-    const result = await generateAIAnalysis(body);
+    let body: TipContext;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    const validation = sanitizeInput(body);
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
+    }
+
+    const result = await generateAIAnalysis(validation.data!);
 
     if (result) {
       return NextResponse.json({ ...result, fallback: false });
     }
 
-    const weakest = body.tracking <= body.flicking ? 'tracking' : 'flicking';
-    return NextResponse.json({
-      recommendedSensitivity: `${(body.edpi / 800).toFixed(2)}`,
-      whyThisFits: `Your ${body.label} profile suggests this range.`,
-      aiTips: [
-        `Target your ${weakest} gap with focused practice.`,
-        'Build consistent pre-round routine.',
-        'Film sessions to identify patterns.',
-        'Train one skill per session.'
-      ],
-      improvementPriority: weakest,
-      hiddenInsight: 'Score gaps reveal habit patterns.',
-      confidence: 'Medium',
-      fallback: true
-    });
+    return NextResponse.json(getFallbackResponse(validation.data!));
   } catch (error) {
     console.error('Tips error:', error);
     return NextResponse.json(
-      { recommendedSensitivity: '0.79', aiTips: ['Analyze your gaps.'], improvementPriority: 'consistency', hiddenInsight: 'Consistency beats raw skill.', confidence: 'Experimental' },
+      { 
+        recommendedSensitivity: '0.79', 
+        aiTips: ['Analyze your gaps.'], 
+        improvementPriority: 'consistency', 
+        hiddenInsight: 'Consistency beats raw skill.', 
+        confidence: 'Experimental',
+        error: 'Using fallback' 
+      },
       { status: 200 }
     );
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    message: 'POST benchmark scores to /api/tips',
+    example: {
+      game: 'valorant',
+      edpi: 400,
+      cm360: 45.5,
+      label: 'balanced',
+      tracking: 70,
+      flicking: 65,
+      switching: 68,
+      aimStyle: 'hybrid',
+      mouseGrip: 'palm'
+    }
+  });
 }

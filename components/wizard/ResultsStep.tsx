@@ -72,7 +72,7 @@ export function ResultsStep({
   // Guard: if no setup, render loading message
   if (!setup || !setup.dpi || !setup.sensitivity || !setup.game) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <div className="bg-[rgba(26,29,38,0.8)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] rounded-2xl p-8 text-center">
           <p className="text-white text-lg">Loading results...</p>
           <p className="text-[#525a6b] text-sm mt-2">Please complete the wizard first</p>
@@ -124,7 +124,9 @@ export function ResultsStep({
         }),
       });
       const data = await response.json();
-      if (data.tips) {
+      if (data.aiTips && Array.isArray(data.aiTips)) {
+        setPersonalizedTips(data.aiTips);
+      } else if (data.tips) {
         setPersonalizedTips(data.tips);
       }
     } catch (error) {
@@ -142,7 +144,7 @@ export function ResultsStep({
   // Guard: render with safe defaults if no setup
   if (!setup) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
         <Card variant="bordered" className="text-center p-8">
           <p className="text-white">Loading results...</p>
         </Card>

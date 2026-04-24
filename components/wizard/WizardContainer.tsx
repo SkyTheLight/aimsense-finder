@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { LayoutDashboard, Sparkles } from 'lucide-react';
 import { useWizard } from '@/hooks/useWizard';
 import { ProgressIndicator } from './ProgressIndicator';
 import { WelcomeStep } from './WelcomeStep';
@@ -9,26 +12,15 @@ import { PresetStep } from './PresetStep';
 import { PSAStep } from './PSAStep';
 import { BenchmarkStep } from './BenchmarkStep';
 import { ResultsStep } from './ResultsStep';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 const pageVariants = {
-  initial: { opacity: 0, y: 16, scale: 0.98 },
+  initial: { opacity: 0, y: 18, scale: 0.985 },
   animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -16, scale: 0.98 },
+  exit: { opacity: 0, y: -14, scale: 0.985 },
 };
 
-const containerVariants = {
-  initial: { opacity: 0 },
-  animate: { 
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 }
-  },
-};
-
-const itemVariants = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-};
+const themeStorageKey = 'truesens-theme';
 
 export function WizardContainer() {
   const {
@@ -44,7 +36,21 @@ export function WizardContainer() {
     reset,
   } = useWizard();
 
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const { currentStep } = state;
+
+  useEffect(() => {
+    const savedTheme = typeof window !== 'undefined' ? window.localStorage.getItem(themeStorageKey) : null;
+    const systemPrefersDark =
+      typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : systemPrefersDark ? 'dark' : 'light';
+    setTheme(initialTheme);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem(themeStorageKey, theme);
+  }, [theme]);
 
   const renderStep = () => {
     switch (currentStep) {
@@ -131,55 +137,48 @@ export function WizardContainer() {
     }
   };
 
+  const showProgress = currentStep > 0 && currentStep < 6;
+
   return (
-    <div className="min-h-screen bg-[#030407] overflow-hidden">
-      {/* Ambient Background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-[60vh] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(6,182,217,0.08),transparent_60%)]" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[100%] h-[40vh] bg-[radial-gradient(ellipse_60%_60%_at_50%_100%,rgba(168,85,247,0.05),transparent_60%)]" />
+    <div className="min-h-screen w-full bg-[var(--app-bg)] text-[var(--app-text-primary)] transition-colors duration-300">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.10),transparent_30%),radial-gradient(circle_at_85%_15%,rgba(168,85,247,0.10),transparent_24%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-[40vh] bg-[radial-gradient(circle_at_bottom,rgba(14,165,233,0.08),transparent_44%)]" />
       </div>
 
-      {/* Header */}
-      <motion.header 
+      <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 px-6 py-5"
+        className="relative z-20 overflow-x-auto px-4 py-4"
       >
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <div className="mx-auto flex min-w-[1180px] max-w-[1180px] items-center justify-between rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] px-5 py-3 shadow-[0_18px_50px_rgba(2,6,23,0.08)] backdrop-blur-xl">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 via-sky-400 to-purple-500 text-white shadow-[0_18px_32px_rgba(14,165,233,0.25)]">
+              <Sparkles className="h-5 w-5" />
             </div>
-            <span className="text-lg font-semibold text-white tracking-tight">TrueSens</span>
+            <div>
+              <div className="text-base font-semibold tracking-[-0.03em] text-[var(--app-text-primary)]">TrueSens</div>
+              <div className="text-xs uppercase tracking-[0.16em] text-[var(--app-text-muted)]">Precision Calibration</div>
+            </div>
           </div>
-          <a 
-            href="/dashboard" 
-            className="text-sm text-[#b8c0cd] hover:text-white transition-colors"
-          >
-            Dashboard
-          </a>
+
+          <div className="flex items-center gap-3">
+            <ThemeToggle theme={theme} onToggle={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))} />
+            <a
+              href="/dashboard"
+              className="inline-flex items-center gap-2 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-soft)] px-4 py-2.5 text-sm font-medium text-[var(--app-text-primary)] transition-colors hover:bg-[var(--app-surface)]"
+            >
+              <LayoutDashboard className="h-4 w-4 text-[var(--app-accent)]" />
+              Dashboard
+            </a>
+          </div>
         </div>
       </motion.header>
 
-      {/* Progress */}
-      {currentStep > 0 && currentStep < 5 && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="relative z-10 px-6 mb-4"
-        >
-          <div className="max-w-4xl mx-auto">
-            <ProgressIndicator currentStep={currentStep} />
-          </div>
-        </motion.div>
-      )}
+      <main className="relative z-10 overflow-x-auto px-4 pb-16 pt-2">
+        <div className="mx-auto flex min-w-[1180px] max-w-[1180px] flex-col gap-6">
+          {showProgress && <ProgressIndicator currentStep={currentStep} />}
 
-      {/* Content */}
-      <main className="relative z-10 px-4 sm:px-6 py-4 pb-12">
-        <div className="max-w-4xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStep}
@@ -187,10 +186,7 @@ export function WizardContainer() {
               initial="initial"
               animate="animate"
               exit="exit"
-              transition={{ 
-                duration: 0.35, 
-                ease: [0.25, 0.46, 0.45, 0.94]
-              }}
+              transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               {renderStep()}
             </motion.div>

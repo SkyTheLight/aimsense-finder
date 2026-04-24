@@ -9,62 +9,61 @@ interface ProgressIndicatorProps {
 }
 
 export function ProgressIndicator({ currentStep }: ProgressIndicatorProps) {
-  return (
-    <div className="w-full mb-8">
-      <div className="flex items-center justify-between relative">
-        {/* Track Background */}
-        <div className="absolute top-4 left-0 right-0 h-0.5 bg-[rgba(255,255,255,0.08)] rounded-full" />
-        
-        {/* Track Progress */}
-        <motion.div
-          className="absolute top-4 left-0 h-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full"
-          initial={{ width: '0%' }}
-          animate={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}
-          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-        />
-        
-        {STEPS.map((step, index) => {
-          const isCompleted = index < currentStep;
-          const isActive = index === currentStep;
-          const stepNum = index + 1;
+  const visibleSteps = STEPS.filter((step) => step.id > 0 && step.id < 6);
+  const currentVisibleIndex = Math.max(0, visibleSteps.findIndex((step) => step.id === currentStep));
+  const progressWidth = visibleSteps.length > 1 ? (currentVisibleIndex / (visibleSteps.length - 1)) * 100 : 0;
 
-          return (
-            <div key={step.id} className="relative z-10 flex flex-col items-center">
-              <motion.div
-                initial={false}
-                animate={{
-                  scale: isActive ? 1.15 : 1,
-                  backgroundColor: isCompleted || isActive ? '#06b6d9' : 'rgba(255,255,255,0.08)',
-                  borderColor: isCompleted || isActive ? '#06b6d9' : 'rgba(255,255,255,0.12)',
-                  boxShadow: isActive ? '0 0 20px rgba(6,182,217,0.4)' : 'none',
-                }}
-                transition={{ duration: 0.3 }}
-                className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
-                  isCompleted || isActive ? '' : 'bg-[rgba(255,255,255,0.08)]'
-                }`}
-              >
-                {isCompleted ? (
-                  <Check className="w-4 h-4 text-white" />
-                ) : (
-                  <span className={`text-xs font-semibold ${isActive ? 'text-white' : 'text-[#525a6b]'}`}>
-                    {stepNum}
-                  </span>
-                )}
-              </motion.div>
-              
-              <motion.span
-                initial={false}
-                animate={{
-                  color: isActive ? '#f4f6fa' : isCompleted ? '#b8c0cd' : '#525a6b',
-                  fontWeight: isActive ? 500 : 400,
-                }}
-                className="mt-2 text-xs hidden sm:block whitespace-nowrap"
-              >
-                {step.label}
-              </motion.span>
-            </div>
-          );
-        })}
+  return (
+    <div className="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-4 shadow-[0_18px_60px_rgba(2,6,23,0.08)] sm:p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <div className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Calibration Progress</div>
+          <div className="mt-1 text-lg font-semibold tracking-[-0.03em] text-[var(--app-text-primary)]">
+            Step {currentVisibleIndex + 1} of {visibleSteps.length}
+          </div>
+        </div>
+        <div className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface-soft)] px-3 py-1 text-sm text-[var(--app-text-secondary)]">
+          {visibleSteps[currentVisibleIndex]?.title}
+        </div>
+      </div>
+
+      <div className="relative">
+        <div className="absolute left-0 right-0 top-5 h-px bg-[var(--app-border)]" />
+        <motion.div
+          className="absolute left-0 top-5 h-px bg-gradient-to-r from-[var(--app-accent)] to-[var(--app-accent-2)]"
+          initial={{ width: 0 }}
+          animate={{ width: `${progressWidth}%` }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        />
+        <div className="relative grid grid-cols-5 gap-2">
+          {visibleSteps.map((step, index) => {
+            const stepNumber = index + 1;
+            const isComplete = index < currentVisibleIndex;
+            const isActive = index === currentVisibleIndex;
+
+            return (
+              <div key={step.id} className="flex flex-col items-center text-center">
+                <motion.div
+                  initial={false}
+                  animate={{
+                    scale: isActive ? 1.08 : 1,
+                    backgroundColor: isComplete || isActive ? 'var(--app-accent)' : 'var(--app-surface)',
+                    borderColor: isComplete || isActive ? 'var(--app-accent)' : 'var(--app-border-strong)',
+                    color: isComplete || isActive ? '#ffffff' : 'var(--app-text-muted)',
+                    boxShadow: isActive ? '0 12px 28px rgba(14,165,233,0.28)' : '0 0 0 rgba(0,0,0,0)',
+                  }}
+                  transition={{ duration: 0.25 }}
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl border text-sm font-semibold"
+                >
+                  {isComplete ? <Check className="h-4 w-4" /> : stepNumber}
+                </motion.div>
+                <div className="mt-3 hidden text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--app-text-muted)] sm:block">
+                  {step.label}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

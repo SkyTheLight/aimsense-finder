@@ -115,7 +115,9 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
           });
           if (res.ok) {
             const data = await res.json();
-            if (mounted) setAiSense(data as any);
+            if (mounted && data.optimalSensitivity) setAiSense(data);
+          } else {
+            console.error('AI sense API error:', res.status);
           }
         } catch {
           // ignore
@@ -168,7 +170,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
   };
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="w-full space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -190,7 +192,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 gap-4"
+        className="grid grid-cols-1 gap-4 md:grid-cols-2"
       >
         {/* DPI Card */}
         <div className="relative group">
@@ -262,7 +264,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
           <Activity className="w-5 h-5 text-cyan-400" />
           <span className="text-sm font-medium text-white">Select Your Game</span>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {games.map((g) => (
             <motion.button
               key={g.value}
@@ -300,7 +302,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
           <Hand className="w-5 h-5 text-cyan-400" />
           <span className="text-sm font-medium text-white">Mouse Grip</span>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {MOUSE_GRIPS.map((g) => (
             <motion.button
               key={g.id}
@@ -332,7 +334,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
           <Crosshair className="w-5 h-5 text-cyan-400" />
           <span className="text-sm font-medium text-white">Aiming Style</span>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {AIMING_MECHANICS.map((m) => (
             <motion.button
               key={m.id}
@@ -356,9 +358,9 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-gradient-to-br from-[rgba(6,182,217,0.1)] to-[rgba(168,85,247,0.1)] border border-[rgba(6,182,217,0.2)] rounded-xl p-5 text-center"
+        className="rounded-xl border border-[rgba(6,182,217,0.2)] bg-gradient-to-br from-[rgba(6,182,217,0.1)] to-[rgba(168,85,247,0.1)] p-5 text-center"
       >
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <p className="text-xs text-[#525a6b] mb-1">eDPI</p>
             <p className="text-3xl font-mono font-bold text-gradient">{edpi || '—'}</p>
@@ -386,11 +388,11 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.35 }}
-        className="flex gap-3"
+        className="flex flex-col gap-3 sm:flex-row"
       >
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[rgba(255,255,255,0.06)] text-white font-medium hover:bg-[rgba(255,255,255,0.1)] transition-all"
+          className="flex items-center justify-center gap-2 rounded-xl bg-[rgba(255,255,255,0.06)] px-4 py-3 font-medium text-white transition-all hover:bg-[rgba(255,255,255,0.1)]"
         >
           <ChevronLeft className="w-5 h-5" />
           Back
