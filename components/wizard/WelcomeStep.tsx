@@ -92,11 +92,11 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
                   <button
                     type="button"
                     onClick={() => handleSignIn('google')}
-                    className="flex items-center justify-between rounded-2xl border border-[var(--app-border-strong)] bg-white px-5 py-4 text-left text-slate-900 transition-transform duration-200 hover:-translate-y-0.5"
+                    className="flex items-center justify-between rounded-2xl border border-[var(--app-border-strong)] bg-[var(--app-surface)] px-5 py-4 text-left text-[var(--app-text-primary)] transition-transform duration-200 hover:-translate-y-0.5"
                   >
                     <div>
                       <div className="text-base font-semibold">Continue with Google</div>
-                      <div className="text-sm text-slate-600">{identity}</div>
+                      <div className="text-sm text-[var(--app-text-secondary)]">{identity}</div>
                     </div>
                     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -107,7 +107,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
                   </button>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 grid-cols-3">
                   {credibility.map((item) => (
                     <div
                       key={item}
@@ -131,3 +131,4 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
     </>
   );
 }
+

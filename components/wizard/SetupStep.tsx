@@ -42,7 +42,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         {aiSense && <div className="inline-flex items-center justify-center gap-2 rounded bg-[var(--app-surface)] p-2 text-xs text-[var(--app-text-secondary)]"><span>AI Suggestion:</span><span className="text-[var(--app-text-primary)] font-semibold">{aiSense.optimalSensitivity?.toFixed ? aiSense.optimalSensitivity.toFixed(2) : aiSense.optimalSensitivity}</span></div>}
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 gap-6">
         <div className="relative group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--app-accent)] to-[var(--app-accent-2)] rounded-xl opacity-0 group-hover:opacity-20 transition-opacity" />
           <div className="space-y-4 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 transition-all hover:border-[var(--app-accent)]/30">
@@ -75,7 +75,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
 
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <div className="mb-4 flex items-center gap-3"><Activity className="w-5 h-5 text-[var(--app-accent)]" /><span className="text-sm font-medium text-[var(--app-text-primary)]">Select Your Game</span></div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-4">
           {games.map((g) => (
             <motion.button key={g.value} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => handleGameChange(g.value)} className={`relative flex items-center justify-center gap-3 rounded-xl px-4 py-4 text-base font-bold transition-all ${game === g.value ? `border-2 text-[var(--app-text-primary)] shadow-[0_0_20px_rgba(${g.color === '#FF4655' ? '255,70,85' : '222,155,53'},0.4)]` : 'bg-[var(--app-surface)] border border-[var(--app-border)] text-[var(--app-text-secondary)] hover:bg-[var(--app-surface)]'}`} style={{ background: game === g.value ? `${g.color}15` : undefined, borderColor: game === g.value ? g.color : undefined }}>
               {g.value === 'valorant' ? <img src="/valorant.png" alt="Valorant" className="w-8 h-8 object-contain" /> : <img src="/cs2-logo.svg" alt="CS2" className="w-8 h-8" />}{g.label}
@@ -86,7 +86,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
 
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <div className="mb-4 flex items-center gap-3"><Hand className="w-5 h-5 text-[var(--app-accent)]" /><span className="text-sm font-medium text-[var(--app-text-primary)]">Mouse Grip</span></div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-3 gap-4">
           {MOUSE_GRIPS.map((g) => (<motion.button key={g.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => handleGripChange(g.id)} className={`rounded-lg px-3 py-3 text-sm transition-all ${mouseGrip === g.id ? 'bg-[var(--app-accent)]/15 border-2 border-[var(--app-accent)] text-[var(--app-accent)]' : 'bg-[var(--app-surface)] border border-[var(--app-border)] text-[var(--app-text-secondary)] hover:bg-[var(--app-surface)]'}`}>{g.name}</motion.button>))}
         </div>
       </motion.div>
@@ -95,20 +95,20 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
 
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
         <div className="mb-4 flex items-center gap-3"><Crosshair className="w-5 h-5 text-[var(--app-accent)]" /><span className="text-sm font-medium text-[var(--app-text-primary)]">Aiming Style</span></div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-3 gap-4">
           {AIMING_MECHANICS.map((m) => (<motion.button key={m.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => handleMechanicChange(m.id)} className={`rounded-lg px-3 py-3 text-sm transition-all ${aimingMechanic === m.id ? 'bg-[var(--app-accent)]/15 border-2 border-[var(--app-accent)] text-[var(--app-accent)]' : 'bg-[var(--app-surface)] border border-[var(--app-border)] text-[var(--app-text-secondary)] hover:bg-[var(--app-surface)]'}`}>{m.name}</motion.button>))}
         </div>
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="space-y-4 rounded-xl border border-[var(--app-accent)]/20 bg-gradient-to-br from-[var(--app-accent)]/10 to-purple-500/10 p-6 text-center">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-4">
           <div><p className="mb-1 text-xs text-[var(--app-text-muted)]">eDPI</p><p className="text-3xl font-mono font-bold text-[var(--app-text-primary)]">{edpi || '—'}</p></div>
           <div><p className="mb-1 text-xs text-[var(--app-text-muted)]">cm/360</p><p className={`text-3xl font-mono font-bold ${getCm360Color()}`}>{cm360 || '—'}</p></div>
         </div>
         {edpi > 0 && <div className="space-y-4 border-t border-[var(--app-border)] pt-4"><div className="flex items-center justify-center gap-2">{getTrendIcon()}<span className="text-sm text-[var(--app-text-secondary)]">{proComparison.range} vs {gameConfig.name} pros</span></div><p className="text-xs text-[var(--app-text-muted)]">{cm360Feedback.message}</p></div>}
       </motion.div>
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-6 flex flex-col gap-4 sm:flex-row">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-6 flex flex-row gap-4">
         <button onClick={onBack} className="flex items-center justify-center gap-2 rounded-xl bg-[var(--app-surface)] px-4 py-3 font-medium text-[var(--app-text-primary)] transition-all hover:bg-[var(--app-surface)] border border-[var(--app-border)]"><ChevronLeft className="w-5 h-5" />Back</button>
         <button onClick={onNext} disabled={!isValid} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--app-accent)] to-[var(--app-accent-2)] px-5 py-3 font-medium text-white shadow-lg transition-all hover:shadow-[var(--app-accent)]/40 disabled:cursor-not-allowed disabled:opacity-50">Continue<ChevronRight className="w-5 h-5" /></button>
       </motion.div>

@@ -14,7 +14,7 @@ export function ProgressIndicator({ currentStep }: ProgressIndicatorProps) {
   const progressWidth = visibleSteps.length > 1 ? (currentVisibleIndex / (visibleSteps.length - 1)) * 100 : 0;
 
   return (
-    <div className="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-4 shadow-[0_18px_60px_rgba(2,6,23,0.08)] sm:p-5">
+    <div className="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[0_18px_60px_rgba(2,6,23,0.08)]">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <div className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Calibration Progress</div>
@@ -57,7 +57,7 @@ export function ProgressIndicator({ currentStep }: ProgressIndicatorProps) {
                 >
                   {isComplete ? <Check className="h-4 w-4" /> : stepNumber}
                 </motion.div>
-                <div className="mt-3 hidden text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--app-text-muted)] sm:block">
+                <div className="mt-3 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--app-text-muted)]">
                   {step.label}
                 </div>
               </div>

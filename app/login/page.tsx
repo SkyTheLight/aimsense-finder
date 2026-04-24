@@ -74,7 +74,7 @@ export default function LoginPage() {
             type="button"
             onClick={handleLogin}
             disabled={loading}
-            className="mt-8 flex w-full items-center justify-between rounded-2xl bg-white px-5 py-4 text-left text-slate-900 shadow-[0_16px_40px_rgba(15,23,42,0.16)] transition-transform duration-200 hover:-translate-y-0.5 disabled:opacity-70"
+            className="mt-8 flex w-full items-center justify-between rounded-2xl border border-[var(--app-border-strong)] bg-[var(--app-surface)] px-5 py-4 text-left text-[var(--app-text-primary)] shadow-[0_16px_40px_rgba(2,6,23,0.10)] transition-transform duration-200 hover:-translate-y-0.5 disabled:opacity-70"
           >
             <div className="flex items-center gap-3">
               <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
@@ -85,7 +85,7 @@ export default function LoginPage() {
               </svg>
               <div>
                 <div className="text-sm font-semibold">{loading ? 'Signing in...' : 'Continue with Google'}</div>
-                <div className="text-xs text-slate-600">Secure OAuth authentication</div>
+                <div className="text-xs text-[var(--app-text-secondary)]">Secure OAuth authentication</div>
               </div>
             </div>
             <ArrowRight className="h-4 w-4" />

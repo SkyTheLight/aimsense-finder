@@ -112,7 +112,7 @@ export function PresetStep({ setup, selectedPreset, selectedAimStyle, selectedGr
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <p className="mb-4 text-sm text-[var(--app-text-secondary)]">All {game} presets</p>
-        <div className="grid max-h-64 grid-cols-2 gap-4 overflow-y-auto sm:grid-cols-3">
+        <div className="grid max-h-64 grid-cols-3 gap-4 overflow-y-auto">
           {gamePresets.map((preset) => {
             const isSelected = selectedPreset?.id === preset.id;
             return (

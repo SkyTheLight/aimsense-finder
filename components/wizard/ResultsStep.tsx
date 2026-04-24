@@ -169,7 +169,7 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
       </motion.div>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-6 flex flex-wrap gap-4">
-        <Button variant="secondary" onClick={handleCopy} className="flex-1 sm:flex-none">{copied ? (<><CheckCircle className="w-4 h-4 mr-2" />Copied!</>) : (<><Copy className="w-4 h-4 mr-2" />Copy</>)}</Button>
+        <Button variant="secondary" onClick={handleCopy} className="flex-none">{copied ? (<><CheckCircle className="w-4 h-4 mr-2" />Copied!</>) : (<><Copy className="w-4 h-4 mr-2" />Copy</>)}</Button>
         <Button onClick={() => onResults(resultData)} className="flex-1"><Save className="w-4 h-4 mr-2" />Save</Button>
         <Button variant="ghost" onClick={onRestart}><RefreshCcw className="w-4 h-4 mr-2" />Restart</Button>
       </motion.div>

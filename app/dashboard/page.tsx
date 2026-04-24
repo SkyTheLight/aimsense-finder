@@ -1,10 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   Activity,
-  ArrowRight,
   Crown,
   Download,
   Gauge,
@@ -79,7 +77,7 @@ export default function DashboardPage() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeNav, setActiveNav] = useState('dashboard');
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [sensitivityData, setSensitivityData] = useState({
     current: 0.5,
     recommended: 0.48,
@@ -95,11 +93,13 @@ export default function DashboardPage() {
     setTheme(resolved);
     document.documentElement.dataset.theme = resolved;
     const timer = setTimeout(() => setIsLoading(false), 900);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    setCurrentTime(new Date());
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   const toggleTheme = () => {
@@ -430,7 +430,7 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
 
           <footer className="flex items-center justify-between rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-6">
             <div className="text-sm text-[var(--app-text-secondary)]">TrueSens v2.0 · Powered by Groq AI · Built for tactical FPS players</div>
-            <div className="text-sm text-[var(--app-text-muted)]">{currentTime.toLocaleTimeString()}</div>
+            <div className="text-sm text-[var(--app-text-muted)]">{currentTime ? currentTime.toLocaleTimeString() : ""}</div>
           </footer>
         </main>
       </div>
