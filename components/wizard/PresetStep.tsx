@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { ProPreset, UserSetup, ProPlayer } from '@/types';
 import { PRO_PRESETS, PRO_eDPI_RANGES } from '@/lib/constants';
 import { getProRange, calculateEDPI, getFilteredPresets, suggestPresets } from '@/lib/calculations';
-import { Users, Crosshair, Info, Sparkles, Trophy } from 'lucide-react';
+import { Users, Crosshair, Info, Sparkles, Trophy, Check, X } from 'lucide-react';
 
 interface PresetStepProps { setup: UserSetup | null; selectedPreset: ProPreset | null; selectedAimStyle: string | null; selectedGrip: string | null; onPresetChange: (preset: ProPreset | null) => void; onNext: () => void; onBack: () => void; }
 
@@ -47,7 +47,7 @@ export function PresetStep({ setup, selectedPreset, selectedAimStyle, selectedGr
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-[var(--app-text-muted)]">Pro range: {proRange.min} - {proRange.max}</span>
-            <span className={`px-2 py-0.5 rounded ${isUserInProRange ? 'bg-green-500/10 text-green-500' : 'bg-pink-500/10 text-pink-500'}`}>{isUserInProRange ? '✓ In pro range' : '✗ Outside pro range'}</span>
+            <span className={`px-2 py-0.5 rounded ${isUserInProRange ? 'bg-green-500/10 text-green-500' : 'bg-pink-500/10 text-pink-500'}`}>{isUserInProRange ? <><Check className="w-3 h-3 inline mr-1" /> In pro range</> : <><X className="w-3 h-3 inline mr-1" /> Outside pro range</>}</span>
           </div>
         </Card>
       </motion.div>

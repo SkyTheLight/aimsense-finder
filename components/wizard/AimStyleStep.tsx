@@ -1,11 +1,12 @@
 'use client';
 
+import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SelectionGrid } from '@/components/ui/SelectionGrid';
 import { AimStyleData, AimingMechanic, Playstyle } from '@/types';
-import { Hand, Zap, Crosshair, Activity } from 'lucide-react';
+import { Hand, Zap, Crosshair, Activity, Lightbulb, Dumbbell, RefreshCw, Target, Scale } from 'lucide-react';
 
 interface AimStyleStepProps {
   aimStyle: AimStyleData | null;
@@ -20,16 +21,16 @@ export function AimStyleStep({
   onNext,
   onBack,
 }: AimStyleStepProps) {
-  const mechanics: { value: AimingMechanic; label: string; icon: string; description: string }[] = [
-    { value: 'wrist', label: 'Wrist', icon: '👋', description: 'Small movements, fast flicks' },
-    { value: 'arm', label: 'Arm', icon: '💪', description: 'Large movements, smooth' },
-    { value: 'hybrid', label: 'Hybrid', icon: '🔄', description: 'Balanced approach' },
+  const mechanics: { value: AimingMechanic; label: string; icon: React.ReactNode; description: string }[] = [
+    { value: 'wrist', label: 'Wrist', icon: <Hand className="w-5 h-5" />, description: 'Small movements, fast flicks' },
+    { value: 'arm', label: 'Arm', icon: <Dumbbell className="w-5 h-5" />, description: 'Large movements, smooth' },
+    { value: 'hybrid', label: 'Hybrid', icon: <RefreshCw className="w-5 h-5" />, description: 'Balanced approach' },
   ];
 
-  const playstyles: { value: Playstyle; label: string; icon: string; description: string }[] = [
-    { value: 'flick', label: 'Fast Flicks', icon: '⚡', description: 'Quick reactions' },
-    { value: 'tracking', label: 'Tracking', icon: '🎯', description: 'Smooth following' },
-    { value: 'balanced', label: 'Balanced', icon: '⚖️', description: 'Both equally' },
+  const playstyles: { value: Playstyle; label: string; icon: React.ReactNode; description: string }[] = [
+    { value: 'flick', label: 'Fast Flicks', icon: <Zap className="w-5 h-5" />, description: 'Quick reactions' },
+    { value: 'tracking', label: 'Tracking', icon: <Target className="w-5 h-5" />, description: 'Smooth following' },
+    { value: 'balanced', label: 'Balanced', icon: <Scale className="w-5 h-5" />, description: 'Both equally' },
   ];
 
   const isComplete = aimStyle?.mechanic && aimStyle?.playstyle;

@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { FinalResults, UserSetup, ProPreset } from '@/types';
 import { calculateEDPI, calculateAimStyleBias, calculateVoltaicModifier, calculateFinalSensitivity, getSensitivityLabel, getSensitivityLabelWithBorderline, isBorderline, generateExplanation, getProComparison, getProRange, calculatePresetBias } from '@/lib/calculations';
 import { AIM_LAB_TASKS, PRACTICE_TIPS, BORDERLINE_TIPS, SENSITIVITY_TIPS } from '@/lib/constants';
-import { Trophy, Save, RefreshCcw, Copy, CheckCircle, TrendingUp, TrendingDown, Minus, Lightbulb, AlertTriangle, Loader2 } from 'lucide-react';
+import { Trophy, Save, RefreshCcw, Copy, CheckCircle, TrendingUp, TrendingDown, Minus, Lightbulb, AlertTriangle, Loader2, Target, Zap, Scale } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
 interface ResultsStepProps {
@@ -90,7 +90,7 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
         <Card variant="glow" className="text-center">
           <div className="mb-4 flex justify-center">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${label === 'control' ? 'bg-blue-500/10 text-blue-500' : label === 'speed' ? 'bg-purple-500/10 text-purple-500' : 'bg-green-500/10 text-green-500'}`}>
-              {label === 'control' ? '🎯 Control' : label === 'speed' ? '⚡ Speed' : '⚖️ Balanced'}
+              {label === 'control' ? <><Target className="w-4 h-4 mr-1" /> Control</> : label === 'speed' ? <><Zap className="w-4 h-4 mr-1" /> Speed</> : <><Scale className="w-4 h-4 mr-1" /> Balanced</>}
             </span>
           </div>
           <p className="mb-1 text-xs text-[var(--app-text-muted)]">Recommended Sensitivity</p>

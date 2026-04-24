@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Clock, CheckCircle, Copy, Share2, Sparkles, Volume2, VolumeX, X, ChevronLeft } from 'lucide-react';
+import { AlertTriangle, Clock, CheckCircle, Copy, Share2, Sparkles, Volume2, VolumeX, X, ChevronLeft, MapPin, Circle } from 'lucide-react';
 import { useSession, signIn } from 'next-auth/react';
 import { FinalResults } from '@/types';
 
@@ -72,7 +72,7 @@ export function WarningStep({ results, onConfirm, onBack, onRestart }: WarningSt
             {DAYS.slice(0, 7).map((day, index) => (
               <div key={day} className={`rounded-lg border p-4 text-center ${index === 0 ? 'bg-green-500/20 border-green-500/30 text-green-400' : 'bg-[var(--app-surface)] border-[var(--app-border)] text-[var(--app-text-muted)]'}`}>
                 <p className="text-xs font-medium">{day.slice(0, 3)}</p>
-                <p className="mt-1 text-sm font-bold">{index === 0 ? '📍' : '⭕'}</p>
+                <p className="mt-1 text-sm font-bold">{index === 0 ? <MapPin className="w-4 h-4 inline" /> : <Circle className="w-4 h-4 inline" />}</p>
               </div>
             ))}
           </div>

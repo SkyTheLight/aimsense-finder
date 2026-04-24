@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { BenchmarkScores } from '@/types';
 import { AIM_LAB_TASKS } from '@/lib/constants';
-import { Award, Zap, Crosshair, Target, ExternalLink, Sparkles, Loader2, ChevronRight } from 'lucide-react';
+import { Award, Zap, Crosshair, Target, ExternalLink, Sparkles, Loader2, ChevronRight, Flame, Gem, Lightbulb } from 'lucide-react';
 
 interface DiagnosticResult {
   skillTier: string;
@@ -173,7 +173,7 @@ export function BenchmarkStep({ benchmarks, simplified, onBenchmarksChange, onSi
                   diagnostic.skillTier === 'Platinum' ? 'bg-gradient-to-br from-green-500 to-emerald-500' :
                   diagnostic.skillTier === 'Gold' ? 'bg-gradient-to-br from-yellow-500 to-amber-500' : 'bg-gradient-to-br from-gray-500 to-slate-600'
                 }`}>
-                  {diagnostic.skillTier === 'Radiant' ? '🔥' : diagnostic.skillTier === 'Ascendant' ? '💎' : diagnostic.skillTier === 'Diamond' ? '💠' : '🎯'}
+                  {diagnostic.skillTier === 'Radiant' ? <Flame className="w-6 h-6 text-white" /> : diagnostic.skillTier === 'Ascendant' ? <Gem className="w-6 h-6 text-white" /> : <Target className="w-6 h-6 text-white" />}
                 </div>
                 <div>
                   <p className="text-xs text-[var(--app-text-muted)]">SKILL TIER</p>
@@ -212,7 +212,7 @@ export function BenchmarkStep({ benchmarks, simplified, onBenchmarksChange, onSi
             <p className="mb-4 text-[var(--app-text-primary)] font-semibold">AI Coach Analysis</p>
             <p className="text-sm text-[var(--app-text-secondary)]">{diagnostic.coachingSummary}</p>
             <p className="mt-4 text-sm text-[var(--app-accent)]">Priority: {diagnostic.priorityFocus}</p>
-            {diagnostic.insight && <p className="mt-4 text-xs text-[var(--app-text-muted)]">💡 {diagnostic.insight}</p>}
+            {diagnostic.insight && <p className="mt-4 text-xs text-[var(--app-text-muted)]"><Lightbulb className="w-3 h-3 inline mr-1" /> {diagnostic.insight}</p>}
           </Card>
 
           <Card variant="bordered">
