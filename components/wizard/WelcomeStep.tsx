@@ -37,7 +37,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
 
   return (
     <>
-      <div className="flex w-full flex-col space-y-8">
+      <div className="flex w-full flex-col space-y-10">
         <HeroSection onStart={() => setShowOptions(true)} />
         <TrustSection />
         <WorkflowSection />

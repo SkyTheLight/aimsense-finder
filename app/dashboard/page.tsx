@@ -191,7 +191,7 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--app-bg)]">
-        <div className="rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface)] px-10 py-8 text-center shadow-[0_30px_90px_rgba(2,6,23,0.16)]">
+        <div className="rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface)] p-8 text-center shadow-[0_30px_90px_rgba(2,6,23,0.16)]">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-cyan-500 to-violet-500 text-white shadow-[0_18px_40px_rgba(14,165,233,0.24)]">
             <Sparkles className="h-7 w-7 animate-pulse" />
           </div>
@@ -207,8 +207,8 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.10),transparent_28%),radial-gradient(circle_at_80%_0%,rgba(168,85,247,0.10),transparent_24%)]" />
       </div>
-      <div className="relative z-10 mx-auto flex w-full min-w-[1440px] max-w-[1440px] gap-6 px-8 py-6">
-        <aside className={`rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[0_24px_80px_rgba(2,6,23,0.10)] ${sidebarCollapsed ? 'w-[112px]' : 'w-[284px]'}`}>
+      <div className="relative z-10 flex w-full gap-6 py-16">
+        <aside className={`space-y-6 rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface)] p-6 shadow-[0_24px_80px_rgba(2,6,23,0.10)] ${sidebarCollapsed ? 'w-[112px]' : 'w-[284px]'}`}>
           <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} gap-3`}>
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-violet-500 text-white">
@@ -228,7 +228,7 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
             )}
           </div>
 
-          <nav className="mt-8 grid gap-2">
+          <nav className="grid gap-2">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -245,13 +245,13 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
             ))}
           </nav>
 
-          <div className="mt-8 rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-4">
+          <div className="space-y-4 rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-6">
             <div className="flex items-center justify-between">
               {!sidebarCollapsed && (
                 <>
                   <div>
                     <div className="text-xs uppercase tracking-[0.16em] text-[var(--app-text-muted)]">Rank Progress</div>
-                    <div className="mt-1 text-lg font-semibold text-[var(--app-text-primary)]">Diamond</div>
+                    <div className="text-lg font-semibold text-[var(--app-text-primary)]">Diamond</div>
                   </div>
                   <Crown className="h-5 w-5 text-cyan-400" />
                 </>
@@ -260,20 +260,20 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
             </div>
             {!sidebarCollapsed && (
               <>
-                <div className="mt-4 h-2 rounded-full bg-[var(--app-border)]">
+                <div className="h-2 rounded-full bg-[var(--app-border)]">
                   <div className="h-2 w-[85%] rounded-full bg-gradient-to-r from-cyan-500 to-violet-500" />
                 </div>
-                <div className="mt-2 text-xs text-[var(--app-text-muted)]">85% toward next competitive milestone</div>
+                <div className="text-xs text-[var(--app-text-muted)]">85% toward next competitive milestone</div>
               </>
             )}
           </div>
         </aside>
 
-        <main className="flex-1 rounded-[36px] border border-[var(--app-border)] bg-[var(--app-surface)] px-8 py-6 shadow-[0_24px_80px_rgba(2,6,23,0.10)]">
+        <main className="flex-1 space-y-12 rounded-[36px] border border-[var(--app-border)] bg-[var(--app-surface)] p-8 shadow-[0_24px_80px_rgba(2,6,23,0.10)]">
           <header className="flex items-center justify-between">
-            <div>
+            <div className="space-y-4">
               <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-accent)]">Command Center</div>
-              <h1 className="mt-2 text-4xl font-semibold tracking-[-0.05em]">Performance Dashboard</h1>
+              <h1 className="text-4xl font-semibold tracking-[-0.05em]">Performance Dashboard</h1>
             </div>
             <div className="flex items-center gap-3">
               <button onClick={toggleTheme} className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-3 text-[var(--app-text-primary)]">
@@ -293,60 +293,60 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
             </div>
           </header>
 
-          <section className="mt-8 grid grid-cols-[1.1fr_0.9fr] gap-6">
-            <div className="rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
+          <section className="grid grid-cols-[1.1fr_0.9fr] gap-6">
+            <div className="space-y-6 rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="space-y-4">
                   <div className="text-sm uppercase tracking-[0.16em] text-[var(--app-text-muted)]">Current Snapshot</div>
-                  <div className="mt-2 text-5xl font-semibold tracking-[-0.06em]">71/100</div>
+                  <div className="text-5xl font-semibold tracking-[-0.06em]">71/100</div>
                 </div>
                 <div className="rounded-[24px] bg-[var(--app-accent-soft)] px-4 py-2 text-sm font-semibold text-[var(--app-accent)]">Diamond tier</div>
               </div>
-              <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--app-text-secondary)]">
+              <p className="max-w-2xl text-base leading-8 text-[var(--app-text-secondary)]">
                 A high-confidence snapshot of where your current sensitivity is helping and where it is still costing precision.
               </p>
 
-              <div className="mt-8 grid grid-cols-5 gap-4">
+              <div className="grid grid-cols-5 gap-4">
                 {metrics.map((metric) => (
-                  <div key={metric.id} className="rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-4">
+                  <div key={metric.id} className="space-y-4 rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--app-accent-soft)] text-[var(--app-accent)]">{metric.icon}</div>
                       <span className={`text-xs font-semibold uppercase tracking-[0.16em] ${metric.trend === 'up' ? 'text-emerald-500' : metric.trend === 'down' ? 'text-rose-500' : 'text-[var(--app-text-muted)]'}`}>
                         {metric.trend}
                       </span>
                     </div>
-                    <div className="mt-5 text-3xl font-semibold tracking-[-0.05em]">{metric.value}</div>
-                    <div className="mt-1 text-xs uppercase tracking-[0.14em] text-[var(--app-text-muted)]">{metric.label}</div>
-                    <div className="mt-4">{metric.sparkline && <Sparkline data={metric.sparkline} color={metric.trend === 'down' ? '#F43F5E' : metric.trend === 'up' ? '#22C55E' : '#64748B'} />}</div>
+                    <div className="text-3xl font-semibold tracking-[-0.05em]">{metric.value}</div>
+                    <div className="text-xs uppercase tracking-[0.14em] text-[var(--app-text-muted)]">{metric.label}</div>
+                    <div>{metric.sparkline && <Sparkline data={metric.sparkline} color={metric.trend === 'down' ? '#F43F5E' : metric.trend === 'up' ? '#22C55E' : '#64748B'} />}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
+            <div className="space-y-6 rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="space-y-4">
                   <div className="text-sm uppercase tracking-[0.16em] text-[var(--app-text-muted)]">Sensitivity Engine</div>
-                  <div className="mt-2 text-3xl font-semibold tracking-[-0.05em]">Live tuning panel</div>
+                  <div className="text-3xl font-semibold tracking-[-0.05em]">Live tuning panel</div>
                 </div>
                 <Monitor className="h-6 w-6 text-[var(--app-accent)]" />
               </div>
 
-              <div className="mt-8 grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-3 gap-4 text-center">
                 {[
                   ['Current', sensitivityData.current.toFixed(2)],
                   ['Delta', `${sensitivityData.change}%`],
                   ['Recommended', sensitivityData.recommended.toFixed(2)],
                 ].map(([label, value]) => (
-                  <div key={label} className="rounded-[24px] border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-5">
+                  <div key={label} className="space-y-4 rounded-[24px] border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
                     <div className="text-xs uppercase tracking-[0.16em] text-[var(--app-text-muted)]">{label}</div>
-                    <div className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{value}</div>
+                    <div className="text-3xl font-semibold tracking-[-0.05em]">{value}</div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-8">
-                <div className="mb-3 flex items-center justify-between text-sm text-[var(--app-text-secondary)]">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-sm text-[var(--app-text-secondary)]">
                   <span>Optimal range</span>
                   <span>{sensitivityData.min.toFixed(2)} - {sensitivityData.max.toFixed(2)}</span>
                 </div>
@@ -360,7 +360,7 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
               <button
                 onClick={handleRecalibrate}
                 disabled={isRecalibrating}
-                className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--app-accent)] px-5 py-4 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(14,165,233,0.22)] disabled:opacity-70"
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--app-accent)] px-5 py-4 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(14,165,233,0.22)] disabled:opacity-70"
               >
                 {isRecalibrating ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                 {isRecalibrating ? 'Analyzing sensitivity...' : 'Recalibrate with new sensitivity'}
@@ -368,13 +368,13 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
             </div>
           </section>
 
-          <section className="mt-6 grid grid-cols-[0.9fr_1.1fr] gap-6">
-            <div className="rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
+          <section className="grid grid-cols-[0.9fr_1.1fr] gap-6">
+            <div className="space-y-6 rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
               <div className="text-sm uppercase tracking-[0.16em] text-[var(--app-text-muted)]">AI Coach</div>
-              <div className="mt-2 text-3xl font-semibold tracking-[-0.05em]">High-priority guidance</div>
-              <div className="mt-6 grid gap-3">
+              <div className="text-3xl font-semibold tracking-[-0.05em]">High-priority guidance</div>
+              <div className="grid gap-4">
                 {coachTips.map((tip) => (
-                  <div key={tip.id} className="rounded-[24px] border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-4">
+                  <div key={tip.id} className="rounded-[24px] border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
                     <div className="flex items-start gap-3">
                       <div className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl text-xs font-semibold ${tip.priority === 'high' ? 'bg-rose-500/12 text-rose-500' : tip.priority === 'medium' ? 'bg-amber-500/12 text-amber-500' : 'bg-emerald-500/12 text-emerald-500'}`}>
                         {tip.id}
@@ -387,20 +387,20 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
             </div>
 
             <div className="grid gap-6">
-              <div className="rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
+              <div className="space-y-6 rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="space-y-4">
                     <div className="text-sm uppercase tracking-[0.16em] text-[var(--app-text-muted)]">Training Videos</div>
-                    <div className="mt-2 text-3xl font-semibold tracking-[-0.05em]">Recommended playlist</div>
+                    <div className="text-3xl font-semibold tracking-[-0.05em]">Recommended playlist</div>
                   </div>
                   <Video className="h-6 w-6 text-[var(--app-accent)]" />
                 </div>
-                <div className="mt-6 grid gap-3">
+                <div className="grid gap-4">
                   {trainingVideos.map((video) => (
-                    <div key={video.id} className="flex items-center justify-between rounded-[24px] border border-[var(--app-border)] bg-[var(--app-surface)] px-5 py-4">
-                      <div>
+                    <div key={video.id} className="flex items-center justify-between rounded-[24px] border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
+                      <div className="space-y-4">
                         <div className="text-base font-semibold tracking-[-0.02em]">{video.title}</div>
-                        <div className="mt-1 text-sm text-[var(--app-text-secondary)]">{video.creator} · {video.duration} · {video.views} views</div>
+                        <div className="text-sm text-[var(--app-text-secondary)]">{video.creator} · {video.duration} · {video.views} views</div>
                       </div>
                       <div className="rounded-full bg-[var(--app-accent-soft)] px-3 py-1.5 text-xs font-medium uppercase tracking-[0.16em] text-[var(--app-accent)]">{video.category}</div>
                     </div>
@@ -408,17 +408,17 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
                 </div>
               </div>
 
-              <div className="rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
+              <div className="space-y-6 rounded-[32px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-8">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="space-y-4">
                     <div className="text-sm uppercase tracking-[0.16em] text-[var(--app-text-muted)]">History</div>
-                    <div className="mt-2 text-3xl font-semibold tracking-[-0.05em]">Sensitivity trendline</div>
+                    <div className="text-3xl font-semibold tracking-[-0.05em]">Sensitivity trendline</div>
                   </div>
                   <Trophy className="h-6 w-6 text-[var(--app-accent)]" />
                 </div>
-                <div className="mt-8 flex h-48 items-end gap-3">
+                <div className="flex h-48 items-end gap-4">
                   {sensitivityHistory.map((point) => (
-                    <div key={point.date} className="flex flex-1 flex-col items-center gap-3">
+                    <div key={point.date} className="flex flex-1 flex-col items-center gap-4">
                       <div className="w-full rounded-t-[24px] bg-gradient-to-t from-cyan-500/30 to-violet-500/65" style={{ height: `${point.score}%` }} />
                       <div className="text-xs uppercase tracking-[0.16em] text-[var(--app-text-muted)]">{point.date}</div>
                     </div>
@@ -428,7 +428,7 @@ ${metrics.map((metric) => `${metric.label}: ${metric.value}`).join('\n')}`;
             </div>
           </section>
 
-          <footer className="mt-6 flex items-center justify-between rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] px-6 py-4">
+          <footer className="flex items-center justify-between rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface-soft)] p-6">
             <div className="text-sm text-[var(--app-text-secondary)]">TrueSens v2.0 · Powered by Groq AI · Built for tactical FPS players</div>
             <div className="text-sm text-[var(--app-text-muted)]">{currentTime.toLocaleTimeString()}</div>
           </footer>

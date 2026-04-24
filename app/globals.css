@@ -94,6 +94,35 @@
   --app-accent-soft: rgba(2, 132, 199, 0.10);
 }
 
+/* ==============================================
+   SPACING SYSTEM - CONSISTENT SCALE
+   ==============================================
+   Use Tailwind spacing utilities ONLY:
+   
+   space-y-1  = 4px   |  gap-1  = 4px
+   space-y-2  = 8px   |  gap-2  = 8px
+   space-y-3  = 12px  |  gap-3  = 12px
+   space-y-4  = 16px  |  gap-4  = 16px
+   space-y-5  = 20px  |  gap-5  = 20px
+   space-y-6  = 24px  |  gap-6  = 24px
+   space-y-8  = 32px  |  gap-8  = 32px
+   space-y-10 = 40px  |  gap-10 = 40px
+   space-y-12 = 48px  |  gap-12 = 48px
+   space-y-16 = 64px  |  gap-16 = 64px
+   
+   CONTAINER SPACING:
+   - py-16 (64px) = section top/bottom
+   - space-y-12 (48px) = between sections
+   
+   CARD/PANEL SPACING:
+   - p-6 (24px) or p-8 (32px) = card padding
+   - space-y-4 (16px) = inside card elements
+   
+   INTERNAL COMPONENT:
+   - mb-4 or mb-6 = titles
+   - mt-6 or mt-8 = buttons
+   ============================================== */
+
 * {
   box-sizing: border-box;
   margin: 0;

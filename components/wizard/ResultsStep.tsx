@@ -1,8 +1,7 @@
 'use client';
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FinalResults, UserSetup, ProPreset } from '@/types';
@@ -22,18 +21,15 @@ import {
 import { AIM_LAB_TASKS, PRACTICE_TIPS, BORDERLINE_TIPS, SENSITIVITY_TIPS } from '@/lib/constants';
 import {
   Trophy,
-  Activity,
   Save,
   RefreshCcw,
   Copy,
-  Camera,
   CheckCircle,
   TrendingUp,
   TrendingDown,
   Minus,
   Lightbulb,
   Target,
-  Share2,
   AlertTriangle,
   Loader2,
 } from 'lucide-react';
@@ -59,26 +55,23 @@ export function ResultsStep({
   onResults,
   onRestart,
 }: ResultsStepProps) {
-  const resultsRef = useRef<HTMLDivElement>(null);
   const { data: session, status: sessionStatus } = useSession();
   const [copied, setCopied] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [tipsLoading, setTipsLoading] = useState(true);
   const [personalizedTips, setPersonalizedTips] = useState<string[]>([]);
-  const [tipsError, setTipsError] = useState(false);
 
   const isLoggedIn = sessionStatus === 'authenticated' && !!session?.user?.id;
 
   // Guard: if no setup, render loading message
   if (!setup || !setup.dpi || !setup.sensitivity || !setup.game) {
     return (
-      <div className="w-full space-y-6">
+      <div className="w-full space-y-12">
         <div className="bg-[rgba(26,29,38,0.8)] backdrop-blur-xl border border-[rgba(255,255,255,0.06)] rounded-2xl p-8 text-center">
           <p className="text-white text-lg">Loading results...</p>
-          <p className="text-[#525a6b] text-sm mt-2">Please complete the wizard first</p>
+          <p className="mt-4 text-sm text-[#525a6b]">Please complete the wizard first</p>
           <button 
             onClick={onRestart}
-            className="mt-4 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-400"
+            className="mt-6 rounded-lg bg-cyan-500 px-4 py-2 text-white hover:bg-cyan-400"
           >
             Start Over
           </button>
@@ -91,7 +84,6 @@ export function ResultsStep({
     // Skip if no valid setup
     if (!setup || !simplified || !aimStyle || !setup.dpi || !setup.sensitivity) {
       setTipsLoading(false);
-      setTipsError(true);
       return;
     }
 
@@ -131,7 +123,6 @@ export function ResultsStep({
       }
     } catch (error) {
       console.error('Failed to fetch personalized tips:', error);
-      setTipsError(true);
     } finally {
       setTipsLoading(false);
     }
@@ -144,7 +135,7 @@ export function ResultsStep({
   // Guard: render with safe defaults if no setup
   if (!setup) {
     return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-12">
         <Card variant="bordered" className="text-center p-8">
           <p className="text-white">Loading results...</p>
         </Card>
@@ -198,40 +189,6 @@ export function ResultsStep({
     },
   };
 
-  const handleScreenshot = async () => {
-    if (!resultsRef.current) return;
-    setSaving(true);
-    try {
-      // Generate text-based report instead of image
-      const report = `TrueSens Results
-==================
-Sensitivity: ${finalSens}
-eDPI: ${edpi}
-cm/360: ${cm360.toFixed(2)}
-Style: ${label} (${proComparison.range} eDPI)
-Recommendation: ${proComparison.recommendation}
-
-Data:
-- DPI: ${setup.dpi}
-- In-Game Sens: ${setup.sensitivity}
-- Game: ${setup.game}
-- Playstyle: ${aimStyle?.playstyle || 'balanced'}
-- Grip: ${setup.mouseGrip}
-`;
-
-      const blob = new Blob([report], { type: 'text/plain' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `aimsense-results-${Date.now()}.txt`;
-      link.click();
-      URL.revokeObjectURL(link.href);
-      setSaving(false);
-    } catch (error) {
-      console.error('Failed to save results:', error);
-      setSaving(false);
-    }
-  };
-
   const handleCopy = async () => {
     const text = `🎯 AimSense Finder Results
 Sensitivity: ${finalSens}
@@ -252,13 +209,13 @@ ${proComparison.recommendation}`;
   };
 
   return (
-    <div className="space-y-6" ref={resultsRef}>
+    <div className="space-y-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
+        className="space-y-4 text-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-2">Your Results</h2>
+        <h2 className="text-2xl font-bold text-white">Your Results</h2>
         <p className="text-[#94a3b8]">Optimized for your playstyle</p>
       </motion.div>
 
@@ -268,7 +225,7 @@ ${proComparison.recommendation}`;
         transition={{ delay: 0.1 }}
       >
         <Card variant="glow" className="text-center">
-          <div className="flex justify-center mb-4">
+          <div className="mb-4 flex justify-center">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
               label === 'control' ? 'bg-[#3b82f6]/10 text-[#3b82f6]' :
               label === 'speed' ? 'bg-[#6366f1]/10 text-[#6366f1]' :
@@ -278,16 +235,16 @@ ${proComparison.recommendation}`;
             </span>
           </div>
 
-          <p className="text-xs text-[#64748b] mb-1">Recommended Sensitivity</p>
-          <p className="text-5xl font-mono font-bold text-[#00ff88] mb-4">{finalSens}</p>
+          <p className="mb-1 text-xs text-[#64748b]">Recommended Sensitivity</p>
+          <p className="mb-4 text-5xl font-mono font-bold text-[#00ff88]">{finalSens}</p>
 
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#2a2a3a]">
+          <div className="grid grid-cols-2 gap-4 border-t border-[#2a2a3a] pt-4">
             <div>
-              <p className="text-xs text-[#64748b] mb-1">eDPI</p>
+              <p className="mb-1 text-xs text-[#64748b]">eDPI</p>
               <p className="text-2xl font-mono font-bold text-white">{edpi}</p>
             </div>
             <div>
-              <p className="text-xs text-[#64748b] mb-1">cm/360</p>
+              <p className="mb-1 text-xs text-[#64748b]">cm/360</p>
               <p className="text-2xl font-mono font-bold text-white">{cm360.toFixed(2)}</p>
             </div>
           </div>
@@ -315,8 +272,8 @@ ${proComparison.recommendation}`;
               <p className="text-xs text-[#64748b]">percentile</p>
             </div>
           </div>
-          <div className="mt-4">
-            <div className="flex justify-between text-xs text-[#64748b] mb-1">
+          <div className="mt-4 space-y-4">
+            <div className="mb-1 flex justify-between text-xs text-[#64748b]">
               <span>Pro Range</span>
               <span>{proRange.min} - {proRange.max}</span>
             </div>
@@ -329,7 +286,7 @@ ${proComparison.recommendation}`;
               />
             </div>
           </div>
-          <p className="text-sm text-[#94a3b8] mt-4">{proComparison.recommendation}</p>
+          <p className="mt-4 text-sm text-[#94a3b8]">{proComparison.recommendation}</p>
         </Card>
       </motion.div>
 
@@ -339,20 +296,20 @@ ${proComparison.recommendation}`;
         transition={{ delay: 0.2 }}
       >
         <Card variant="bordered">
-          <div className="flex items-start gap-3">
-            <Lightbulb className="w-5 h-5 text-[#00ff88] mt-0.5" />
-            <div className="flex-1">
-              <p className="text-white font-semibold mb-3">💡 Pro Tips for Your Sensitivity</p>
+          <div className="flex items-start gap-4">
+            <Lightbulb className="mt-0.5 h-5 w-5 text-[#00ff88]" />
+            <div className="flex-1 space-y-4">
+              <p className="text-white font-semibold">💡 Pro Tips for Your Sensitivity</p>
               {tipsLoading ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="w-5 h-5 text-[#00ff88] animate-spin" />
                 </div>
               ) : personalizedTips.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {personalizedTips.map((tip, index) => (
                     <div 
                       key={index} 
-                      className={`p-3 rounded-lg border text-sm text-[#94a3b8] ${
+                      className={`rounded-lg border p-4 text-sm text-[#94a3b8] ${
                         index === 0 ? 'bg-[#00ff88]/5 border-[#00ff88]/20' :
                         index === 1 ? 'bg-[#6366f1]/5 border-[#6366f1]/20' :
                         'bg-[#1a1a24] border-[#2a2a3a]'
@@ -364,11 +321,11 @@ ${proComparison.recommendation}`;
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="p-3 bg-[rgba(255,255,255,0.04)] rounded-lg border border-[rgba(255,255,255,0.08)]">
+                  <div className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-4">
                     <p className="text-sm text-[#b8c0cd]">{tips.pros} {tips.advice}</p>
                   </div>
                   {tips.struggles && (
-                    <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4">
                       <p className="text-sm text-amber-300">{tips.struggles}</p>
                     </div>
                   )}
@@ -386,7 +343,7 @@ ${proComparison.recommendation}`;
           transition={{ delay: 0.2 }}
         >
           <Card variant="bordered" className="border-[#f59e0b]/30 bg-[#f59e0b]/5">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="mb-4 flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-[#f59e0b]" />
               <p className="text-[#f59e0b] font-semibold">Risk Warning</p>
             </div>
@@ -403,7 +360,7 @@ ${proComparison.recommendation}`;
         transition={{ delay: 0.25 }}
       >
         <Card variant="bordered">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="mb-4 flex items-center gap-3">
             <Trophy className="w-5 h-5 text-[#00ff88]" />
             <p className="text-white font-semibold">Practice Recommendations</p>
           </div>
@@ -412,8 +369,8 @@ ${proComparison.recommendation}`;
               {practiceTip}
             </p>
             {tracking < 6 && (
-              <div>
-                <p className="text-xs text-[#64748b] mb-2">Improve Tracking</p>
+              <div className="space-y-4">
+                <p className="text-xs text-[#64748b]">Improve Tracking</p>
                 <div className="flex flex-wrap gap-2">
                   {AIM_LAB_TASKS.tracking.slice(0, 2).map((t) => (
                     <span key={t.id} className="text-xs px-2 py-1 rounded bg-[#1a1a24] text-[#94a3b8]">
@@ -424,8 +381,8 @@ ${proComparison.recommendation}`;
               </div>
             )}
             {flicking < 6 && (
-              <div>
-                <p className="text-xs text-[#64748b] mb-2">Improve Flicking</p>
+              <div className="space-y-4">
+                <p className="text-xs text-[#64748b]">Improve Flicking</p>
                 <div className="flex flex-wrap gap-2">
                   {AIM_LAB_TASKS.flicking.slice(0, 2).map((t) => (
                     <span key={t.id} className="text-xs px-2 py-1 rounded bg-[#1a1a24] text-[#94a3b8]">
@@ -436,8 +393,8 @@ ${proComparison.recommendation}`;
               </div>
             )}
             {switching < 6 && (
-              <div>
-                <p className="text-xs text-[#64748b] mb-2">Improve Switching</p>
+              <div className="space-y-4">
+                <p className="text-xs text-[#64748b]">Improve Switching</p>
                 <div className="flex flex-wrap gap-2">
                   {AIM_LAB_TASKS.switching.slice(0, 2).map((t) => (
                     <span key={t.id} className="text-xs px-2 py-1 rounded bg-[#1a1a24] text-[#94a3b8]">
@@ -458,7 +415,7 @@ ${proComparison.recommendation}`;
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="flex flex-wrap gap-3"
+        className="mt-6 flex flex-wrap gap-4"
       >
         <Button variant="secondary" onClick={handleCopy} className="flex-1 sm:flex-none">
           {copied ? (
@@ -489,10 +446,10 @@ ${proComparison.recommendation}`;
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.35 }}
-          className="flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/20"
+          className="flex flex-col items-center gap-4 rounded-xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 p-6"
         >
           <p className="text-sm text-[#94a3b8]">Share your results</p>
-          <div className="flex items-center gap-2 w-full max-w-md">
+          <div className="flex w-full max-w-md items-center gap-4">
             <input 
               type="text" 
               readOnly 
@@ -513,7 +470,7 @@ ${proComparison.recommendation}`;
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="flex flex-col items-center gap-3 pt-8 pb-4"
+        className="flex flex-col items-center gap-4 py-12"
       >
         <a 
           href="https://steamcommunity.com/id/SkyTheLight666" 

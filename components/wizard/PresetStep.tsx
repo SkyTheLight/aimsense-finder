@@ -77,13 +77,13 @@ export function PresetStep({
   const isUserInProRange = userEDPI >= proRange.min && userEDPI <= proRange.max;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
+        className="space-y-4 text-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-2">Pro Presets</h2>
+        <h2 className="text-2xl font-bold text-white">Pro Presets</h2>
         <p className="text-[#94a3b8]">Choose your target playstyle or skip</p>
       </motion.div>
 
@@ -118,16 +118,16 @@ export function PresetStep({
           transition={{ delay: 0.12 }}
         >
           <Card variant="bordered" className="bg-[#1a1a24]">
-            <div className="flex items-center justify-between mb-3">
+            <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#00ff88]" />
                 <span className="text-sm text-white font-medium">AI Pro Matching</span>
               </div>
               <span className="text-xs text-[#64748b]">Based on your eDPI & aim style</span>
             </div>
-            <div className="space-y-2 mb-3">
+            <div className="mb-4 space-y-4">
               {proRecommendations.slice(0, 3).map((pro, idx) => (
-                <div key={pro.name} className="flex items-center justify-between p-2 rounded-lg bg-[#12121a]">
+                <div key={pro.name} className="flex items-center justify-between rounded-lg bg-[#12121a] p-4">
                   <div className="flex items-center gap-2">
                     <span className={`text-sm font-bold ${idx === 0 ? 'text-[#ffd700]' : 'text-[#94a3b8]'}`}>
                       #{idx + 1}
@@ -155,7 +155,7 @@ export function PresetStep({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-[#94a3b8] flex items-center gap-2">
               <Trophy className="w-4 h-4 text-[#ffd700]" />
               Top Pro Player Matches
@@ -164,7 +164,7 @@ export function PresetStep({
               Hide
             </button>
           </div>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="max-h-48 space-y-4 overflow-y-auto">
             {proRecommendations.map((pro, idx) => (
               <div key={pro.name} className="flex items-center justify-between p-3 rounded-xl bg-[#12121a] border border-[#2a2a3a]">
                 <div className="flex items-center gap-3">
@@ -186,7 +186,7 @@ export function PresetStep({
         </motion.div>
       )}
 
-      <div className="flex items-center gap-2 text-xs text-[#64748b] mb-4">
+      <div className="mb-6 flex items-center gap-2 text-xs text-[#64748b]">
         <Info className="w-3 h-3" />
         <span>Pro data from prosettings.net</span>
       </div>
@@ -197,11 +197,11 @@ export function PresetStep({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          <p className="text-sm text-[#94a3b8] mb-3 flex items-center gap-2">
+          <p className="mb-4 flex items-center gap-2 text-sm text-[#94a3b8]">
             <Crosshair className="w-4 h-4" />
             Suggested for your eDPI
           </p>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-4">
             {suggestedPresets.map((preset) => {
               const isSelected = selectedPreset?.id === preset.id;
               const midPoint = (preset.edpiRange.min + preset.edpiRange.max) / 2;
@@ -215,14 +215,14 @@ export function PresetStep({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`
-                    relative p-4 rounded-xl border-2 transition-all text-left
+                    relative rounded-xl border-2 p-6 text-left transition-all
                     ${isSelected
                       ? 'border-[#00ff88] bg-[#00ff88]/5'
                       : 'border-[#2a2a3a] bg-[#12121a] hover:border-[#4a4a5a]'
                     }
                   `}
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="mb-4 flex items-center justify-between">
                     <span className="text-lg">{preset.icon}</span>
                     {isSelected && (
                       <div className="w-2 h-2 rounded-full bg-[#00ff88]" />
@@ -231,7 +231,7 @@ export function PresetStep({
                   <p className={`font-semibold text-sm ${isSelected ? 'text-[#00ff88]' : 'text-white'}`}>
                     {preset.name}
                   </p>
-                  <p className="text-xs text-[#64748b] mb-2">{preset.description}</p>
+                  <p className="mb-4 text-xs text-[#64748b]">{preset.description}</p>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-[#64748b]">{preset.edpiRange.min}-{preset.edpiRange.max} eDPI</span>
                     <span className="text-[#00ff88]">{matchPercent.toFixed(0)}% match</span>
@@ -248,8 +248,8 @@ export function PresetStep({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <p className="text-sm text-[#94a3b8] mb-3">All {game} presets</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
+        <p className="mb-4 text-sm text-[#94a3b8]">All {game} presets</p>
+        <div className="grid max-h-64 grid-cols-2 gap-4 overflow-y-auto sm:grid-cols-3">
           {gamePresets.map((preset) => {
             const isSelected = selectedPreset?.id === preset.id;
             return (
@@ -259,7 +259,7 @@ export function PresetStep({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`
-                  p-3 rounded-xl border-2 transition-all text-left
+                  rounded-xl border-2 p-4 text-left transition-all
                   ${isSelected
                     ? 'border-[#00ff88] bg-[#00ff88]/5'
                     : 'border-[#2a2a3a] bg-[#12121a] hover:border-[#4a4a5a]'
@@ -287,7 +287,7 @@ export function PresetStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25 }}
-        className="flex gap-3"
+        className="mt-6 flex gap-4"
       >
         <Button variant="secondary" onClick={onBack}>
           Back

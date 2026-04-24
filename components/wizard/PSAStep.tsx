@@ -8,13 +8,8 @@ import { PSAIteration, UserSetup, ProPreset } from '@/types';
 import {
   generateInitialPSAOptions,
   createFirstIteration,
-  processPSAChoice,
   getPSAValue,
 } from '@/lib/psaLogic';
-import {
-  calculateEDPI,
-  calculateBaseSensitivity,
-} from '@/lib/calculations';
 import { Target, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 
 interface PSAStepProps {
@@ -98,7 +93,7 @@ export function PSAStep({
 
   if (!setup || !setup.dpi || !setup.sensitivity) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-12">
         <Card variant="bordered" className="text-center">
           <p className="text-white">Please complete Setup step first</p>
         </Card>
@@ -108,13 +103,13 @@ export function PSAStep({
   }
 
 return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
+        className="space-y-4 text-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-2">PSA Method</h2>
+        <h2 className="text-2xl font-bold text-white">PSA Method</h2>
         <p className="text-[#94a3b8]">
               {initialChoice
                 ? isComplete
@@ -132,8 +127,8 @@ return (
         >
           <Card variant="bordered" className="bg-[#12121a]">
             <div className="space-y-4">
-              <div>
-                <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+              <div className="space-y-4">
+                <h3 className="mb-4 flex items-center gap-2 text-white font-semibold">
                   <span className="w-6 h-6 rounded-full bg-[#00ff88]/20 text-[#00ff88] flex items-center justify-center text-xs">?</span>
                   What is the PSA Method?
                 </h3>
@@ -142,8 +137,8 @@ return (
                 </p>
               </div>
 
-              <div className="border-t border-[#2a2a3a] pt-4">
-                <h4 className="text-white font-medium text-sm mb-2">How it works:</h4>
+              <div className="space-y-4 border-t border-[#2a2a3a] pt-4">
+                <h4 className="text-sm font-medium text-white">How it works:</h4>
                 <ol className="text-sm text-[#94a3b8] space-y-2">
                   <li className="flex gap-2">
                     <span className="text-[#00ff88] font-mono">1.</span>
@@ -160,17 +155,17 @@ return (
                 </ol>
               </div>
 
-              <div className="border-t border-[#2a2a3a] pt-4">
-                <h4 className="text-white font-medium text-sm mb-2">Example:</h4>
+              <div className="space-y-4 border-t border-[#2a2a3a] pt-4">
+                <h4 className="text-sm font-medium text-white">Example:</h4>
                 <p className="text-sm text-[#94a3b8]">
                   If your current sens is <code className="text-cyan-400">0.5</code>, you'll compare <code className="text-cyan-400">0.25</code> vs <code className="text-cyan-400">1.0</code>. Pick the smoother one, then compare alternatives around that choice. After 7 steps, you'll narrow it down to your optimal sensitivity.
                 </p>
               </div>
 
-              <p className="text-sm text-[#94a3b8] mb-4 text-center pt-2">
+              <p className="pt-4 text-center text-sm text-[#94a3b8]">
                 Which feels better for smooth tracking?
               </p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-4">
                 {[
                   { key: 'half' as const, value: psaOptions.slower, label: 'Slower' },
                   { key: 'base' as const, value: psaOptions.current, label: 'Current' },
@@ -179,14 +174,14 @@ return (
                   <button
                     key={option.key}
                     onClick={() => handleInitialChoice(option.key)}
-                    className="p-4 rounded-xl border-2 border-[#2a2a3a] bg-[#1a1a24] hover:border-[#00ff88] hover:bg-[#00ff88]/5 transition-all"
+                    className="space-y-4 rounded-xl border-2 border-[#2a2a3a] bg-[#1a1a24] p-6 transition-all hover:border-[#00ff88] hover:bg-[#00ff88]/5"
                   >
-                    <p className="text-xs text-[#64748b] mb-1">{option.label}</p>
+                    <p className="mb-1 text-xs text-[#64748b]">{option.label}</p>
                     <p className="text-xl font-mono font-bold text-white">{option.value}</p>
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-[#64748b] text-center mt-4">
+              <p className="text-center text-xs text-[#64748b]">
                 Your current sensitivity: {baseSens.toFixed(3)}
               </p>
             </div>
@@ -202,8 +197,8 @@ return (
           transition={{ duration: 0.3 }}
         >
           <Card variant="glow">
-            <div className="text-center mb-6">
-              <Target className="w-10 h-10 text-[#00ff88] mx-auto mb-3" />
+            <div className="space-y-4 text-center">
+              <Target className="mx-auto h-10 w-10 text-[#00ff88]" />
               <p className="text-sm text-[#94a3b8]">
                 Compare these two sensitivities and pick which feels better
               </p>
@@ -212,10 +207,10 @@ return (
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => handleBinaryChoice('low')}
-                className="p-6 rounded-xl border-2 border-[#2a2a3a] bg-[#1a1a24] hover:border-[#00ff88] hover:bg-[#00ff88]/5 transition-all group"
+                className="group space-y-4 rounded-xl border-2 border-[#2a2a3a] bg-[#1a1a24] p-6 transition-all hover:border-[#00ff88] hover:bg-[#00ff88]/5"
               >
-                <ArrowLeft className="w-6 h-6 text-[#64748b] mx-auto mb-2 group-hover:text-[#00ff88]" />
-                <p className="text-xs text-[#64748b] mb-1">Lower</p>
+                <ArrowLeft className="mx-auto h-6 w-6 text-[#64748b] group-hover:text-[#00ff88]" />
+                <p className="mb-1 text-xs text-[#64748b]">Lower</p>
                 <p className="text-2xl font-mono font-bold text-white">
                   {currentIteration.low.toFixed(3)}
                 </p>
@@ -223,17 +218,17 @@ return (
 
               <button
                 onClick={() => handleBinaryChoice('high')}
-                className="p-6 rounded-xl border-2 border-[#2a2a3a] bg-[#1a1a24] hover:border-[#00ff88] hover:bg-[#00ff88]/5 transition-all group"
+                className="group space-y-4 rounded-xl border-2 border-[#2a2a3a] bg-[#1a1a24] p-6 transition-all hover:border-[#00ff88] hover:bg-[#00ff88]/5"
               >
-                <ArrowRight className="w-6 h-6 text-[#64748b] mx-auto mb-2 group-hover:text-[#00ff88]" />
-                <p className="text-xs text-[#64748b] mb-1">Higher</p>
+                <ArrowRight className="mx-auto h-6 w-6 text-[#64748b] group-hover:text-[#00ff88]" />
+                <p className="mb-1 text-xs text-[#64748b]">Higher</p>
                 <p className="text-2xl font-mono font-bold text-white">
                   {currentIteration.high.toFixed(3)}
                 </p>
               </button>
             </div>
 
-            <div className="flex justify-center mt-4">
+            <div className="mt-6 flex justify-center">
               <button
                 onClick={handleReset}
                 className="flex items-center gap-2 text-sm text-[#64748b] hover:text-white transition-colors"
@@ -252,14 +247,14 @@ return (
           animate={{ opacity: 1, scale: 1 }}
         >
           <Card variant="glow" className="text-center">
-            <div className="w-16 h-16 rounded-full bg-[#00ff88]/10 flex items-center justify-center mx-auto mb-4">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#00ff88]/10">
               <Target className="w-8 h-8 text-[#00ff88]" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">PSA Complete!</h3>
-            <p className="text-sm text-[#94a3b8] mb-4">
+            <h3 className="mb-4 text-xl font-bold text-white">PSA Complete!</h3>
+            <p className="mb-4 text-sm text-[#94a3b8]">
               Your calibrated sensitivity value
             </p>
-            <p className="text-4xl font-mono font-bold text-[#00ff88] mb-2">
+            <p className="mb-4 text-4xl font-mono font-bold text-[#00ff88]">
               {getPSAValue(iterations)?.toFixed(3)}
             </p>
             <p className="text-xs text-[#64748b]">
@@ -273,7 +268,7 @@ return (
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="flex gap-3"
+        className="mt-6 flex gap-4"
       >
         <Button variant="secondary" onClick={onBack}>
           Back

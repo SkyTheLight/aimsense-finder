@@ -61,7 +61,7 @@ export function BenchmarkStep({
   );
   const [diagnostic, setDiagnostic] = useState<DiagnosticResult | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
-  const [game, setGame] = useState<'valorant' | 'cs2'>('valorant');
+  const [game] = useState<'valorant' | 'cs2'>('valorant');
 
   const runDiagnostic = useCallback(async () => {
     setAnalyzing(true);
@@ -118,9 +118,9 @@ export function BenchmarkStep({
   const hasData = localBenchmarks.gridshot > 0 || localBenchmarks.sixshot > 0 || localBenchmarks.strafeTrack > 0 || localBenchmarks.sphereTrack > 0;
 
   return (
-    <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">Performance Test</h2>
+    <div className="space-y-12">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 text-center">
+        <h2 className="text-2xl font-bold text-white">Performance Test</h2>
         <p className="text-[#94a3b8]">Run Aim Lab tasks and enter your scores</p>
       </motion.div>
 
@@ -147,10 +147,10 @@ export function BenchmarkStep({
               <span className="text-white font-semibold">Flicking</span>
             </div>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {AIM_LAB_TASKS.flicking.map((task) => (
-              <div key={task.id}>
-                <div className="flex items-center justify-between mb-1">
+              <div key={task.id} className="space-y-4">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-[#94a3b8]">{task.name}</span>
                     <span className="text-xs text-[#64748b]">({task.difficulty})</span>
@@ -174,10 +174,10 @@ export function BenchmarkStep({
               <span className="text-white font-semibold">Tracking</span>
             </div>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {AIM_LAB_TASKS.tracking.map((task) => (
-              <div key={task.id}>
-                <div className="flex items-center justify-between mb-1">
+              <div key={task.id} className="space-y-4">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-[#94a3b8]">{task.name}</span>
                     <span className="text-xs text-[#64748b]">({task.difficulty})</span>
@@ -206,11 +206,11 @@ export function BenchmarkStep({
           </Card>
         ) : (
           <Card variant="glow">
-            <div className="flex items-start gap-3">
-              <Award className="w-5 h-5 text-[#00ff88] mt-0.5" />
-              <div>
+            <div className="flex items-start gap-4">
+              <Award className="mt-0.5 h-5 w-5 text-[#00ff88]" />
+              <div className="space-y-4">
                 <p className="text-sm text-[#94a3b8]">Enter scores from Aim Lab to get personalized AI coaching</p>
-                <p className="text-xs text-[#64748b] mt-1">Leave empty to use default calibration</p>
+                <p className="text-xs text-[#64748b]">Leave empty to use default calibration</p>
               </div>
             </div>
           </Card>
@@ -221,7 +221,7 @@ export function BenchmarkStep({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
+          className="space-y-6"
         >
           <Card variant="glow">
             <div className="flex items-center justify-between mb-4">
@@ -247,16 +247,16 @@ export function BenchmarkStep({
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="text-center p-3 bg-[rgba(255,255,255,0.04)] rounded-lg">
+            <div className="mb-4 grid grid-cols-3 gap-4">
+              <div className="rounded-lg bg-[rgba(255,255,255,0.04)] p-4 text-center">
                 <p className="text-xs text-[#64748b]">Micro</p>
                 <p className="text-lg font-bold text-[#ff3366]">{diagnostic.microScore}</p>
               </div>
-              <div className="text-center p-3 bg-[rgba(255,255,255,0.04)] rounded-lg">
+              <div className="rounded-lg bg-[rgba(255,255,255,0.04)] p-4 text-center">
                 <p className="text-xs text-[#64748b]">Macro</p>
                 <p className="text-lg font-bold text-[#00ff88]">{diagnostic.macroScore}</p>
               </div>
-              <div className="text-center p-3 bg-[rgba(255,255,255,0.04)] rounded-lg">
+              <div className="rounded-lg bg-[rgba(255,255,255,0.04)] p-4 text-center">
                 <p className="text-xs text-[#64748b]">Tension</p>
                 <p className="text-lg font-bold text-[#6366f1]">{diagnostic.tensionScore}</p>
               </div>
@@ -272,33 +272,33 @@ export function BenchmarkStep({
           </Card>
 
           <Card variant="bordered">
-            <p className="text-white font-semibold mb-2">AI Coach Analysis</p>
+            <p className="mb-4 text-white font-semibold">AI Coach Analysis</p>
             <p className="text-sm text-[#b8c0cd]">{diagnostic.coachingSummary}</p>
-            <p className="text-sm text-cyan-400 mt-3">Priority: {diagnostic.priorityFocus}</p>
+            <p className="mt-4 text-sm text-cyan-400">Priority: {diagnostic.priorityFocus}</p>
             {diagnostic.insight && (
-              <p className="text-xs text-[#64748b] mt-2">💡 {diagnostic.insight}</p>
+              <p className="mt-4 text-xs text-[#64748b]">💡 {diagnostic.insight}</p>
             )}
           </Card>
 
           <Card variant="bordered">
-            <p className="text-white font-semibold mb-3">Learning Resources</p>
-            <div className="space-y-3">
+            <p className="mb-4 text-white font-semibold">Learning Resources</p>
+            <div className="space-y-4">
               {diagnostic.learningGuidance.map((guide, i) => (
-                <div key={i} className="p-3 bg-[rgba(255,255,255,0.04)] rounded-lg">
+                <div key={i} className="space-y-4 rounded-lg bg-[rgba(255,255,255,0.04)] p-6">
                   <p className="text-xs text-cyan-400 font-medium">{guide.category}</p>
                   <p className="text-sm text-white">{guide.objective}</p>
-                  <p className="text-xs text-[#64748b] mt-1">{guide.direction}</p>
+                  <p className="text-xs text-[#64748b]">{guide.direction}</p>
                 </div>
               ))}
             </div>
-            <div className="space-y-2 mt-3">
+            <div className="mt-6 space-y-4">
               {diagnostic.videos.map((video, i) => (
                 <a
                   key={i}
                   href={`https://www.youtube.com/results?search_query=${video.query}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-[rgba(255,255,255,0.04)] rounded-lg hover:bg-[rgba(255,255,255,0.08)] transition-colors"
+                  className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.04)] p-4 transition-colors hover:bg-[rgba(255,255,255,0.08)]"
                 >
                   <div>
                     <p className="text-sm text-white">{video.title}</p>
@@ -312,7 +312,7 @@ export function BenchmarkStep({
         </motion.div>
       )}
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="flex gap-3">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-6 flex gap-4">
         <Button variant="secondary" onClick={onBack}>Back</Button>
         <Button onClick={onNext} className="flex-1">Calculate Results</Button>
       </motion.div>

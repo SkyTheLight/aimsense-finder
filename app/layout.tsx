@@ -42,8 +42,11 @@ export default function RootLayout({
       <body className="min-h-screen bg-[#060912] text-slate-100 antialiased font-sans selection:bg-cyan-500/30 selection:text-cyan-100">
         <ClientProviders>
           <ParticleBackground />
-          <div className="relative z-10 min-h-screen flex flex-col items-center px-6 py-8">
-            {children}
+          {/* Main container: centered, max-width, py-16 for breathing room */}
+          <div className="relative z-10 min-h-screen flex flex-col items-center px-6 py-16">
+            <div className="w-full max-w-4xl">
+              {children}
+            </div>
           </div>
         </ClientProviders>
       </body>

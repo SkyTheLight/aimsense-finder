@@ -12,10 +12,10 @@ const steps = [
 
 export function WorkflowSection() {
   return (
-    <section className="rounded-xl border border-slate-800 bg-slate-900/50 p-6 space-y-6">
+    <section className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 space-y-6">
       <div className="space-y-2">
-        <div className="text-sm text-cyan-400 uppercase tracking-wide">How It Works</div>
-        <h2 className="text-xl font-semibold text-white">Four-step calibration flow</h2>
+        <div className="text-sm text-[var(--app-accent)] uppercase tracking-wide">How It Works</div>
+        <h2 className="text-xl font-semibold text-[var(--app-text-primary)]">Four-step calibration flow</h2>
       </div>
       <div className="grid grid-cols-4 gap-4">
         {steps.map((item, i) => (
@@ -24,12 +24,12 @@ export function WorkflowSection() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="rounded-lg border border-slate-800 bg-slate-900 p-4 space-y-3"
+            className="rounded-lg border border-[var(--app-border)] bg-[var(--app-surface)] p-4 space-y-3"
           >
-            <div className="text-xs text-slate-500">{item.step}</div>
-            <item.icon className="h-5 w-5 text-cyan-400" />
-            <h3 className="text-sm font-medium text-white">{item.title}</h3>
-            <p className="text-xs text-slate-500">{item.body}</p>
+            <div className="text-xs text-[var(--app-text-muted)]">{item.step}</div>
+            <item.icon className="h-5 w-5 text-[var(--app-accent)]" />
+            <h3 className="text-sm font-medium text-[var(--app-text-primary)]">{item.title}</h3>
+            <p className="text-xs text-[var(--app-text-muted)]">{item.body}</p>
           </motion.div>
         ))}
       </div>

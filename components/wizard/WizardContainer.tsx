@@ -149,9 +149,9 @@ export function WizardContainer() {
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-20 overflow-x-auto px-4 py-4"
+        className="relative z-20 py-6"
       >
-        <div className="mx-auto flex min-w-[1180px] max-w-[1180px] items-center justify-between rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] px-5 py-3 shadow-[0_18px_50px_rgba(2,6,23,0.08)] backdrop-blur-xl">
+        <div className="flex w-full items-center justify-between rounded-[28px] border border-[var(--app-border)] bg-[var(--app-surface)] px-5 py-3 shadow-[0_18px_50px_rgba(2,6,23,0.08)] backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 via-sky-400 to-purple-500 text-white shadow-[0_18px_32px_rgba(14,165,233,0.25)]">
               <Sparkles className="h-5 w-5" />
@@ -175,8 +175,8 @@ export function WizardContainer() {
         </div>
       </motion.header>
 
-      <main className="relative z-10 overflow-x-auto px-4 pb-16 pt-2">
-        <div className="mx-auto flex min-w-[1180px] max-w-[1180px] flex-col gap-6">
+      <main className="relative z-10 py-16">
+        <div className="flex w-full flex-col space-y-12">
           {showProgress && <ProgressIndicator currentStep={currentStep} />}
 
           <AnimatePresence mode="wait">

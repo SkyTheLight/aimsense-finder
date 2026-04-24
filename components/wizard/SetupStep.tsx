@@ -170,17 +170,17 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-12">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
+        className="space-y-4 text-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-2">{aiCopy?.title || 'Setup Your Gear'}</h2>
+        <h2 className="text-2xl font-bold text-white">{aiCopy?.title || 'Setup Your Gear'}</h2>
         <p className="text-[#b8c0cd]">{aiCopy?.subtitle || 'Tell us about your mouse and game'}</p>
         {aiSense && (
-          <div className="mt-2 bg-[rgba(0,0,0,0.25)] p-2 rounded text-xs text-[#d1d5db] inline-flex items-center justify-center gap-2" style={{ display: 'inline-flex' }}>
+          <div className="inline-flex items-center justify-center gap-2 rounded bg-[rgba(0,0,0,0.25)] p-2 text-xs text-[#d1d5db]" style={{ display: 'inline-flex' }}>
             <span>AI Suggestion:</span>
             <span className="text-white font-semibold">{aiSense.optimalSensitivity?.toFixed ? aiSense.optimalSensitivity.toFixed(2) : aiSense.optimalSensitivity}</span>
           </div>
@@ -192,13 +192,13 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 gap-4 md:grid-cols-2"
+        className="grid grid-cols-1 gap-6 md:grid-cols-2"
       >
         {/* DPI Card */}
         <div className="relative group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity" />
-          <div className="bg-[rgba(13,15,20,0.8)] border border-[rgba(255,255,255,0.08)] hover:border-cyan-500/30 rounded-xl p-5 transition-all">
-            <div className="flex items-center justify-between mb-4">
+          <div className="space-y-4 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(13,15,20,0.8)] p-6 transition-all hover:border-cyan-500/30">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 flex items-center justify-center">
                   <Mouse className="w-5 h-5 text-cyan-400" />
@@ -219,15 +219,15 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
               />
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-20 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50" />
             </div>
-            <p className="text-center text-xs text-[#525a6b] mt-3">Common: 400 • 800 • 1600 • 3200</p>
+            <p className="text-center text-xs text-[#525a6b]">Common: 400 • 800 • 1600 • 3200</p>
           </div>
         </div>
 
         {/* Sensitivity Card */}
         <div className="relative group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity" />
-          <div className="bg-[rgba(13,15,20,0.8)] border border-[rgba(255,255,255,0.08)] hover:border-purple-500/30 rounded-xl p-5 transition-all">
-            <div className="flex items-center justify-between mb-4">
+          <div className="space-y-4 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(13,15,20,0.8)] p-6 transition-all hover:border-purple-500/30">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center">
                   <Crosshair className="w-5 h-5 text-purple-400" />
@@ -249,7 +249,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
               />
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-20 h-0.5 bg-gradient-to-r from-transparent via-purple-400 to-transparent opacity-50" />
             </div>
-            <p className="text-center text-xs text-[#525a6b] mt-3">Valorant: 0.5 • CS2: 0.8 • Apex: 1.0</p>
+            <p className="text-center text-xs text-[#525a6b]">Valorant: 0.5 • CS2: 0.8 • Apex: 1.0</p>
           </div>
         </div>
       </motion.div>
@@ -260,18 +260,18 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
       >
-        <div className="flex items-center gap-3 mb-4">
+        <div className="mb-4 flex items-center gap-3">
           <Activity className="w-5 h-5 text-cyan-400" />
           <span className="text-sm font-medium text-white">Select Your Game</span>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {games.map((g) => (
             <motion.button
               key={g.value}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleGameChange(g.value)}
-              className={`relative py-4 px-4 rounded-xl font-bold text-base transition-all flex items-center justify-center gap-3 ${
+              className={`relative flex items-center justify-center gap-3 rounded-xl px-4 py-4 text-base font-bold transition-all ${
                 game === g.value
                   ? `border-2 text-white shadow-[0_0_20px_rgba(${g.color === '#FF4655' ? '255,70,85' : '222,155,53'},0.4)]`
                   : 'bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-[#b8c0cd] hover:bg-[rgba(255,255,255,0.08)]'
@@ -298,18 +298,18 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <div className="flex items-center gap-3 mb-4">
+        <div className="mb-4 flex items-center gap-3">
           <Hand className="w-5 h-5 text-cyan-400" />
           <span className="text-sm font-medium text-white">Mouse Grip</span>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {MOUSE_GRIPS.map((g) => (
             <motion.button
               key={g.id}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleGripChange(g.id)}
-              className={`py-3 px-3 rounded-lg text-sm transition-all ${
+              className={`rounded-lg px-3 py-3 text-sm transition-all ${
                 mouseGrip === g.id
                   ? 'bg-[rgba(6,182,217,0.15)] border-2 border-cyan-400 text-cyan-400'
                   : 'bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-[#b8c0cd] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.12)]'
@@ -330,18 +330,18 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
       >
-        <div className="flex items-center gap-3 mb-4">
+        <div className="mb-4 flex items-center gap-3">
           <Crosshair className="w-5 h-5 text-cyan-400" />
           <span className="text-sm font-medium text-white">Aiming Style</span>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {AIMING_MECHANICS.map((m) => (
             <motion.button
               key={m.id}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleMechanicChange(m.id)}
-              className={`py-3 px-3 rounded-lg text-sm transition-all ${
+              className={`rounded-lg px-3 py-3 text-sm transition-all ${
                 aimingMechanic === m.id
                   ? 'bg-[rgba(6,182,217,0.15)] border-2 border-cyan-400 text-cyan-400'
                   : 'bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-[#b8c0cd] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.12)]'
@@ -358,21 +358,21 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="rounded-xl border border-[rgba(6,182,217,0.2)] bg-gradient-to-br from-[rgba(6,182,217,0.1)] to-[rgba(168,85,247,0.1)] p-5 text-center"
+        className="space-y-4 rounded-xl border border-[rgba(6,182,217,0.2)] bg-gradient-to-br from-[rgba(6,182,217,0.1)] to-[rgba(168,85,247,0.1)] p-6 text-center"
       >
-        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <p className="text-xs text-[#525a6b] mb-1">eDPI</p>
+            <p className="mb-1 text-xs text-[#525a6b]">eDPI</p>
             <p className="text-3xl font-mono font-bold text-gradient">{edpi || '—'}</p>
           </div>
           <div>
-            <p className="text-xs text-[#525a6b] mb-1">cm/360</p>
+            <p className="mb-1 text-xs text-[#525a6b]">cm/360</p>
             <p className={`text-3xl font-mono font-bold ${getCm360Color()}`}>{cm360 || '—'}</p>
           </div>
         </div>
         {edpi > 0 && (
-          <div className="pt-4 border-t border-[rgba(255,255,255,0.08)]">
-            <div className="flex items-center justify-center gap-2 mb-1">
+          <div className="space-y-4 border-t border-[rgba(255,255,255,0.08)] pt-4">
+            <div className="flex items-center justify-center gap-2">
               {getTrendIcon()}
               <span className="text-sm text-[#b8c0cd]">
                 {proComparison.range} vs {gameConfig.name} pros
@@ -388,7 +388,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.35 }}
-        className="flex flex-col gap-3 sm:flex-row"
+        className="mt-6 flex flex-col gap-4 sm:flex-row"
       >
         <button
           onClick={onBack}
@@ -400,7 +400,7 @@ export function SetupStep({ setup, onSetupChange, onNext, onBack }: SetupStepPro
         <button
           onClick={onNext}
           disabled={!isValid}
-          className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-medium shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-600 px-5 py-3 font-medium text-white shadow-lg shadow-cyan-500/25 transition-all hover:shadow-cyan-500/40 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Continue
           <ChevronRight className="w-5 h-5" />
