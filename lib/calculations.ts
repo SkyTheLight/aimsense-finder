@@ -37,6 +37,91 @@ export function calculateRecommendedSens(dpi: number, game: Game, issues: string
   return Number(recommended.toFixed(3));
 }
 
+export function getTargetCm360Range(game: Game): { min: number; max: number; ideal: number } {
+  const ranges = {
+    valorant: { min: 35, max: 55, ideal: 42 },
+    cs2: { min: 30, max: 50, ideal: 40 },
+  };
+  return ranges[game] || ranges.valorant;
+}
+
+export function classifyCm360(cm360: number): { label: string; status: 'unstable' | 'fast' | 'balanced' | 'slow' | 'limited'; action: string; forced: boolean } {
+  if (cm360 < 30) {
+    return { label: 'TOO FAST', status: 'unstable', action: 'MUST SLOW DOWN', forced: true };
+  }
+  if (cm360 <= 40) {
+    return { label: 'FAST', status: 'fast', action: 'Acceptable', forced: false };
+  }
+  if (cm360 <= 45) {
+    return { label: 'BALANCED', status: 'balanced', action: 'Pro baseline', forced: false };
+  }
+  if (cm360 <= 60) {
+    return { label: 'SLOW', status: 'slow', action: 'Acceptable', forced: false };
+  }
+  return { label: 'TOO SLOW', status: 'limited', action: 'MUST SPEED UP', forced: true };
+}
+
+export interface SensitivityResult {
+  recommendedSens: number;
+  cm360: number;
+  eDPI: number;
+  classification: ReturnType<typeof classifyCm360>;
+  adjustment: number;
+  reason: string;
+  forcedCorrection: boolean;
+}
+
+export function calculateDeterministicSens(
+  dpi: number,
+  currentSens: number,
+  game: Game,
+  issues: string[] = []
+): SensitivityResult {
+  const currentCm360 = calculateCm360(dpi, currentSens, game);
+  const classification = classifyCm360(currentCm360);
+  const targetRange = getTargetCm360Range(game);
+  
+  let targetCm360 = targetRange.ideal;
+  let adjustment = 0;
+  let reason = '';
+  let forcedCorrection = classification.forced;
+  
+  if (classification.status === 'unstable') {
+    targetCm360 = 35;
+    adjustment = (targetCm360 - currentCm360) / currentCm360 * 100;
+    reason = `TOO FAST (${currentCm360}cm) - Force slower to stable`;
+  } else if (classification.status === 'limited') {
+    targetCm360 = 50;
+    adjustment = (targetCm360 - currentCm360) / currentCm360 * 100;
+    reason = `TOO SLOW (${currentCm360}cm) - Force faster for reaction`;
+  } else if (issues.includes('overflicking')) {
+    targetCm360 = currentCm360 > 40 ? currentCm360 : 42;
+    adjustment = 8;
+    reason = 'Overflicking detected - move toward slower zone';
+  } else if (issues.includes('underflicking')) {
+    targetCm360 = currentCm360 < 40 ? currentCm360 : 38;
+    adjustment = -8;
+    reason = 'Underflicking detected - move toward faster zone';
+  } else {
+    adjustment = 0;
+    reason = `Current cm/360 (${currentCm360}cm) is in acceptable range`;
+  }
+  
+  const recommendedSens = currentSens * (1 + adjustment / 100);
+  const newCm360 = calculateCm360(dpi, recommendedSens, game);
+  const newEDPI = calculateEDPI(dpi, recommendedSens);
+  
+  return {
+    recommendedSens: Number(recommendedSens.toFixed(3)),
+    cm360: newCm360,
+    eDPI: newEDPI,
+    classification: classifyCm360(newCm360),
+    adjustment: Math.round(adjustment),
+    reason,
+    forcedCorrection
+  };
+}
+
 export function getValidEDPIRange(game: Game): { min: number; max: number } {
   const range = getProRange(game);
   return {
