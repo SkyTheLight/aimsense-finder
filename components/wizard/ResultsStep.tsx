@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FinalResults, UserSetup, ProPreset } from '@/types';
-import { calculateEDPI, calculateAimStyleBias, calculateVoltaicModifier, calculateFinalSensitivity, getSensitivityLabel, getSensitivityLabelWithBorderline, isBorderline, generateExplanation, getProComparison, getProRange, calculatePresetBias } from '@/lib/calculations';
+import { calculateEDPI, calculateCm360, calculateAimStyleBias, calculateVoltaicModifier, calculateFinalSensitivity, getSensitivityLabel, getSensitivityLabelWithBorderline, isBorderline, generateExplanation, getProComparison, getProRange, calculatePresetBias, getTargetCm360Range } from '@/lib/calculations';
 import { analyzePlayer } from '@/lib/analysis';
 import { analyzeUserWithData, convertAnalysisToCoachInput } from '@/lib/coach';
 import { generateDashboard } from '@/lib/dashboard';
@@ -14,6 +14,7 @@ import { generateArchitecture } from '@/lib/architecture';
 import { AIM_LAB_TASKS, PRACTICE_TIPS, BORDERLINE_TIPS, SENSITIVITY_TIPS } from '@/lib/constants';
 import { Trophy, Save, RefreshCcw, Copy, CheckCircle, TrendingUp, TrendingDown, Minus, Lightbulb, AlertTriangle, Loader2, Target, Zap, Scale, BarChart3, Brain, Settings } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import Cm360Meter from '@/components/Cm360Meter';
 
 interface ResultsStepProps {
   setup: UserSetup | null;
@@ -128,6 +129,20 @@ export function ResultsStep({ setup, selectedPreset, psaValue, aimStyle, simplif
             <div><p className="mb-1 text-xs text-[var(--app-text-muted)]">eDPI</p><p className="text-2xl font-mono font-bold text-[var(--app-text-primary)]">{edpi}</p></div>
             <div><p className="mb-1 text-xs text-[var(--app-text-muted)]">cm/360</p><p className="text-2xl font-mono font-bold text-[var(--app-text-primary)]">{cm360.toFixed(2)}</p></div>
           </div>
+        </Card>
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+        <Card variant="bordered" className="p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-medium text-[var(--app-text-secondary)]">Sensitivity Meter</h3>
+            <span className="text-xs px-2 py-1 rounded bg-[var(--app-surface)] text-[var(--app-text-muted)]">{game.toUpperCase()}</span>
+          </div>
+          <Cm360Meter 
+            value={cm360} 
+            recommendedMin={getTargetCm360Range(game).min}
+            recommendedMax={getTargetCm360Range(game).max}
+          />
         </Card>
       </motion.div>
 
