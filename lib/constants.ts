@@ -25,8 +25,8 @@ export const SENSITIVITY_LIMITS = {
 };
 
 export const PRO_eDPI_RANGES = {
-  valorant: { min: 141, max: 450, avg: 280 },
-  cs2: { min: 380, max: 1400, avg: 800 },
+  valorant: { min: 200, max: 400, avg: 280 },
+  cs2: { min: 600, max: 1200, avg: 800 },
 };
 
 export const PRO_PRESETS: ProPreset[] = [

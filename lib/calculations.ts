@@ -1,5 +1,4 @@
 import { Game, GameConfig, GAMES, ProPreset } from '@/types';
-import { PRO_eDPI_RANGES } from './constants';
 
 export function calculateEDPI(dpi: number, sensitivity: number): number {
   return Math.round(dpi * sensitivity);
@@ -17,7 +16,25 @@ export function getGameConfig(game: Game): GameConfig {
 }
 
 export function getProRange(game: Game): { min: number; max: number; avg: number } {
-  return PRO_eDPI_RANGES[game] || PRO_eDPI_RANGES.valorant;
+  const ranges = {
+    valorant: { min: 200, max: 400, avg: 280 },
+    cs2: { min: 600, max: 1200, avg: 800 },
+  };
+  return ranges[game] || ranges.valorant;
+}
+
+export function getProEDPIAverage(game: Game): number {
+  return getProRange(game).avg;
+}
+
+export function calculateRecommendedSens(dpi: number, game: Game, issues: string[] = []): number {
+  const targetEDPI = getProEDPIAverage(game);
+  let recommended = targetEDPI / dpi;
+  
+  if (issues.includes('overflicking')) recommended *= 1.08;
+  else if (issues.includes('underflicking')) recommended *= 0.92;
+  
+  return Number(recommended.toFixed(3));
 }
 
 export function getValidEDPIRange(game: Game): { min: number; max: number } {
