@@ -26,7 +26,7 @@ interface TipContext {
 const VALID_LABELS = ['control', 'speed', 'balanced', 'precision', 'aggressive'];
 const VALID_AIM_STYLES = ['wrist', 'arm', 'hybrid', 'fingertip', 'claw', 'palm'];
 const VALID_GRIPS = ['palm', 'claw', 'tip', 'hybrid', 'fingertip'];
-const VALID_GAMES = ['valorant', 'cs2', 'overwatch2', 'apex legends', 'fortnite'];
+const VALID_GAMES = ['valorant', 'cs2'];
 
 function sanitizeInput(input: TipContext): { valid: boolean; error?: string; data?: TipContext } {
   if (!input.game || typeof input.game !== 'string') {

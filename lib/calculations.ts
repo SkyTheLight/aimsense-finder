@@ -284,25 +284,31 @@ export function suggestPresets(userEDPI: number, game: Game): ProPreset[] {
 
 export function getOptimalCm360Range(game: Game): { min: number; max: number; ideal: number } {
   const ranges: Record<Game, { min: number; max: number; ideal: number }> = {
-    valorant: { min: 20, max: 50, ideal: 30 },
-    cs2: { min: 25, max: 60, ideal: 40 },
+    valorant: { min: 30, max: 60, ideal: 40 },
+    cs2: { min: 30, max: 50, ideal: 40 },
   };
   return ranges[game] || ranges.valorant;
 }
 
+export function getCm360Classification(cm360: number): { label: string; status: 'unstable' | 'fast' | 'balanced' | 'slow' | 'limited'; recommendation: string; issue: string | null } {
+  if (cm360 < 30) {
+    return { label: 'TOO FAST', status: 'unstable', recommendation: 'Increase cm/360 for stability', issue: 'unstable' };
+  }
+  if (cm360 <= 40) {
+    return { label: 'FAST', status: 'fast', recommendation: 'Good for close-range combat', issue: null };
+  }
+  if (cm360 <= 45) {
+    return { label: 'BALANCED', status: 'balanced', recommendation: 'Ideal for all distances', issue: null };
+  }
+  if (cm360 <= 60) {
+    return { label: 'SLOW', status: 'slow', recommendation: 'Good for long-range precision', issue: null };
+  }
+  return { label: 'TOO SLOW', status: 'limited', recommendation: 'Decrease cm/360 for better reaction', issue: 'limited' };
+}
+
 export function getCm360Feedback(cm360: number, game: Game): { status: string; message: string } {
-  const range = getOptimalCm360Range(game);
-  
-  if (cm360 < range.min) {
-    return { status: 'fast', message: `Very fast (${cm360}cm/360). Great for close quarters.` };
-  }
-  if (cm360 > range.max) {
-    return { status: 'slow', message: `Very slow (${cm360}cm/360). Excellent for long-range precision.` };
-  }
-  if (cm360 >= range.ideal * 0.9 && cm360 <= range.ideal * 1.1) {
-    return { status: 'ideal', message: `Ideal range (${cm360}cm/360). Balanced for all distances.` };
-  }
-  return { status: 'good', message: `Good range (${cm360}cm/360). Works well for most scenarios.` };
+  const classification = getCm360Classification(cm360);
+  return { status: classification.status, message: classification.recommendation };
 }
 
 export function validateSensitivityInput(dpi: number, sensitivity: number): { valid: boolean; errors: string[] } {

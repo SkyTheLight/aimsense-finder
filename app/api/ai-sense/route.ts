@@ -20,7 +20,7 @@ interface AiSenseInput {
 }
 
 const VALID_GRIPS = ['palm', 'claw', 'tip', 'hybrid', 'fingertip'];
-const VALID_GAMES = ['valorant', 'cs2', 'overwatch2', 'apex legends', 'fortnite'];
+const VALID_GAMES = ['valorant', 'cs2'];
 const VALID_MOUSE_PADS = ['cloth', 'hard', 'hybrid', 'glass'];
 
 function sanitizeInput(input: AiSenseInput): { valid: boolean; error?: string; data?: AiSenseInput } {
